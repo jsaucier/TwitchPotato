@@ -1,0 +1,23 @@
+{
+    "manifest_version": 2,
+    "name": "Twitch Potato",
+    "description": "Couch friendly Twitch.TV application.",
+    "version": "1.0",
+    "icons": {
+        "images/128": "128.png"
+    },
+    "app": {
+        "background": {
+            "scripts": ["js/background.js"],
+            "persistent": false
+        }
+    },
+    "permissions": [
+        "storage",
+        "webview",
+        "fullscreen",
+        "overrideEscFullscreen",
+        "<all_urls>"
+    ],
+    "kiosk_enabled": true
+}

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>Twitch Potato</title>
+
+        <link type="text/css" rel="stylesheet" href="css/potato.css" />
+
+        <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="js/potato.js"></script>
+    </head>
+
+    <body>
+
+        <div id="player"></div>
+
+        <div class="top"></div>
+        <div id="content" class="content">
+            <div class="time">
+                <div id="updated"></div>
+                <div id="time"></div>
+            </div>
+            <div class=left></div>
+            <div class="lists">
+                <div class="content-lists">
+                    <div class="list followed" menu="followed">
+                        <div class="head">Following</div>
+                        <div class="items"></div>
+                    </div>
+                    <div class="list featured" menu="featured">
+                        <div class="head">Featured</div>
+                        <div class="items"></div>
+                    </div>
+                    <div class="list channels" menu="channels">
+                        <div class="head">Channels</div>
+                        <div class="items"></div>
+                    </div>
+                    <div class="list games" menu="games">
+                        <div class="head" menu="Following">Games</div>
+                        <div class="items"></div>
+                    </div>
+                    <div class="list game" menu="game" style="display: none;">
+                        <div class="head">Game</div>
+                        <div class="items"></div>
+                    </div>
+                    <div class="list settings" menu="settings">
+                        <div class="head">Settings</div>
+                        <div class="items">
+                            <div class="item setting" type="import">
+                                <div class="setting">Import Channels</div>
+                            </div>
+                            <div class="item setting" type="reset">
+                                <div class="setting">Reset Settings</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="info"></div>
+            <div class="right"></div>
+        </div>
+        <div class="bottom"></div>
+
+
+
+        <div id="notification" class="window">
+            <div class="head">Now Live</div>
+            <div class="main">
+                <ul class="streamers"></ul>
+            </div>
+        </div>
+
+        <script id="popup-template" type="text/template">
+            <div class="popup">
+                <div class="main">
+                    <div class="button search selected" type="search">Search Game</div>
+                    <div class="button follow" type="follow">Follow</div>
+                    <div class="button unfollow" type="unfollow">Unfollow</div>
+                </div>
+            </div>
+        </script>
+
+        <script id="channel-item-template" type="text/template">
+            <div class="item channel" type="channel">
+                <div class="streamer">{Streamer}</div>
+                <div class="game">{Game}</div>
+            </div>
+        </script>
+
+        <script id="game-item-template" type="text/template">
+            <div class="item game" type="game">
+                <div class="game">{Game}</div>
+            </div>
+        </script>
+
+        <script id="import-template" type="text/template">
+            <div class="head import">
+                <div>Import Channels</div>
+                <div class="sub-head">
+                    <div>Import a Twitch.TV account's followed channels.</div>
+                </div>
+            </div>
+            <div class="left"></div>
+            <div class="center">
+                <div class="top"></div>
+                <div class="middle">
+                    <div class="content">
+                        <div class="input">
+                            Twitch.TV Name
+                            <br/>
+                            <input id="import" />
+                        </div>
+                    </div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+            <div class="right"></div>
+        </script>
+
+        <script id="reset-template" type="text/template">
+            <div class="head reset">
+                <div>Reset Settings</div>
+                <div class="sub-head">
+                    <div>Reset all of Twitch Potato's settings.</div>
+                </div>
+            </div>
+            <div class="left"></div>
+            <div class="center">
+                <div class="top"></div>
+                <div class="middle">
+                    <div class="content">
+
+                    </div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+            <div class="right"></div>
+        </script>
+
+        <script id="channel-template" type="text/template">
+            <div class="head">
+                <div class="streamer">{Streamer}</div>
+                <div class="sub-head">
+                    <div class="title">{Title}</div>
+                    <div class="game">{Game}</div>
+                    <div class="viewers">{999} viewers</div>
+                </div>
+            </div>
+            <div class="left"></div>
+            <div class="center">
+                <div class="top"></div>
+                <div class="middle">
+                    <div class="content">
+                        <div class="preview"></div>
+                    </div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+            <div class="right"></div>
+        </script>
+
+        <script id="game-template" type="text/template">
+            <div class="head">
+                <div class="game">{Game}</div>
+                <div class="sub-head">
+                    <div class="channels">{99} channels</div>
+                    <div class="viewers">{99,999} viewers</div>
+                </div>
+            </div>
+            <div class="left"></div>
+            <div class="center">
+                <div class="top"></div>
+                <div class="middle">
+                    <div class="content">
+                        <div class="boxart"></div>
+                    </div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+            <div class="right"></div>
+        </script>
+
+        <script id="player-template" type="text/template">
+            <div class="video">
+                <webview src="http://twitch.tv/{0}/embed"></webview>
+            </div>
+            <div class="chat">
+                <webview src="http://twitch.tv/{0}/chat?popout=true"></webview>
+            </div>
+        </script>
+
+    </body>
+
+</html>
