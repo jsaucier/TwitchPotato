@@ -328,17 +328,17 @@ window.Potato = (function() {
 
                     // Followed games.
                     for (var f in me.followed.game) {
-                        var game = me.followed.game[f];
+                        var g = me.followed.game[f];
 
                         // Check to make sure we don't already have this game listed
-                        if (followed.indexOf(game) === -1) {
+                        if (followed.indexOf(g) === -1) {
                             me.addMenuItem('games', {
                                 viewers: -1,
                                 channels: -1,
                                 game: {
-                                    name: game,
+                                    name: g,
                                     box: {
-                                        large: 'http://static-cdn.jtvnw.net/ttv-boxart/{0}-272x380.jpg'.format(encodeURIComponent(game))
+                                        large: 'http://static-cdn.jtvnw.net/ttv-boxart/{0}-272x380.jpg'.format(encodeURIComponent(g))
                                     }
                                 }
                             }, true);
@@ -408,6 +408,26 @@ window.Potato = (function() {
         },
 
         updateMenuItems: function(menu, goto) {
+            var sort = function(a, b) {
+                var aViewers = a.viewers;
+                var bViewers = b.viewers;
+
+                if (m === 'games') {
+                    if (a.followed === true) {
+                        aViewers += 999999999;
+                    }
+                    if (b.followed === true) {
+                        bViewers += 999999999;
+                    }
+                }
+
+                if (aViewers > bViewers)
+                    return -1;
+                if (aViewers < bViewers)
+                    return 1;
+                return 0;
+            };
+
             var menus = [
                 'followed',
                 'featured',
@@ -425,26 +445,7 @@ window.Potato = (function() {
                 var m = menus[i];
 
                 // Sort the menu items by viewers.
-                me.menu[m].sort(function(a, b) {
-
-                    var aViewers = a.viewers;
-                    var bViewers = b.viewers;
-
-                    if (m === 'games') {
-                        if (a.followed === true) {
-                            aViewers += 999999999
-                        }
-                        if (b.followed === true) {
-                            bViewers += 999999999
-                        }
-                    }
-
-                    if (aViewers > bViewers)
-                        return -1;
-                    if (aViewers < bViewers)
-                        return 1;
-                    return 0;
-                });
+                me.menu[m].sort(sort);
 
                 // Save the selected menu item.
                 var selected = $('.list.' + m + ' .items .item.selected').attr('name');
@@ -543,12 +544,12 @@ window.Potato = (function() {
                 } else {
                     // Set a short delay to update so that we do not update multiple times in a row.
                     // Clear the current timeout
-                    clearTimeout(me.timers.info);
+                    //clearTimeout(me.timers.info);
 
                     // Set a new update timer.
-                    me.timers.info = setTimeout(function() {
-                        me.updateMenu();
-                    }, 1000);
+                    //me.timers.info = setTimeout(me.updateMenu, 1000);
+                    // Delay updating the menu
+                    me.updateMenu(null, 500);
                 }
             }
         },
@@ -583,7 +584,7 @@ window.Potato = (function() {
             }, 1000);
         },
 
-        updateMenu: function(direction) {
+        updateMenu: function(direction, delay) {
             if ($('#content').is(':visible')) {
                 // Update the selected menu head
                 me.updateMenuList(direction);
@@ -597,8 +598,17 @@ window.Potato = (function() {
                 // Update the mneu scroll position
                 me.updateMenuScroll();
 
-                // Update info panel
-                me.updateInfo();
+                if (delay !== undefined) {
+                    // Clear timeout
+                    clearTimeout(me.timers.updateMenu);
+
+                    // Set a timer
+                    me.timers.updateMenu = setTimeout(me.updateInfo, delay);
+                    return;
+                } else {
+                    // Update info panel
+                    me.updateInfo();
+                }
             }
         },
 
@@ -759,13 +769,11 @@ window.Potato = (function() {
             }
         },
 
-        showSetting: function(setting, isRefresh) {
-            var html = $($('#' + setting + '-template').html());
+        showSetting: function(setting) {
+            var html = $($('#' + setting + '-setting-template').html());
 
-            if ($('.info .' + setting).length === 0) {
-                $('.info').empty();
-                $('.info').append(html);
-            }
+            $('.info').empty();
+            $('.info').append(html);
         },
 
         showPopup: function() {
@@ -917,9 +925,6 @@ window.Potato = (function() {
 
                     break;
                 case 'game':
-                    // Set the loading value.
-                    //me.loading.game = true;
-
                     // Hide the game menu.
                     $('.list.game').hide();
 
@@ -935,13 +940,18 @@ window.Potato = (function() {
                 case 'import':
                     $('#import').focus();
                     break;
+                case 'follow-game':
+                    $('#follow-game').focus();
+                    break;
+                case 'follow-channel':
+                    $('#follow-channel').focus();
+                    break;
                 case 'reset':
                     chrome.storage.sync.clear(function() {
                         chrome.storage.local.clear(function() {
                             me.initialize();
                         });
                     });
-
                     break;
                 default:
                     break;
@@ -1071,16 +1081,16 @@ window.Potato = (function() {
                     me.openMenuItem();
                     break;
                 case me.keys.left:
-                    me.updateMenu('left');
+                    me.updateMenu('left', 200);
                     break;
                 case me.keys.up:
-                    me.updateMenu('up');
+                    me.updateMenu('up', 200);
                     break;
                 case me.keys.right:
-                    me.updateMenu('right');
+                    me.updateMenu('right', 200);
                     break;
                 case me.keys.down:
-                    me.updateMenu('down');
+                    me.updateMenu('down', 200);
                     break;
                 case me.keys.toggleLists:
                     if ($('#player').is(':visible')) {
@@ -1121,7 +1131,7 @@ window.Potato = (function() {
                     me.updateChat('right');
                     break;
                 case me.keys.toggleLists:
-                    $('#content').fadeTo('fast', .99);
+                    $('#content').fadeTo('fast', 0.99);
 
                     me.updateMenu();
 
@@ -1168,16 +1178,26 @@ window.Potato = (function() {
                             return;
                         }
 
-                        if (input.attr('id') === 'import') {
-                            me.importChannels(value);
+                        switch (input.attr('id')) {
+                            case 'import':
+                                me.importChannels(value);
+                                break;
+                            case 'follow-channel':
+                                me.follow('channel', value);
+                                break;
+                            case 'follow-game':
+                                me.follow('game', value);
+                                break;
+                            default:
+                                break;
                         }
-
-                        // Clear the input.
-                        input.val('');
-
-                        // Clear the input focus.
-                        input.blur();
                     }
+
+                    // Clear the input.
+                    input.val('');
+
+                    // Clear the input focus.
+                    input.blur();
             }
 
             event.stopPropagation();
@@ -1192,7 +1212,7 @@ window.Potato = (function() {
         $(document).keyup(function(event) {
             me.handleKeyPress(event);
         });
-    })
+    });
 
     return me;
 
@@ -1246,4 +1266,4 @@ $.fn.scrollTo = function(target, options, callback) {
             }
         });
     });
-}
+};
