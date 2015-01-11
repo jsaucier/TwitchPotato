@@ -571,11 +571,11 @@ window.Potato = (function() {
             var date = new Date();
 
             // Set the update time.
-            $('#updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
+            $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
         },
 
         updateTime: function() {
-            $('#time').text(new Date().toLocaleTimeString());
+            $('#time .current').text(new Date().toLocaleTimeString());
 
             clearTimeout(me.timers.time);
 
