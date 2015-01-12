@@ -543,12 +543,6 @@ window.Potato = (function() {
                     me.updateMenu(true);
                 } else {
                     // Set a short delay to update so that we do not update multiple times in a row.
-                    // Clear the current timeout
-                    //clearTimeout(me.timers.info);
-
-                    // Set a new update timer.
-                    //me.timers.info = setTimeout(me.updateMenu, 1000);
-                    // Delay updating the menu
                     me.updateMenu(null, 500);
                 }
             }
@@ -600,10 +594,10 @@ window.Potato = (function() {
 
                 if (delay !== undefined) {
                     // Clear timeout
-                    clearTimeout(me.timers.updateMenu);
+                    clearTimeout(me.timers.info);
 
                     // Set a timer
-                    me.timers.updateMenu = setTimeout(me.updateInfo, delay);
+                    me.timers.info = setTimeout(me.updateInfo, delay);
                     return;
                 } else {
                     // Update info panel
@@ -687,7 +681,7 @@ window.Potato = (function() {
                 if ($('.items:visible .item.selected').length > 0) {
                     $('.items:visible').scrollTo('.items:visible .item.selected', {
                         offsetTop: offset,
-                        duration: 100
+                        duration: 0
                     });
                 }
             }
@@ -726,6 +720,13 @@ window.Potato = (function() {
                     html = me.showGame(data);
                 }
             }
+
+            $('#info').removeAttr('menu type name');
+            $('#info').attr({
+                menu: menu,
+                type: type,
+                name: name
+            });
         },
 
         showChannel: function(data) {
@@ -737,8 +738,8 @@ window.Potato = (function() {
             $(html).find('.viewers').text(addCommas(data.viewers) + ' viewers');
             me.loadImage(data.preview, $(html).find('.preview'));
 
-            $('.info').empty();
-            $('.info').append(html);
+            $('#info').empty();
+            $('#info').append(html);
         },
 
         showGame: function(game) {
@@ -760,20 +761,34 @@ window.Potato = (function() {
 
             me.loadImage(game.boxArt, $(html).find('.boxart'));
 
-            $('.info').empty();
-            $('.info').append(html);
+            $('#info').empty();
+            $('#info').append(html);
 
             if (game.viewers === -1 && game.channels === -1) {
-                $('.info .sub-head').remove();
-                $('.info .head').css('border-bottom', 'none');
+                $('#info .sub-head').remove();
+                $('#info .head').css('border-bottom', 'none');
             }
         },
 
         showSetting: function(setting) {
+            // Only update settings if the menu has actually changed.
+            if ($('#info').attr('menu') === 'settings' &&
+                $('#info').attr('type') === setting)
+                return;
+
             var html = $($('#' + setting + '-setting-template').html());
 
-            $('.info').empty();
-            $('.info').append(html);
+            $('#info').empty();
+            $('#info').append(html);
+
+            if (setting === 'login') {
+                var height = $('#info').height() -
+                    $('#info .head').outerHeight() -
+                    ($('#info .content').outerHeight(true) -
+                        $('#info .content').height());
+                $('#info webview').css('height', height);
+
+            }
         },
 
         showPopup: function() {
@@ -874,18 +889,18 @@ window.Potato = (function() {
                 // Append the player object
                 $('#player').append(player);
 
-                var wv = document.querySelector('#player .chat webview');
 
-                wv.addEventListener('loadcommit', function() {
-                    wv.insertCSS({
-                        file: 'css/twitch.css',
+
+                $('#player .chat webview').on('loadcommit', function() {
+                    $('#player .chat webview')[0].insertCSS({
+                        file: 'css/twitch.css'
                     });
-                });
-                wv.addEventListener('loadcommit', function() {
-                    wv.insertCSS({
+                    $('#player .chat webview')[0].insertCSS({
                         code: 'body { font-size: ' + me.zoomLevel + '%!important; }'
                     });
                 });
+
+
 
                 // Show the player
                 $('#player').fadeIn();
@@ -1023,6 +1038,13 @@ window.Potato = (function() {
 
                 // Update the mneu scroll position
                 me.updateMenuScroll();
+
+                // Update the chat css
+                if ($('#player .chat webview').length > 0) {
+                    $('#player .chat webview')[0].insertCSS({
+                        code: 'body { font-size: ' + me.zoomLevel + '%!important; }'
+                    });
+                }
             });
         },
 
@@ -1032,6 +1054,13 @@ window.Potato = (function() {
         },
 
         handleKeyPress: function(event) {
+            // Handle webview
+            if ($('#info .content webview').length > 0) {
+                //return;
+                // TOOD: handle webview login, need to see if cookies persist
+                // inject script, etc.
+            }
+
             // Check to see if an input box is focused.
             var input = $('input:focus');
 
@@ -1210,8 +1239,24 @@ window.Potato = (function() {
         me.initialize();
 
         $(document).keyup(function(event) {
-            me.handleKeyPress(event);
+            var key = event.keyCode;
+
+            if (key === me.keys.up ||
+                key === me.keys.down ||
+                key === me.keys.left ||
+                key === me.keys.right) {
+                if (me.timers.info !== null) {
+                    // Clear the timeout
+                    clearTimeout(me.timers.info);
+                    // Update immediately
+                    me.updateInfo();
+                }
+            }
         });
+
+        $(document).keydown(function(event) {
+            me.handleKeyPress(event);
+        })
     });
 
     return me;

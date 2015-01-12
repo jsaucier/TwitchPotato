@@ -1,4 +1,3 @@
-var w;
 chrome.app.runtime.onLaunched.addListener(function() {
     chrome.app.window.create('index.html', {
         id: 'main',
@@ -16,6 +15,5 @@ chrome.app.runtime.onLaunched.addListener(function() {
                 e.preventDefault();
             }
         });
-        w = win;
     });
 });

@@ -186,7 +186,7 @@ body {
 .lists .content-lists .list .items .item .popup .main .button:first-child {
   margin-top: 0;
 }
-.info {
+#info {
   float: left;
   background-color: #222;
   height: 100%;
@@ -195,11 +195,11 @@ body {
   -webkit-flex-direction: column;
   border: 5px solid #6441a5;
 }
-.info .head {
+#info .head {
   background-color: #6441a5;
   border-bottom: 5px solid #6441a5;
 }
-.info .head > div {
+#info .head > div {
   font-size: 1.2em;
   padding: 5px 10px;
   -webkit-align-items: flex-end;
@@ -208,28 +208,27 @@ body {
   white-space: nowrap;
   line-height: 1.5em;
 }
-.info .head .sub-head {
+#info .head .sub-head {
   border: 1px solid #191919;
   font-size: 1.1em;
   color: #bbb;
   background-color: #333;
-  /* border-bottom: 5px solid #6441a5; */
 }
-.info .content {
+#info .content {
   display: -webkit-flex;
   -webkit-flex-direction: column;
   width: 100%;
   height: 100%;
   padding: 20px;
 }
-.info .content > div {
+#info .content > div {
   height: 100%;
   width: 100%;
   font-size: 1.2em;
   text-align: center;
   color: #fff;
 }
-.info .content input {
+#info .content input {
   color: #191919;
   background-color: #fff;
   border: none;
@@ -238,6 +237,10 @@ body {
   font-size: 1.1em;
   margin-top: 10px;
   border-radius: 5px;
+}
+#info .content.login webview {
+  width: 100%;
+  height: 100%;
 }
 #player {
   display: none;

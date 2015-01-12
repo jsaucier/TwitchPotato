@@ -17,7 +17,7 @@
         "webview",
         "fullscreen",
         "overrideEscFullscreen",
-        "<all_urls>"
-    ],
-    "kiosk_enabled": true
+        "<all_urls>",
+        "commands"
+    ]
 }

@@ -43,6 +43,9 @@
                     <div class="list settings" menu="settings">
                         <div class="head">Settings</div>
                         <div class="items">
+                            <div class="item setting" type="login">
+                                <div class="setting">Log into Twitch</div>
+                            </div>
                             <div class="item setting" type="follow-channel">
                                 <div class="setting">Follow Channel</div>
                             </div>
@@ -59,7 +62,7 @@
                     </div>
                 </div>
             </div>
-            <div class="info"></div>
+            <div id="info"></div>
             <div class="right"></div>
         </div>
 
@@ -98,7 +101,7 @@
             <div class="head import">
                 <div>Import Channels</div>
                 <div class="sub-head">
-                    <div>Import a Twitch.TV account's followed channels.</div>
+                    <div>Import a Twitch account's followed channels.</div>
                 </div>
             </div>
             <div class="left"></div>
@@ -107,7 +110,7 @@
                 <div class="middle">
                     <div class="content">
                         <div class="input">
-                            Twitch.TV Name
+                            Twitch Account
                             <br/>
                             <input id="import" />
                         </div>
@@ -119,17 +122,17 @@
         </script>
 
         <script id="follow-channel-setting-template" type="text/template">
-            <div class="head import">
+            <div class="head follow-channel">
                 <div>Follow Channel</div>
                 <div class="sub-head">
-                    <div>Follow a Twitch.TV channel.</div>
+                    <div>Follow a Twitch channel.</div>
                 </div>
             </div>
             <div class="left"></div>
             <div class="center">
                 <div class="top"></div>
                 <div class="middle">
-                    <div class="content">
+                    <div class="content follow-channel">
                         <div class="input">
                             Channel Name
                             <br/>
@@ -143,17 +146,17 @@
         </script>
 
         <script id="follow-game-setting-template" type="text/template">
-            <div class="head import">
+            <div class="head follow-game">
                 <div>Follow Game</div>
                 <div class="sub-head">
-                    <div>Follow a Twitch.TV game.</div>
+                    <div>Follow a Twitch game.</div>
                 </div>
             </div>
             <div class="left"></div>
             <div class="center">
                 <div class="top"></div>
                 <div class="middle">
-                    <div class="content">
+                    <div class="content follow-game">
                         <div class="input">
                             Game Name
                             <br/>
@@ -177,7 +180,27 @@
             <div class="center">
                 <div class="top"></div>
                 <div class="middle">
-                    <div class="content"></div>
+                    <div class="content reset"></div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+            <div class="right"></div>
+        </script>
+
+        <script id="login-setting-template" type="text/template">
+            <div class="head login">
+                <div>Reset Settings</div>
+                <div class="sub-head">
+                    <div>Log into your Twitch account.</div>
+                </div>
+            </div>
+            <div class="left"></div>
+            <div class="center">
+                <div class="top"></div>
+                <div class="middle">
+                    <div class="content login">
+                        <webview src="http://twitch.tv/login" autosize="on" partition="persist:twitchpotato"></webview>
+                    </div>
                 </div>
                 <div class="bottom"></div>
             </div>
@@ -229,10 +252,10 @@
 
         <script id="player-template" type="text/template">
             <div class="video">
-                <webview src="http://twitch.tv/{0}/embed"></webview>
+                <webview src="http://twitch.tv/{0}/embed" autosize="on" partition="persist:twitchpotato"></webview>
             </div>
             <div class="chat">
-                <webview src="http://twitch.tv/{0}/chat?popout=true"></webview>
+                <webview src="http://twitch.tv/{0}/chat?popout=true" autosize="on" partition="persist:twitchpotato"></webview>
             </div>
         </script>
 
