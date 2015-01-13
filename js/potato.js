@@ -780,15 +780,6 @@ window.Potato = (function() {
 
             $('#info').empty();
             $('#info').append(html);
-
-            if (setting === 'login') {
-                var height = $('#info').height() -
-                    $('#info .head').outerHeight() -
-                    ($('#info .content').outerHeight(true) -
-                        $('#info .content').height());
-                $('#info webview').css('height', height);
-
-            }
         },
 
         showPopup: function() {
@@ -952,6 +943,9 @@ window.Potato = (function() {
                     // Load the game search.
                     me.getGame(name);
                     break;
+                case 'login':
+                    $('#login').fadeIn();
+                    break;
                 case 'import':
                     $('#import').focus();
                     break;
@@ -1055,10 +1049,15 @@ window.Potato = (function() {
 
         handleKeyPress: function(event) {
             // Handle webview
-            if ($('#info .content webview').length > 0) {
-                //return;
-                // TOOD: handle webview login, need to see if cookies persist
-                // inject script, etc.
+            if ($('#login').is(':visible')) {
+                switch (event.keyCode) {
+                    case me.keys.escape:
+                        $('#login').fadeOut();
+                        event.stopPropagation();
+                        return event.preventDefault();
+                    default:
+                        return;
+                }
             }
 
             // Check to see if an input box is focused.
@@ -1071,7 +1070,7 @@ window.Potato = (function() {
             // Handle global keypresses here.
             switch (event.keyCode) {
                 case me.keys.escape:
-                    return event.preventDefault();
+                    return window.close();
                 case me.keys.exit:
                     return window.close();
                 case me.keys.reload:

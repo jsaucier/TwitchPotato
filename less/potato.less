@@ -90,100 +90,100 @@ body {
         flex-direction: column;
         align-items: center;
     }
-}
-.lists {
-    width: 20em;
-    height: 100%;
-    float: left;
-    display: -webkit-flex;
-    -webkit-flex-direction: column;
-    background-color: #6441a5;
-    margin-right: 20px;
-    .content-lists {
+    .lists {
+        width: 20em;
         height: 100%;
+        float: left;
         display: -webkit-flex;
         -webkit-flex-direction: column;
-        background-color: #191919;
-        margin: 5px;
-        .list {
-            display: flex;
-            flex-direction: column;
-            height: 2.6em;
-            background-color: #222;
-            &.selected {
-                flex: auto;
-                padding: 0 0 5px;
-                border-left: none;
-                border-right: none;
-                background-color: #6441a5;
-                &.settings {
-                    padding: 0;
+        background-color: #6441a5;
+        margin-right: 20px;
+        .content-lists {
+            height: 100%;
+            display: -webkit-flex;
+            -webkit-flex-direction: column;
+            background-color: #191919;
+            margin: 5px;
+            .list {
+                display: flex;
+                flex-direction: column;
+                height: 2.6em;
+                background-color: #222;
+                &.selected {
+                    flex: auto;
+                    padding: 0 0 5px;
+                    border-left: none;
+                    border-right: none;
+                    background-color: #6441a5;
+                    &.settings {
+                        padding: 0;
+                    }
+                    .head {
+                        color: #fff;
+                    }
                 }
                 .head {
-                    color: #fff;
+                    align-items: center;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    font-size: 1.2em;
+                    padding: 5px 10px;
+                    line-height: 1.5em;
                 }
-            }
-            .head {
-                align-items: center;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                font-size: 1.2em;
-                padding: 5px 10px;
-                line-height: 1.5em;
-            }
-            .items {
-                display: none;
-                background-color: #191919;
-                overflow-y: scroll;
-                border: 1px solid #191919;
-                margin-top: 1px;
-                .item {
-                    background-color: #333;
-                    color: #fff;
+                .items {
+                    display: none;
+                    background-color: #191919;
+                    overflow-y: scroll;
+                    border: 1px solid #191919;
                     margin-top: 1px;
-                    padding: 5px;
-                    font-size: 1.1em;
-                    > div {
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        padding: 3px;
-                    }
-                    &:first-child {
-                        margin-top: 0;
-                    }
-                    &.selected {
-                        background-color: #6441a5;
-                    }
-                    &.channel {
-                        .streamer {
-                            
+                    .item {
+                        background-color: #333;
+                        color: #fff;
+                        margin-top: 1px;
+                        padding: 5px;
+                        font-size: 1.1em;
+                        > div {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            padding: 3px;
                         }
-                        .game {
-                            font-size: 0.9em;
-                            color: #bbb;
+                        &:first-child {
+                            margin-top: 0;
                         }
-                    }
-                    .popup {
-                        display: none;
-                        background-color: #6441a5;
-                        padding-top: 5px;
-                        .main {
-                            background-color: #333;
-                            padding: 1px;
-                            .button {
-                                background-color: #444;
-                                margin-top: 1px;
-                                text-align: center;
-                                padding: 5px;
+                        &.selected {
+                            background-color: #6441a5;
+                        }
+                        &.channel {
+                            .streamer {
+                                
+                            }
+                            .game {
                                 font-size: 0.9em;
-                                color: #fff;
-                                &.selected {
-                                    background-color: #6441a5;
-                                }
-                                &:first-child {
-                                    margin-top: 0;
+                                color: #bbb;
+                            }
+                        }
+                        .popup {
+                            display: none;
+                            background-color: #6441a5;
+                            padding-top: 5px;
+                            .main {
+                                background-color: #333;
+                                padding: 1px;
+                                .button {
+                                    background-color: #444;
+                                    margin-top: 1px;
+                                    text-align: center;
+                                    padding: 5px;
+                                    font-size: 0.9em;
+                                    color: #fff;
+                                    &.selected {
+                                        background-color: #6441a5;
+                                    }
+                                    &:first-child {
+                                        margin-top: 0;
+                                    }
                                 }
                             }
                         }
@@ -192,61 +192,55 @@ body {
             }
         }
     }
-}
-#info {
-    float: left;
-    background-color: #222;
-    height: 100%;
-    width: 100%;
-    display: -webkit-flex;
-    -webkit-flex-direction: column;
-    border: 5px solid #6441a5;
-    .head {
-        background-color: #6441a5;
-        border-bottom: 5px solid #6441a5;
-        > div {
-            font-size: 1.2em;
-            padding: 5px 10px;
-            -webkit-align-items: flex-end;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            line-height: 1.5em;
-        }
-        .sub-head {
-            border: 1px solid #191919;
-            font-size: 1.1em;
-            color: #bbb;
-            background-color: #333;
-        }
-    }
-    .content {
+    #info {
+        float: left;
+        background-color: #222;
+        height: 100%;
+        width: 100%;
         display: -webkit-flex;
         -webkit-flex-direction: column;
-        width: 100%;
-        height: 100%;
-        padding: 20px;
-        > div {
-            height: 100%;
+        border: 5px solid #6441a5;
+        .head {
+            background-color: #6441a5;
+            border-bottom: 5px solid #6441a5;
+            > div {
+                font-size: 1.2em;
+                padding: 5px 10px;
+                -webkit-align-items: flex-end;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                line-height: 1.5em;
+            }
+            .sub-head {
+                border: 1px solid #191919;
+                font-size: 1.1em;
+                color: #bbb;
+                background-color: #333;
+            }
+        }
+        .content {
+            display: -webkit-flex;
+            -webkit-flex-direction: column;
             width: 100%;
-            font-size: 1.2em;
-            text-align: center;
-            color: #fff;
-        }
-        input {
-            color: #191919;
-            background-color: #fff;
-            border: none;
-            width: 250px;
-            padding: 3px 6px;
-            font-size: 1.1em;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
-        &.login {
-            webview {
-                width: 100%;
+            height: 100%;
+            padding: 20px;
+            > div {
                 height: 100%;
+                width: 100%;
+                font-size: 1.2em;
+                text-align: center;
+                color: #fff;
+            }
+            input {
+                color: #191919;
+                background-color: #fff;
+                border: none;
+                width: 250px;
+                padding: 3px 6px;
+                font-size: 1.1em;
+                margin-top: 10px;
+                border-radius: 5px;
             }
         }
     }
@@ -281,6 +275,32 @@ body {
             height: 100%;
             width: 100%;
             background-color: #222;
+        }
+    }
+}
+#login {
+    display: none;
+    position: fixed;
+    top: 20px;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    background-color: #191919;
+    border: 2px solid #6441a5;
+    .head {
+        background-color: #6441a5;
+        padding: 5px;
+        font-size: 1.2em;
+    }
+    .content {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        top: 20px;
+        webview {
+            width: 100%;
+            height: 100%;
         }
     }
 }
