@@ -26,7 +26,7 @@ body {
     &#notification {
         right: 10px;
         bottom: 10px;
-        width: 260px;
+        width: 350px;
     }
     .head {
         background-color: #6441a5;
@@ -47,6 +47,20 @@ body {
             padding: 5px;
             background-color: #333;
             margin-top: 1px;
+            div {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                &.streamer {
+                    float: left;
+                    width: 45%;
+                }
+                &.game {
+                    float: right;
+                    width: 55%;
+                    text-align: right;
+                }
+            }
         }
     }
 }

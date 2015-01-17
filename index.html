@@ -75,11 +75,23 @@
         </div>
 
         <div id="notification" class="window">
-            <div class="head">Now Live</div>
+            <div class="head">Twitch Potato</div>
             <div class="main">
-                <ul class="streamers"></ul>
+                <ul>
+                    <div class="streamer"></div>
+                    <div class="game"></div>
+                    <div class="status"></div>
+                </ul>
             </div>
         </div>
+
+        <script id="notify-template" type="text/template">
+            <li>
+                <div class="streamer"></div>
+                <div class="game"></div>
+                <div class="clear"></div>
+            </li>
+        </script>
 
         <script id="popup-template" type="text/template">
             <div class="popup">

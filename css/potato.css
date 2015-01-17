@@ -25,7 +25,7 @@ body {
 .window#notification {
   right: 10px;
   bottom: 10px;
-  width: 260px;
+  width: 350px;
 }
 .window .head {
   background-color: #6441a5;
@@ -47,6 +47,20 @@ body {
   padding: 5px;
   background-color: #333;
   margin-top: 1px;
+}
+.window .main li div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.window .main li div.streamer {
+  float: left;
+  width: 45%;
+}
+.window .main li div.game {
+  float: right;
+  width: 55%;
+  text-align: right;
 }
 /* Time */
 #time {
@@ -290,7 +304,7 @@ body {
   bottom: 20px;
   left: 20px;
   right: 20px;
-  top: 52px;
+  top: 20px;
 }
 #login .content webview {
   width: 100%;

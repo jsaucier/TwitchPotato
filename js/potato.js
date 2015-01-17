@@ -47,7 +47,7 @@ window.Potato = (function() {
         },
 
         notifications: {
-            online: {},
+            list: {},
             notify: [],
         },
 
@@ -203,7 +203,6 @@ window.Potato = (function() {
             $.ajax({
                 url: 'https://api.twitch.tv/kraken/users/{0}/follows/channels?limit=100'.format(account),
                 success: function(json) {
-
                     for (var f in json.follows) {
                         // Get the channel name.
                         var channel = json.follows[f].channel.name;
@@ -233,7 +232,7 @@ window.Potato = (function() {
                 me.notifications.notify = [];
 
                 // Stores the current online streamers.
-                var online = {};
+                var list = {};
 
                 $.ajax({
                     url: 'https://api.twitch.tv/kraken/streams?limit=100&channel=' + me.followed.channel.join(','),
@@ -243,25 +242,38 @@ window.Potato = (function() {
                             // Add the followed streams to the menu.
                             me.addMenuItem('followed', json.streams[s]);
 
+                            var channel = json.streams[s].channel.name;
                             var streamer = json.streams[s].channel.display_name;
+                            var game = json.streams[s].game;
 
-                            if (me.notifications.online[streamer] !== true) {
-                                me.notifications.notify.push(streamer);
-                                me.notifications.online[streamer] = true;
+                            var info = {
+                                streamer: streamer,
+                                game: game,
+                            };
+
+                            if (me.notifications.list[channel] === undefined) {
+                                info.type = 'online';
+                            } else if (me.notifications.list[channel].game !== game) {
+                                info.type = 'game';
                             }
 
-                            online[streamer] = true;
+                            if (info.type !== undefined) {
+                                me.notifications.notify.push(info);
+                                me.notifications.list[channel] = info;
+                            }
+
+                            list[channel] = info;
                         }
 
                         // Update the online streamers.
-                        me.notifications.online = online;
+                        me.notifications.list = list;
 
                         // Update the menu items.
                         me.updateMenuItems('followed');
 
                         // Display any notifications if needed.
                         if (me.notifications.notify.length > 0) {
-                            me.notifyOnline();
+                            me.showNotification();
                         }
                     }
                 });
@@ -371,12 +383,19 @@ window.Potato = (function() {
             });
         },
 
-        notifyOnline: function() {
-            $('#notification .streamers').empty();
+        showNotification: function() {
+            $('#notification ul').empty();
 
             for (var c in me.notifications.notify) {
-                var channel = me.notifications.notify[c];
-                $('<li/>').text(channel).appendTo($('#notification .streamers'));
+                var info = me.notifications.notify[c];
+
+                var item = $($('#notify-template').html());
+
+                item.find('.streamer').text(info.streamer);
+                item.find('.game').text(info.game);
+                item.find('.status').text(info.status);
+
+                item.appendTo($('#notification ul'));
             }
 
             $('#notification').fadeIn(function() {
@@ -1226,12 +1245,12 @@ window.Potato = (function() {
 
                     // Clear the input focus.
                     input.blur();
+
+                    break;
+                default:
+                    break;
             }
-
-            event.stopPropagation();
-            event.preventDefault();
         }
-
     };
 
     $(function() {
