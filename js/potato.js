@@ -963,6 +963,7 @@ window.Potato = (function() {
                     me.getGame(name);
                     break;
                 case 'login':
+                    $('#login webview').attr('src', 'http://twitch.tv/');
                     $('#login').fadeIn();
                     break;
                 case 'import':
@@ -1071,6 +1072,7 @@ window.Potato = (function() {
             if ($('#login').is(':visible')) {
                 switch (event.keyCode) {
                     case me.keys.escape:
+                        $('#login webview').attr('src', 'about:blank');
                         $('#login').fadeOut();
                         event.stopPropagation();
                         return event.preventDefault();
