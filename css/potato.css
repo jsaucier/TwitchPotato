@@ -309,6 +309,7 @@ body {
 #login .content webview {
   width: 100%;
   height: 100%;
+  padding-top: 30px;
 }
 ::-webkit-scrollbar {
   width: 0;
