@@ -56,42 +56,6 @@ window.Potato = (function($, chrome, undefined) {
             overlay: false
         },
 
-        logout: function() {
-            Twitch.logout(function(error) {
-                // the user is now logged out
-                console.log('logged out.');
-            });
-        },
-
-        login: function() {
-            /*Twitch.login({
-                scope: ['user_read', 'channel_read']
-            });*/
-            //https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=60wzh4fjbowe6jwtofuc1jakjfgekry&redirect_uri=chrome-extension%3A%2F%2Fjpkdbkoagobgckedflobeijhlbclikpo%2Findex.html&scope=user_read+channel_read
-            $.ajax({
-                url: 'https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=60wzh4fjbowe6jwtofuc1jakjfgekry&redirect_uri=chrome-extension%3A%2F%2Fjpkdbkoagobgckedflobeijhlbclikpo%2Findex.html&scope=user_read+channel_read',
-                success: function(data, status, xhr) {
-                    $('#info').html(xhr.responseText);
-                }
-            });
-        },
-
-        init: function() {
-            Twitch.init({
-                clientId: '60wzh4fjbowe6jwtofuc1jakjfgekry'
-            }, function(error, status) {
-                if (error) {
-                    // error encountered while loading
-                    console.log(error);
-                }
-                // the sdk is now loaded
-                if (status.authenticated) {
-                    console.log('already logged in');
-                    // user is currently logged in
-                }
-            });
-        },
-
         initialize: function() {
             // Load the stored data.
             me.loadStoredData();
