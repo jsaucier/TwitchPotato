@@ -754,7 +754,7 @@ window.Potato = (function($, chrome, undefined) {
             $(html).find('.title').text(data.title || '');
             $(html).find('.game').text(data.game || '');
             $(html).find('.streamer').text(data.streamer);
-            $(html).find('.viewers').text(addCommas(data.viewers) + ' viewers');
+            $(html).find('.viewers').text(data.viewers.deliminate(',') + ' viewers');
             me.loadImage(data.preview, $(html).find('.preview'));
 
             $('#info').empty();
@@ -769,13 +769,13 @@ window.Potato = (function($, chrome, undefined) {
             if (game.channels === -1) {
                 $(html).find('.channels').remove();
             } else {
-                $(html).find('.channels').text(addCommas(game.channels) + ' channels');
+                $(html).find('.channels').text(game.channels.deliminate(',') + ' channels');
             }
 
             if (game.viewers === -1) {
                 $(html).find('.viewers').remove();
             } else {
-                $(html).find('.viewers').text(addCommas(game.viewers) + ' viewers');
+                $(html).find('.viewers').text(game.viewers.deliminate(',') + ' viewers');
             }
 
             me.loadImage(game.boxArt, $(html).find('.boxart'));
@@ -1282,53 +1282,3 @@ window.Potato = (function($, chrome, undefined) {
     return me;
 
 })(jQuery, chrome);
-
-String.prototype.format = function() {
-    var args = arguments;
-    return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function(m, n) {
-        if (m === "{{") {
-            return "{";
-        }
-        if (m === "}}") {
-            return "}";
-        }
-        return args[n];
-    });
-};
-
-function addCommas(nStr) {
-    nStr += '';
-    var x = nStr.split('.');
-    var x1 = x[0];
-    var x2 = x.length > 1 ? '.' + x[1] : '';
-    var rgx = /(\d+)(\d{3})/;
-    while (rgx.test(x1)) {
-        x1 = x1.replace(rgx, '$1' + ',' + '$2');
-    }
-    return x1 + x2;
-}
-
-$.fn.scrollTo = function(target, options, callback) {
-    if (typeof options == 'function' && arguments.length == 2) {
-        callback = options;
-        options = target;
-    }
-    var settings = $.extend({
-        scrollTarget: target,
-        offsetTop: 50,
-        duration: 500,
-        easing: 'swing'
-    }, options);
-    return this.each(function() {
-        var scrollPane = $(this);
-        var scrollTarget = (typeof settings.scrollTarget == "number") ? settings.scrollTarget : $(settings.scrollTarget);
-        var scrollY = (typeof scrollTarget == "number") ? scrollTarget : scrollTarget.offset().top + scrollPane.scrollTop() - parseInt(settings.offsetTop);
-        scrollPane.animate({
-            scrollTop: scrollY
-        }, parseInt(settings.duration), settings.easing, function() {
-            if (typeof callback == 'function') {
-                callback.call(this);
-            }
-        });
-    });
-};
