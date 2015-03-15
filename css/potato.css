@@ -252,7 +252,7 @@ body {
   margin-top: 10px;
   border-radius: 5px;
 }
-#player {
+#players {
   display: none;
   position: fixed;
   top: 0;
@@ -260,26 +260,68 @@ body {
   right: 0;
   left: 0;
 }
-#player .video {
+#players .player {
   position: fixed;
+}
+#players .player.default {
+  display: none;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+#players .player.default[order="0"] {
+  display: block;
+}
+#players .player.pip[order="0"] {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 0;
+}
+#players .player.pip[order="1"] {
+  bottom: 10px;
+  left: 10px;
+  height: 200px;
+  width: 340px;
+  z-index: 1000;
+}
+#players .player.pip[order="2"] {
+  bottom: 10px;
+  right: 10px;
+  height: 200px;
+  width: 340px;
+  z-index: 1000;
+}
+#players .player.pip[order="3"] {
+  bottom: 10px;
+  left: 50%;
+  height: 200px;
+  width: 340px;
+  margin-left: -170px;
+  z-index: 1000;
+}
+#players .player .video {
+  position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
   right: 0;
 }
-#player .video webview {
+#players .player .video webview {
   height: 100%;
   width: 100%;
   background-color: #222;
 }
-#player .chat {
+#players .player .chat {
   display: none;
   position: fixed;
   top: 0;
   bottom: 0;
   width: 25em;
 }
-#player .chat webview {
+#players .player .chat webview {
   height: 100%;
   width: 100%;
   background-color: #222;

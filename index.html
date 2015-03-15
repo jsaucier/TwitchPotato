@@ -10,10 +10,12 @@
         <script type="text/javascript" src="js/twitch.min.js"></script>
         <script type="text/javascript" src="js/utils.js"></script>
         <script type="text/javascript" src="js/potato.js"></script>
+        <script type="text/javascript" src="js/players.js"></script>
+        <script type="text/javascript" src="js/player.js"></script>
     </head>
 
     <body>
-        <div id="player"></div>
+        <div id="players"></div>
 
         <div id="content" class="content">
             <div id="time">
@@ -272,11 +274,14 @@
         </script>
 
         <script id="player-template" type="text/template">
-            <div class="video">
-                <webview src="http://twitch.tv/{0}/embed" autosize="on" partition="persist:twitchpotato"></webview>
-            </div>
-            <div class="chat ">
-                <webview src="http://twitch.tv/{0}/chat?popout=true " autosize="on " partition="persist:twitchpotato "></webview>
+            <div class="player default" channel="{0}" order="{1}">
+                <div class="video">
+                    <webview src="http://twitch.tv/{0}/embed" autosize="on" partition="persist:twitchpotato"></webview>
+                </div>
+                <div class="chat ">
+                    <!--src="http://twitch.tv/{0}/chat?popout=true"-->
+                    <webview autosize="on " partition="persist:twitchpotato "></webview>
+                </div>
             </div>
         </script>
 

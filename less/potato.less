@@ -81,6 +81,7 @@ body {
     }
 }
 #content {
+    //display: none!important;
     position: fixed;
     top: 0;
     left: 0;
@@ -259,7 +260,7 @@ body {
         }
     }
 }
-#player {
+#players {
     display: none;
     position: fixed;
     top: 0;
@@ -267,28 +268,74 @@ body {
     left: 0;
     right: 0;
     left: 0;
-    .video {
+    .player {
         position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        webview {
-            height: 100%;
-            width: 100%;
-            background-color: #222;
+        &.default {
+            display: none;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            left: 0;
+            &[order="0"] {
+                display: block;
+            }
         }
-    }
-    .chat {
-        display: none;
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        width: 25em;
-        webview {
-            height: 100%;
-            width: 100%;
-            background-color: #222;
+        &.pip {
+            &[order="0"] {
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                left: 0;
+                z-index: 0;
+            }
+            &[order="1"] {
+                bottom: 10px;
+                left: 10px;
+                height: 200px;
+                width: 340px;
+                z-index: 1000;
+            }
+            &[order="2"] {
+                bottom: 10px;
+                right: 10px;
+                height: 200px;
+                width: 340px;
+                z-index: 1000;
+            }
+            &[order="3"] {
+                bottom: 10px;
+                left: 50%;
+                height: 200px;
+                width: 340px;
+                margin-left: -170px;
+                z-index: 1000;
+            }
+        }
+        .video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            webview {
+                height: 100%;
+                width: 100%;
+                background-color: #222;
+            }
+        }
+        .chat {
+            display: none;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 25em;
+            webview {
+                height: 100%;
+                width: 100%;
+                background-color: #222;
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
 window.Potato = (function($, chrome, undefined) {
+
+
     var me = {
         keys: {
             up: 38,
@@ -67,7 +69,7 @@ window.Potato = (function($, chrome, undefined) {
         fullscreen: function(state) {
             var nHeight = screen.height;
             var fHeight = nHeight + 32;
-            var player = $('#player .video webview');
+            var player = $('#players .video webview');
 
             if ((state === 'toggle' && player.height() === nHeight) || state === 'enter') {
                 // Toggle player to fullscreen.
@@ -883,29 +885,29 @@ window.Potato = (function($, chrome, undefined) {
 
         playChannel: function(channel) {
             // Ensure we aren't already playing a channel thats currently playing
-            if ($('#player').attr('channel') !== channel) {
+            if ($('#players').attr('channel') !== channel) {
                 // Save the channel to flashback.
-                me.flashback = $('#player').attr('channel') || null;
+                me.flashback = $('#players').attr('channel') || null;
 
                 // Load the player template
-                var player = $($('#player-template').html().format(channel));
+                var player = $($('#player-template').html().format(channel, 0));
 
                 // Clear the player div
-                $('#player').empty().hide();
+                $('#players').empty().hide();
 
                 // Set the player name
-                $('#player').attr('channel', channel);
+                $('#players').attr('channel', channel);
 
                 // Append the player object
-                $('#player').append(player);
+                $('#players').append(player);
 
 
 
-                $('#player .chat webview').on('loadcommit', function() {
-                    $('#player .chat webview')[0].insertCSS({
+                $('#players .chat webview').on('loadcommit', function() {
+                    $('#players .chat webview')[0].insertCSS({
                         file: 'css/twitch.css'
                     });
-                    $('#player .chat webview')[0].insertCSS({
+                    $('#players .chat webview')[0].insertCSS({
                         code: 'body { font-size: ' + me.zoomLevel + '%!important; }'
                     });
                 });
@@ -913,7 +915,7 @@ window.Potato = (function($, chrome, undefined) {
 
 
                 // Show the player
-                $('#player').fadeIn();
+                $('#players').fadeIn();
 
                 // Hide the content
                 $('#content').fadeOut();
@@ -925,13 +927,13 @@ window.Potato = (function($, chrome, undefined) {
 
         stopChannel: function() {
             // Save the flashback
-            me.flashback = $('#player').attr('channel');
+            me.flashback = $('#players').attr('channel');
 
             // Clear and hide the player.
-            $('#player').empty().hide();
+            $('#players').empty().hide();
 
             // Reset the player
-            $('#player').removeAttr('channel');
+            $('#players').removeAttr('channel');
 
             // Fade in the content.
             $('#content').fadeTo('fast', 1);
@@ -1003,8 +1005,8 @@ window.Potato = (function($, chrome, undefined) {
         },
 
         showChat: function() {
-            var chatFrame = $('#player .chat');
-            var videoFrame = $('#player .video');
+            var chatFrame = $('#players .chat');
+            var videoFrame = $('#players .video');
 
             chatFrame.removeClass('left right');
 
@@ -1054,8 +1056,8 @@ window.Potato = (function($, chrome, undefined) {
                 me.updateMenuScroll();
 
                 // Update the chat css
-                if ($('#player .chat webview').length > 0) {
-                    $('#player .chat webview')[0].insertCSS({
+                if ($('#players .chat webview').length > 0) {
+                    $('#players .chat webview')[0].insertCSS({
                         code: 'body { font-size: ' + me.zoomLevel + '%!important; }'
                     });
                 }
@@ -1063,8 +1065,8 @@ window.Potato = (function($, chrome, undefined) {
         },
 
         hideChat: function() {
-            $('#player .chat').hide();
-            $('#player .video').css('left', 0).css('right', 0);
+            $('#players .chat').hide();
+            $('#players .video').css('left', 0).css('right', 0);
         },
 
         handleKeyPress: function(event) {
@@ -1118,7 +1120,7 @@ window.Potato = (function($, chrome, undefined) {
             if (popupClosed === false) {
                 if ($('#content').is(':visible')) {
                     me.handleListKeyPress(event.keyCode);
-                } else if ($('#player').is(':visible')) {
+                } else if ($('#players').is(':visible')) {
                     me.handlePlayerKeyPress(event.keyCode);
                 }
             }
@@ -1142,7 +1144,7 @@ window.Potato = (function($, chrome, undefined) {
                     me.updateMenu('down', 200);
                     break;
                 case me.keys.toggleLists:
-                    if ($('#player').is(':visible')) {
+                    if ($('#players').is(':visible')) {
                         $('#content').fadeOut();
                     }
                     break;
