@@ -1,3 +1,8 @@
+/*
+    To Do List:
+        Rename #content to #guide
+*/
+
 window.Potato = (function($, chrome, undefined) {
 
 
@@ -63,11 +68,13 @@ window.Potato = (function($, chrome, undefined) {
             me.loadStoredData();
 
             // Start the update timer.
-            me.updateTime();
+            me.guide.updateTime();
         },
 
         fullscreen: function(state) {
-            var nHeight = screen.height;
+            //console.log('fullscreen', state);
+            //me.player.fullscreen(state);
+            /*var nHeight = screen.height;
             var fHeight = nHeight + 32;
             var player = $('#players .video webview');
 
@@ -77,7 +84,7 @@ window.Potato = (function($, chrome, undefined) {
             } else if ((state === 'toggle' && player.height() === fHeight) || state === 'exit') {
                 // Toggle player to normal.
                 player.height(nHeight);
-            }
+            }*/
         },
 
         loadStoredData: function() {
@@ -99,7 +106,7 @@ window.Potato = (function($, chrome, undefined) {
                 }
 
                 // Update the channels and games.
-                me.updateAll();
+                me.guide.updateAll();
 
                 // Sync the now initialized store object.
                 chrome.storage.sync.set(store);
@@ -135,7 +142,7 @@ window.Potato = (function($, chrome, undefined) {
             }
         },
 
-        createObjectURL: function(blob) {
+        /*createObjectURL: function(blob) {
             var objURL = URL.createObjectURL(blob);
             this.objectURLs = this.objectURLs || [];
             this.objectURLs.push(objURL);
@@ -158,7 +165,7 @@ window.Potato = (function($, chrome, undefined) {
                 element.appendChild(img);
             }.bind(this);
             xhr.send();
-        },
+        },*/
 
         follow: function(type, name) {
             if (me.followed[type].indexOf(name) === -1) {
@@ -228,7 +235,7 @@ window.Potato = (function($, chrome, undefined) {
         getFollowed: function() {
             if (me.followed.channel.length !== 0) {
                 // Clear the menu items.
-                me.menu.followed = [];
+                me.guide.followed = [];
 
                 // Reset the notification array.
                 me.notifications.notify = [];
@@ -242,7 +249,7 @@ window.Potato = (function($, chrome, undefined) {
                         for (var s in json.streams) {
                             var remove = [];
                             // Add the followed streams to the menu.
-                            me.addMenuItem('followed', json.streams[s]);
+                            me.guide.addMenuItem('followed', json.streams[s]);
 
                             var channel = json.streams[s].channel.name;
                             var streamer = json.streams[s].channel.display_name;
@@ -271,7 +278,7 @@ window.Potato = (function($, chrome, undefined) {
                         me.notifications.list = list;
 
                         // Update the menu items.
-                        me.updateMenuItems('followed');
+                        me.guide.updateMenuItems('followed');
 
                         // Display any notifications if needed.
                         if (me.notifications.notify.length > 0) {
@@ -281,7 +288,7 @@ window.Potato = (function($, chrome, undefined) {
                 });
             } else {
                 // Update the menu items.
-                me.updateMenuItems('followed');
+                me.guide.updateMenuItems('followed');
             }
         },
 
@@ -290,15 +297,15 @@ window.Potato = (function($, chrome, undefined) {
                 url: 'https://api.twitch.tv/kraken/streams/featured?limit=100',
                 success: function(json) {
                     // Update our featured object.
-                    me.menu.featured = [];
+                    me.guide.featured = [];
 
                     // Add the featured streams to the menu.
                     for (var s in json.featured) {
-                        me.addMenuItem('featured', json.featured[s].stream);
+                        me.guide.addMenuItem('featured', json.featured[s].stream);
                     }
 
                     // Update the menu items.
-                    me.updateMenuItems('featured');
+                    me.guide.updateMenuItems('featured');
                 }
 
             });
@@ -309,15 +316,15 @@ window.Potato = (function($, chrome, undefined) {
                 url: 'https://api.twitch.tv/kraken/streams?limit=100',
                 success: function(json) {
                     // Update our channels object.
-                    me.menu.channels = [];
+                    me.guide.channels = [];
 
                     // Add the channels to the menu.
                     for (var s in json.streams) {
-                        me.addMenuItem('channels', json.streams[s]);
+                        me.guide.addMenuItem('channels', json.streams[s]);
                     }
 
                     // Update the menu items.
-                    me.updateMenuItems('channels');
+                    me.guide.updateMenuItems('channels');
                 }
             });
         },
@@ -327,14 +334,14 @@ window.Potato = (function($, chrome, undefined) {
                 url: 'https://api.twitch.tv/kraken/games/top?limit=100',
                 success: function(json) {
                     // Update our games object.
-                    me.menu.games = [];
+                    me.guide.games = [];
 
                     var followed = [];
 
                     // Add the games to the menu.
                     for (var s in json.top) {
                         var game = json.top[s].game.name;
-                        me.addMenuItem('games', json.top[s], (me.followed.game.indexOf(game) !== -1));
+                        me.guide.addMenuItem('games', json.top[s], (me.followed.game.indexOf(game) !== -1));
 
                         // Track this game as already known.
                         followed.push(game);
@@ -346,7 +353,7 @@ window.Potato = (function($, chrome, undefined) {
 
                         // Check to make sure we don't already have this game listed
                         if (followed.indexOf(g) === -1) {
-                            me.addMenuItem('games', {
+                            me.guide.addMenuItem('games', {
                                 viewers: -1,
                                 channels: -1,
                                 game: {
@@ -360,7 +367,7 @@ window.Potato = (function($, chrome, undefined) {
                     }
 
                     // Update the menu items.
-                    me.updateMenuItems('games');
+                    me.guide.updateMenuItems('games');
                 }
             });
         },
@@ -370,7 +377,7 @@ window.Potato = (function($, chrome, undefined) {
                 url: 'https://api.twitch.tv/kraken/streams?game={0}&limit=100'.format(game),
                 success: function(json) {
                     // Update our game object.
-                    me.menu.game = [];
+                    me.guide.game = [];
 
                     // Add the games to the menu.
                     for (var s in json.streams) {
@@ -380,7 +387,7 @@ window.Potato = (function($, chrome, undefined) {
                     $('.list.game .head').text(game);
 
                     // Update the menu items.
-                    me.updateMenuItems('game', true);
+                    me.guide.updateMenuItems('game', true);
                 }
             });
         },
@@ -407,7 +414,7 @@ window.Potato = (function($, chrome, undefined) {
             });
         },
 
-        addMenuItem: function(type, data, followed) {
+        /*addMenuItem: function(type, data, followed) {
             if (data.channel !== undefined) {
                 me.menu[type].push({
                     title: data.channel.status,
@@ -881,10 +888,19 @@ window.Potato = (function($, chrome, undefined) {
 
             // Remove the popup menu.
             $('.popup').remove();
-        },
+        },*/
 
         playChannel: function(channel) {
-            // Ensure we aren't already playing a channel thats currently playing
+            me.player.registerInputs();
+
+            me.player.play(channel);
+
+            // Show the player
+            $('#players').fadeIn();
+
+            // Hide the content
+            $('#content').fadeOut();
+            /*// Ensure we aren't already playing a channel thats currently playing
             if ($('#players').attr('channel') !== channel) {
                 // Save the channel to flashback.
                 me.flashback = $('#players').attr('channel') || null;
@@ -922,11 +938,12 @@ window.Potato = (function($, chrome, undefined) {
             } else {
                 // Channel is already playing, just fade the list out.
                 $('#content').fadeOut();
-            }
+            }*/
         },
 
         stopChannel: function() {
-            // Save the flashback
+            me.player.stop();
+            /*// Save the flashback
             me.flashback = $('#players').attr('channel');
 
             // Clear and hide the player.
@@ -939,10 +956,10 @@ window.Potato = (function($, chrome, undefined) {
             $('#content').fadeTo('fast', 1);
 
             // Update the menu
-            me.updateMenu();
+            me.updateMenu();*/
         },
 
-        openMenuItem: function() {
+        /*openMenuItem: function() {
             var name = $('.item.selected:visible').attr('name');
             var type = $('.item.selected:visible').attr('type');
 
@@ -959,7 +976,7 @@ window.Potato = (function($, chrome, undefined) {
                     $('.list.game .head').text(name);
 
                     // Update the menu.
-                    me.updateMenu();
+                    me.guide.updateMenu();
 
                     // Load the game search.
                     me.getGame(name);
@@ -987,7 +1004,7 @@ window.Potato = (function($, chrome, undefined) {
                 default:
                     break;
             }
-        },
+        },*/
 
         updateChat: function(side) {
             if (me.chat.side === null || me.chat.side !== side) {
@@ -1050,10 +1067,10 @@ window.Potato = (function($, chrome, undefined) {
             }, function() {
                 $('body').css('font-size', me.zoomLevel + '%');
                 // Update the menu size
-                me.updateMenuSize();
+                me.guide.updateMenuSize();
 
                 // Update the mneu scroll position
-                me.updateMenuScroll();
+                me.guide.updateMenuScroll();
 
                 // Update the chat css
                 if ($('#players .chat webview').length > 0) {
@@ -1132,16 +1149,16 @@ window.Potato = (function($, chrome, undefined) {
                     me.openMenuItem();
                     break;
                 case me.keys.left:
-                    me.updateMenu('left', 200);
+                    me.guide.updateMenu('left', 200);
                     break;
                 case me.keys.up:
-                    me.updateMenu('up', 200);
+                    me.guide.updateMenu('up', 200);
                     break;
                 case me.keys.right:
-                    me.updateMenu('right', 200);
+                    me.guide.updateMenu('right', 200);
                     break;
                 case me.keys.down:
-                    me.updateMenu('down', 200);
+                    me.guide.updateMenu('down', 200);
                     break;
                 case me.keys.toggleLists:
                     if ($('#players').is(':visible')) {
@@ -1149,7 +1166,7 @@ window.Potato = (function($, chrome, undefined) {
                     }
                     break;
                 case me.keys.refresh:
-                    me.updateAll();
+                    me.guide.updateAll();
                     break;
                 case me.keys.popup:
                     me.showPopup();
@@ -1160,7 +1177,7 @@ window.Potato = (function($, chrome, undefined) {
         },
 
         handlePlayerKeyPress: function(key) {
-            switch (key) {
+            /*switch (key) {
                 case me.keys.select:
                     me.fullscreen('toggle');
                     break;
@@ -1171,9 +1188,7 @@ window.Potato = (function($, chrome, undefined) {
                     me.fullscreen('exit');
                     break;
                 case me.keys.flashback:
-                    if (me.flashback !== null) {
-                        me.playChannel(me.flashback);
-                    }
+                    me.player.flashback();
                     break;
                 case me.keys.left:
                     me.updateChat('left');
@@ -1192,7 +1207,7 @@ window.Potato = (function($, chrome, undefined) {
                     break;
                 default:
                     break;
-            }
+            }*/
         },
 
         handlePopupKeyPress: function(key) {
@@ -1260,7 +1275,7 @@ window.Potato = (function($, chrome, undefined) {
     $(function() {
         me.initialize();
 
-        $(document).keyup(function(event) {
+        /*$(document).keyup(function(event) {
             var key = event.keyCode;
 
             if (key === me.keys.up ||
@@ -1278,9 +1293,23 @@ window.Potato = (function($, chrome, undefined) {
 
         $(document).keydown(function(event) {
             me.handleKeyPress(event);
-        });
+        });*/
     });
 
     return me;
 
 })(jQuery, chrome);
+
+Potato.prototype.toggleGuide = function() {
+
+    if ($('#content').is(':visible')) {
+        $('#players').fadeIn();
+        $('#content').fadeOut();
+        this.registerInputs(this.player);
+    } else {
+        $('#players').fadeOut();
+        $('#content').fadeIn();
+        this.registerInputs(this.guide);
+    }
+
+};

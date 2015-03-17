@@ -268,62 +268,90 @@ body {
     left: 0;
     right: 0;
     left: 0;
-    .player {
+    .selector {
         position: fixed;
+        display: none;
+        background-color: #6441a5;
+        opacity: 0.3;
         &.default {
-            display: none;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            left: 0;
-            &[order="0"] {
+            &[number="0"] {
                 display: block;
-            }
-        }
-        &.pip {
-            &[order="0"] {
                 top: 0;
                 bottom: 0;
                 left: 0;
                 right: 0;
                 left: 0;
+                height: 100%;
+                width: 100%;
+                z-index: 1;
+            }
+            &[number="1"] {
+                display: block;
+                bottom: 35px;
+                left: 35px;
+                height: 200px;
+                width: 340px;
+                z-index: 1001;
+            }
+            &[number="2"] {
+                display: block;
+                bottom: 35px;
+                left: 50%;
+                height: 200px;
+                width: 340px;
+                margin-left: -170px;
+                z-index: 1001;
+            }
+            &[number="3"] {
+                display: block;
+                bottom: 35px;
+                right: 35px;
+                height: 200px;
+                width: 340px;
+                z-index: 1001;
+            }
+        }
+    }
+    .player {
+        position: fixed;
+        &.default {
+            &[number="0"] {
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                left: 0;
+                height: 100%;
+                width: 100%;
                 z-index: 0;
             }
-            &[order="1"] {
-                bottom: 10px;
-                left: 10px;
+            &[number="1"] {
+                bottom: 35px;
+                left: 35px;
                 height: 200px;
                 width: 340px;
                 z-index: 1000;
             }
-            &[order="2"] {
-                bottom: 10px;
-                right: 10px;
-                height: 200px;
-                width: 340px;
-                z-index: 1000;
-            }
-            &[order="3"] {
-                bottom: 10px;
+            &[number="2"] {
+                bottom: 35px;
                 left: 50%;
                 height: 200px;
                 width: 340px;
                 margin-left: -170px;
                 z-index: 1000;
             }
-        }
-        .video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            webview {
-                height: 100%;
-                width: 100%;
-                background-color: #222;
+            &[number="3"] {
+                bottom: 35px;
+                right: 35px;
+                height: 200px;
+                width: 340px;
+                z-index: 1000;
             }
+        }
+        webview.video {
+            height: 100%;
+            width: 100%;
+            background-color: #222;
         }
         .chat {
             display: none;
