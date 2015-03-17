@@ -1,51 +1,108 @@
-window.Potato = window.Potato || {};
-
 (function(potato, $, chrome, undefined) {
 
     var Input = function() {
+        this.input = 'Global';
 
         this.inputs = [];
         this.registered = [];
         this.types = ['keyup', 'keydown'];
-
     };
 
     Input.prototype.initializeInputs = function() {
 
-        this.addInput('Global', 'globalExit', 27, 'Exit', 'Exits the application.');
+        this.addInput('Global', 'globalExit', 88, 'Exit', 'Exits the application.');
+        this.addInput('Global', 'globalGuideToggle', 71, 'Toggle Guide', 'Toggles the guide.');
         this.addInput('Global', 'globalZoomIn', 187, 'Zoom In', 'Increases the application zoom level.');
         this.addInput('Global', 'globalZoomOut', 189, 'Zoom Out', 'Decreases the application zoom level.');
         this.addInput('Global', 'globalZoomReset', 48, 'Zoom Reset', 'Resets the application zoom level.');
 
-        this.registerInputs();
+        this.addInput('Guide', 'guideUp', 38, 'Scroll Up', 'Scrolls up the guide items.');
+        this.addInput('Guide', 'guideDown', 40, 'Scroll Down', 'Scrolls down the guide items.');
+        this.addInput('Guide', 'guideLeft', 37, 'Move Up', 'Moves up the guide list.');
+        this.addInput('Guide', 'guideRight', 39, 'Move Down', 'Moves down the guide list.');
+        this.addInput('Guide', 'guidePageUp', 33, 'Jump Up', 'Jumps up the guide items.');
+        this.addInput('Guide', 'guidePageDown', 33, 'Jump Down', 'Jumps down the guide items.');
+        this.addInput('Guide', 'guideSelect', 13, 'Select Item', 'Selects the current guide item.');
+        this.addInput('Guide', 'guideRefresh', 82, 'Refresh Guide', 'Refreshes the guide.');
+        this.addInput('Guide', 'guideMenu', 80, 'Guide Menu', 'Displays the guide context menu.');
 
+        this.addInput('Player', 'playerUp', 38, 'Previous Playing', '');
+        this.addInput('Player', 'playerDown', 40, 'Next Playing', '');
+        this.addInput('Player', 'playerStop', 83, 'Stop Playing', '');
+        this.addInput('Player', 'playerMute', 77, 'Mute Volume', '');
+        this.addInput('Player', 'playerFlashback', 70, 'Previous Channel', '');
+        this.addInput('Player', 'playerSelect', 13, 'Select Channel', '');
+        this.addInput('Player', 'playerFullscreenToggle', 85, 'Toggle Fullscreen', '');
+        this.addInput('Player', 'playerFullscreenEnter', 79, 'Enter Fullscreen', '');
+        this.addInput('Player', 'playerFullscreenExit', 73, 'Exit Fullscreen', '');
+
+        this.registerInputs(potato.guide);
     };
 
-    Input.prototype.registerInputs = function() {
+    Input.prototype.registerInputs = function(binder) {
 
-        var registerInput = function(id) {
+        var registerInput = function(id, binder) {
 
             // Register the keydown event.
             this.registerInput(id, 'keydown', function() {
                 this.onInput(id, 'keydown');
-            }.bind(this));
+            }.bind(binder));
 
             // Register the keyup event.
             this.registerInput(id, 'keyup', function() {
                 this.onInput(id, 'keyup');
-            }.bind(this));
+            }.bind(binder));
 
         }.bind(this);
 
         // Unregister all inputs.
-        this.unregisterAllInput();
+        this.registered = [];
 
-        // Get the inputs associated with the guide.
-        var inputs = this.getInputsBySection('Global');
+        // Get the global inputs
+        var inputs = this.getInputsByOwner(this.input);
 
-        // Register all of the guide inputs.
+        // Register all of the global inputs.
         for (var i in inputs) {
-            registerInput(inputs[i].id);
+            registerInput(inputs[i].id, this);
+        }
+
+        if (this.input !== other.input) {
+            // Get the other inputs
+            inputs = this.getInputsByOwner(binder.input);
+
+            // Register all of the other inputs.
+            for (i in inputs) {
+                registerInput(inputs[i].id, binder);
+            }
+        }
+
+    };
+
+    Input.prototype.onInput = function(id, type) {
+
+        var input = this.getRegisteredInput(id, type);
+
+        if (input !== undefined && input.type === 'keyup') {
+
+            switch (input.id) {
+                case 'globalExit':
+                    window.close();
+                    break;
+                case 'globalGuideToggle':
+                    potato.toggleGuide();
+                    break;
+                case 'globalZoomIn':
+                    potato.zoom('in');
+                    break;
+                case 'globalZoomOut':
+                    potato.zoom('out');
+                    break;
+                case 'globalZoomReset':
+                    potato.zoom('reset');
+                    break;
+                default:
+                    break;
+            }
         }
 
     };
@@ -105,14 +162,14 @@ window.Potato = window.Potato || {};
 
     };
 
-    Input.prototype.getInputsBySection = function(section) {
+    Input.prototype.getInputsByOwner = function(owner) {
 
         var inputs = [];
 
         for (var i in this.inputs) {
             var input = this.inputs[i];
 
-            if (input.section === section) {
+            if (input.owner === owner) {
                 inputs.push(input);
             }
         }
@@ -120,12 +177,12 @@ window.Potato = window.Potato || {};
         return inputs;
     };
 
-    Input.prototype.getInput = function(section, id) {
+    Input.prototype.getInput = function(owner, id) {
 
         for (var i in this.inputs) {
             var input = this.inputs[i];
 
-            if (input.section === section &&
+            if (input.owner === owner &&
                 input.id === id) {
                 return input;
             }
@@ -135,13 +192,13 @@ window.Potato = window.Potato || {};
 
     };
 
-    Input.prototype.addInput = function(section, id, keyCode, name, desc, forceRemove) {
+    Input.prototype.addInput = function(owner, id, keyCode, name, desc, forceRemove) {
 
-        var input = this.getInput(section, id);
+        var input = this.getInput(owner, id);
 
         if (input !== undefined) {
             if (forceRemove === true) {
-                this.removeInput(section, id);
+                this.removeInput(name, id);
             } else {
                 console.error('Input must be removed before it can be redadded [id: {0}, type: {1}].'.format(input.id, type));
                 return;
@@ -149,7 +206,7 @@ window.Potato = window.Potato || {};
         }
 
         this.inputs.push({
-            section: section,
+            owner: owner,
             id: id,
             keyCode: keyCode,
             name: name,
@@ -158,15 +215,14 @@ window.Potato = window.Potato || {};
 
     };
 
-    Input.prototype.removeInput = function(section, id) {
+    Input.prototype.removeInput = function(owner, id) {
 
         var index = -1;
 
         for (var i in this.inputs) {
             var input = this.input[i];
 
-            if (input.section === section &&
-                input.id === id) {
+            if (input.owner === owner && input.id === id) {
                 index = i;
                 break;
             }
@@ -185,8 +241,7 @@ window.Potato = window.Potato || {};
         for (var i in this.registered) {
             var registered = this.registered[i];
 
-            if (registered.id === id &&
-                registered.type === type) {
+            if (registered.id === id && registered.type === type) {
                 index = i;
                 break;
             }
@@ -195,12 +250,6 @@ window.Potato = window.Potato || {};
         if (index !== -1) {
             this.registered.splice(index, 1);
         }
-
-    };
-
-    Input.prototype.unregisterAllInput = function() {
-
-        this.registered = [];
 
     };
 
@@ -247,8 +296,8 @@ window.Potato = window.Potato || {};
 
     };
 
-    Input.prototype.onInput = function(event) {
-        console.log(event.keyCode);
+    Input.prototype.onInputEvent = function(event) {
+
         // Get the input associated with the keycode.
         var input = this.getInputFromKeyCode(event.keyCode);
 
@@ -273,238 +322,9 @@ window.Potato = window.Potato || {};
 
         input.initializeInputs();
 
-        $(document).keydown(input.onInput.bind(input));
-        $(document).keyup(input.onInput.bind(input));
+        $(document).keydown(input.onInputEvent.bind(input));
+        $(document).keyup(input.onInputEvent.bind(input));
     });
 
     potato.input = input;
 }(window.Potato, window.jQuery, window.chrome));
-
-/*$(document).keyup(function(event) {
-    var key = event.keyCode;
-
-    if (key === me.keys.up ||
-        key === me.keys.down ||
-        key === me.keys.left ||
-        key === me.keys.right) {
-        if (me.timers.info !== null) {
-            // Clear the timeout
-            clearTimeout(me.timers.info);
-            // Update immediately
-            me.updateInfo();
-        }
-    }
-});*/
-
-/*
-
-keys: {
-    up: 38,
-    down: 40,
-    left: 37,
-    right: 39,
-    select: 13, // enter
-    popup: 80, // p
-    reload: 82, // r
-    refresh: 84, // t
-    stop: 81, // q
-    flashback: 70, // f
-    toggleLists: 66, // b
-    exit: 88, // x
-    resolution: 72, // h
-    zoomIn: 187, // +
-    zoomOut: 189, // -
-    zoomReset: 48, // 0
-    enterFullscreen: 79, // o
-    exitFullscreen: 73, // i
-    escape: 27 // esc
-},
-
-        handleKeyPress: function(event) {
-            // Handle webview
-            if ($('#login').is(':visible')) {
-                switch (event.keyCode) {
-                    case me.keys.escape:
-                        $('#login webview').attr('src', 'about:blank');
-                        $('#login').fadeOut();
-                        event.stopPropagation();
-                        return event.preventDefault();
-                    default:
-                        return;
-                }
-            }
-
-            // Check to see if an input box is focused.
-            var input = $('input:focus');
-
-            if (input.length !== 0) {
-                return me.handleInputKeyPress(event.keyCode, input);
-            }
-
-            // Handle global keypresses here.
-            switch (event.keyCode) {
-                case me.keys.escape:
-                    return window.close();
-                case me.keys.exit:
-                    return window.close();
-                case me.keys.reload:
-                    return window.location.reload(false);
-                case me.keys.stop:
-                    return me.stopChannel();
-                case me.keys.zoomIn:
-                    return me.zoom('in');
-                case me.keys.zoomOut:
-                    return me.zoom('out');
-                case me.keys.zoomReset:
-                    return me.zoom('normal');
-                default:
-                    console.log('KeyCode: ' + event.keyCode);
-                    break;
-            }
-
-            var popupClosed = false;
-
-            if ($('.popup').is(':visible')) {
-                popupClosed = me.handlePopupKeyPress(event.keyCode);
-            }
-
-            if (popupClosed === false) {
-                if ($('#content').is(':visible')) {
-                    me.handleListKeyPress(event.keyCode);
-                } else if ($('#player').is(':visible')) {
-                    me.handlePlayerKeyPress(event.keyCode);
-                }
-            }
-        },
-
-        handleListKeyPress: function(key) {
-            switch (key) {
-                case me.keys.select:
-                    me.openMenuItem();
-                    break;
-                case me.keys.left:
-                    me.updateMenu('left', 200);
-                    break;
-                case me.keys.up:
-                    me.updateMenu('up', 200);
-                    break;
-                case me.keys.right:
-                    me.updateMenu('right', 200);
-                    break;
-                case me.keys.down:
-                    me.updateMenu('down', 200);
-                    break;
-                case me.keys.toggleLists:
-                    if ($('#player').is(':visible')) {
-                        $('#content').fadeOut();
-                    }
-                    break;
-                case me.keys.refresh:
-                    me.updateAll();
-                    break;
-                case me.keys.popup:
-                    me.showPopup();
-                    break;
-                default:
-                    break;
-            }
-        },
-
-        handlePlayerKeyPress: function(key) {
-            switch (key) {
-                case me.keys.select:
-                    me.fullscreen('toggle');
-                    break;
-                case me.keys.enterFullscreen:
-                    me.fullscreen('enter');
-                    break;
-                case me.keys.exitFullscreen:
-                    me.fullscreen('exit');
-                    break;
-                case me.keys.flashback:
-                    if (me.flashback !== null) {
-                        me.playChannel(me.flashback);
-                    }
-                    break;
-                case me.keys.left:
-                    me.updateChat('left');
-                    break;
-                case me.keys.right:
-                    me.updateChat('right');
-                    break;
-                case me.keys.toggleLists:
-                    $('#content').fadeTo('fast', 0.99);
-
-                    me.updateMenu();
-
-                    break;
-                case me.keys.resolution:
-                    //$.ajax({url: 'http://localhost:80/test.html?openResolution'.format(x, y)});
-                    break;
-                default:
-                    break;
-            }
-        },
-
-        handlePopupKeyPress: function(key) {
-            switch (key) {
-                case me.keys.up:
-                    me.updatePopupButton('up');
-                    break;
-                case me.keys.down:
-                    me.updatePopupButton('down');
-                    break;
-                case me.keys.select:
-                    me.openPopupButton();
-                    break;
-                case me.keys.popup:
-                    $('.popup').remove();
-                    break;
-                default:
-                    $('.popup').remove();
-                    return true;
-            }
-        },
-
-        handleInputKeyPress: function(key, input) {
-            switch (key) {
-                case me.keys.select:
-                    if (input.length !== 0) {
-                        // Remove the whitespace from the input
-                        var value = $.trim(input.val());
-
-                        // Remove the focus if there is no input.
-                        if (value === '') {
-                            input.blur();
-
-                            return;
-                        }
-
-                        switch (input.attr('id')) {
-                            case 'import':
-                                me.importChannels(value);
-                                break;
-                            case 'follow-channel':
-                                me.follow('channel', value);
-                                break;
-                            case 'follow-game':
-                                me.follow('game', value);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    // Clear the input.
-                    input.val('');
-
-                    // Clear the input focus.
-                    input.blur();
-
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        */
