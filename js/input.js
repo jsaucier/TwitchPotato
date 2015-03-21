@@ -10,7 +10,7 @@
 
     Input.prototype.initializeInputs = function() {
 
-        this.addInput('Global', 'globalExit', 88, 'Exit', 'Exits the application.');
+        this.addInput('Global', 'globalExit', 27, 'Exit', 'Exits the application.');
         this.addInput('Global', 'globalGuideToggle', 71, 'Toggle Guide', 'Toggles the guide.');
         this.addInput('Global', 'globalZoomIn', 187, 'Zoom In', 'Increases the application zoom level.');
         this.addInput('Global', 'globalZoomOut', 189, 'Zoom Out', 'Decreases the application zoom level.');
@@ -66,11 +66,11 @@
             registerInput(inputs[i].id, this);
         }
 
-        if (this.input !== other.input) {
-            // Get the other inputs
+        if (this.input !== binder.input) {
+            // Get the binder inputs
             inputs = this.getInputsByOwner(binder.input);
 
-            // Register all of the other inputs.
+            // Register all of the binder inputs.
             for (i in inputs) {
                 registerInput(inputs[i].id, binder);
             }
@@ -86,7 +86,14 @@
 
             switch (input.id) {
                 case 'globalExit':
-                    window.close();
+                    if ($('webview:visible').length === 0) {
+                        window.close();
+                    } else {
+                        $('#login').fadeOut();
+                        $('#accounts').fadeOut();
+                        // Register guide inputs.
+                        this.registerInputs(potato.guide);
+                    }
                     break;
                 case 'globalGuideToggle':
                     potato.toggleGuide();
@@ -236,19 +243,23 @@
 
     Input.prototype.unregisterInput = function(id, type) {
 
-        var index = -1;
+        var indexes = [];
 
         for (var i in this.registered) {
             var registered = this.registered[i];
 
-            if (registered.id === id && registered.type === type) {
-                index = i;
-                break;
+            if (registered.id === id) {
+                if (type !== undefined) {
+                    indexes.push(i);
+                    if (registered.type === type) {
+                        break;
+                    }
+                }
             }
         }
 
-        if (index !== -1) {
-            this.registered.splice(index, 1);
+        for (i in indexes) {
+            this.registered.splice(indexes[i], 1);
         }
 
     };
@@ -318,8 +329,6 @@
     var input = new Input();
 
     $(function() {
-        console.log('Input Loaded');
-
         input.initializeInputs();
 
         $(document).keydown(input.onInputEvent.bind(input));
