@@ -85,7 +85,7 @@
 
         // Register an event for when the webview has finished loading.
         webview.addEventListener('contentload', function() {
-            console.log($(webview).attr('src'), $(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize'));
+
             if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize') !== -1) { //}?client_id=60wzh4fjbowe6jwtofuc1jakjfgekry&redirect_uri=https%3A%2F%2Fdl.dropboxusercontent.com%2Fspa%2Ftn9l4tkx2yhpiv3%2Ftwitch%2520potato%2Fpublic%2Fredirect.html&response_type=token&scope=user_read+channel_read') {
                 $(webview).show();
                 $('#accounts').show();
@@ -208,7 +208,7 @@
 
         // Parse the json message.
         var json = JSON.parse(event.data);
-        console.log(json);
+
         // Call the method based on the message.
         this['on' + json.method].apply(this, json.args);
 
