@@ -19,5 +19,10 @@
         "overrideEscFullscreen",
         "<all_urls>",
         "commands"
-    ]
+    ],
+    "webview": {
+        "partitions": [{
+            "name": "account_*",
+        }]
+    }
 }
