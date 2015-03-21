@@ -5,6 +5,24 @@
         this.clientId = '60wzh4fjbowe6jwtofuc1jakjfgekry';
     };
 
+
+    Twitch.prototype.onFollowChannel = function(account) {};
+    Twitch.prototype.onUnfollowChannel = function(account) {};
+    Twitch.prototype.onFollowGame = function(account) {};
+    Twitch.prototype.onUnfollowGame = function(account) {};
+
+    Twitch.prototype.onFollowedChannels = function(account, json) {
+        potato.guide.onFollowedChannels(account, json);
+    };
+
+    Twitch.prototype.onFollowedGames = function(account, json) {
+        potato.guide.onFollowedGames(account, json);
+    };
+
+    Twitch.prototype.onFollowedVideos = function(account, json) {
+        potato.guide.onFollowedVideos(account, json);
+    };
+
     Twitch.prototype.getFeatured = function() {
         $.ajax({
             url: 'https://api.twitch.tv/kraken/streams/featured?limit=100',
@@ -41,11 +59,6 @@
         });
     };
 
-
-
-
-
-
     Twitch.prototype.new = function(account) {
 
         // Load the webview template
@@ -72,13 +85,14 @@
 
         // Register an event for when the webview has finished loading.
         webview.addEventListener('contentload', function() {
-            if ($(webview).attr('src') === 'https://api.twitch.tv/kraken/oauth2/authenticate?action=authorize&client_id=60wzh4fjbowe6jwtofuc1jakjfgekry&redirect_uri=https%3A%2F%2Fdl.dropboxusercontent.com%2Fspa%2Ftn9l4tkx2yhpiv3%2Ftwitch%2520potato%2Fpublic%2Fredirect.html&response_type=token&scope=user_read+channel_read') {
+            console.log($(webview).attr('src'), $(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize'));
+            if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize') !== -1) { //}?client_id=60wzh4fjbowe6jwtofuc1jakjfgekry&redirect_uri=https%3A%2F%2Fdl.dropboxusercontent.com%2Fspa%2Ftn9l4tkx2yhpiv3%2Ftwitch%2520potato%2Fpublic%2Fredirect.html&response_type=token&scope=user_read+channel_read') {
                 $(webview).show();
                 $('#accounts').show();
-                this.updateVisibility();
+                this.updateVisibility(acc);
             } else {
                 $(webview).hide();
-                this.updateVisibility();
+                this.updateVisibility(acc);
 
                 // Initialize the webview.
                 this.post(account, 'Init', [this.clientId]);
@@ -100,52 +114,48 @@
         this.post(account, 'Logout');
 
     };
-    Twitch.prototype.onLogout = function(account) {
-
-    };
+    Twitch.prototype.onLogout = function(account) {};
 
     Twitch.prototype.onError = function(account, json) {
         console.log(account, 'Error:', json.error);
-    }
+    };
 
-    Twitch.prototype.followChannel = function(account, channel) {};
-    Twitch.prototype.onFollowChannel = function(account) {};
-
-    Twitch.prototype.unfollowChannel = function(account, channel) {};
-    Twitch.prototype.onUnfollowChannel = function(account) {};
-
+    Twitch.prototype.followChannel = function(account, channel) {
+        this.post(account, 'FollowChannel', [channel]);
+    };
+    Twitch.prototype.unfollowChannel = function(account, channel) {
+        this.post(account, 'UnfollowChannel', [channel]);
+    };
+    Twitch.prototype.followGame = function(account, game) {
+        this.post(account, 'FollowGame', [game]);
+    };
+    Twitch.prototype.unfollowGame = function(account, game) {
+        this.post(account, 'UnfollowGame', [game]);
+    };
     Twitch.prototype.followedChannels = function(account) {
         this.post(account, 'FollowedChannels');
     };
-    Twitch.prototype.onFollowedChannels = function(account, json) {
-        potato.guide.onFollowedChannels(account, json);
-    };
-
-    Twitch.prototype.followGame = function(account, game) {};
-    Twitch.prototype.onFollowGame = function(account) {};
-
-    Twitch.prototype.unfollowGame = function(account, game) {};
-    Twitch.prototype.onUnfollowGame = function(account) {};
-
     Twitch.prototype.followedGames = function(account) {
         this.post(account, 'FollowedGames');
     };
-    Twitch.prototype.onFollowedGames = function(account, json) {
-        potato.guide.onFollowedGames(account, json);
-    };
-
     Twitch.prototype.followedVideos = function(account) {
         this.post(account, 'FollowedVideos');
     };
-    Twitch.prototype.onFollowedVideos = function(account, json) {
-        potato.guide.onFollowedVideos(account, json);
-    };
 
-    Twitch.prototype.updateVisibility = function() {
+    Twitch.prototype.updateVisibility = function(account) {
 
         if ($('#accounts webview:visible').length === 0) {
             $('#accounts').hide();
         } else {
+            console.log(account);
+            // Hide all webviews
+            $('#accounts webview').hide();
+            // Show the first one
+            ///$('#accounts webview:eq(0)').show();
+            $(account.webview).show();
+            // Set the title
+            $('#accounts .head').text('Enter the login for {0} | Press ESC to Cancel'.format(account.account));
+            // Show the container
             $('#accounts').show();
         }
 
@@ -198,7 +208,7 @@
 
         // Parse the json message.
         var json = JSON.parse(event.data);
-
+        console.log(json);
         // Call the method based on the message.
         this['on' + json.method].apply(this, json.args);
 
