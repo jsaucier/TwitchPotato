@@ -1,20 +1,23 @@
 (function(potato, $, chrome, undefined) {
 
     var Input = function() {
-        this.input = 'Global';
-
         this.inputs = [];
         this.registered = [];
         this.types = ['keyup', 'keydown'];
+
+        // Repeat timer.
+        this.timer = undefined;
+        // Repeat event
+        this.lastEvent = undefined;
     };
 
     Input.prototype.initializeInputs = function() {
 
-        this.addInput('Global', 'globalExit', 27, 'Exit', 'Exits the application.');
-        this.addInput('Global', 'globalGuideToggle', 71, 'Toggle Guide', 'Toggles the guide.');
-        this.addInput('Global', 'globalZoomIn', 187, 'Zoom In', 'Increases the application zoom level.');
-        this.addInput('Global', 'globalZoomOut', 189, 'Zoom Out', 'Decreases the application zoom level.');
-        this.addInput('Global', 'globalZoomReset', 48, 'Zoom Reset', 'Resets the application zoom level.');
+        this.addInput('Potato', 'potatoExit', 27, 'Exit', 'Exits the application.');
+        this.addInput('Potato', 'potatoGuideToggle', 71, 'Toggle Guide', 'Toggles the guide.');
+        this.addInput('Potato', 'potatoZoomIn', 187, 'Zoom In', 'Increases the application zoom level.');
+        this.addInput('Potato', 'potatoZoomOut', 189, 'Zoom Out', 'Decreases the application zoom level.');
+        this.addInput('Potato', 'potatoZoomReset', 48, 'Zoom Reset', 'Resets the application zoom level.');
 
         this.addInput('Guide', 'guideUp', 38, 'Scroll Up', 'Scrolls up the guide items.');
         this.addInput('Guide', 'guideDown', 40, 'Scroll Down', 'Scrolls down the guide items.');
@@ -28,7 +31,8 @@
 
         this.addInput('Player', 'playerUp', 38, 'Previous Playing', '');
         this.addInput('Player', 'playerDown', 40, 'Next Playing', '');
-        this.addInput('Player', 'playerStop', 83, 'Stop Playing', '');
+        this.addInput('Player', 'playerStop', 83, 'Stop Player', '');
+        this.addInput('Player', 'playerPause', 32, 'Pause Player', '');
         this.addInput('Player', 'playerMute', 77, 'Mute Volume', '');
         this.addInput('Player', 'playerFlashback', 70, 'Previous Channel', '');
         this.addInput('Player', 'playerSelect', 13, 'Select Channel', '');
@@ -58,57 +62,21 @@
         // Unregister all inputs.
         this.registered = [];
 
-        // Get the global inputs
-        var inputs = this.getInputsByOwner(this.input);
+        // Get the potato inputs
+        var inputs = this.getInputsByOwner('Potato');
 
-        // Register all of the global inputs.
+        // Register all of the potato inputs.
         for (var i in inputs) {
-            registerInput(inputs[i].id, this);
+            registerInput(inputs[i].id, potato);
         }
 
-        if (this.input !== binder.input) {
+        if (potato !== binder) {
             // Get the binder inputs
             inputs = this.getInputsByOwner(binder.input);
 
             // Register all of the binder inputs.
             for (i in inputs) {
                 registerInput(inputs[i].id, binder);
-            }
-        }
-
-    };
-
-    Input.prototype.onInput = function(id, type) {
-
-        var input = this.getRegisteredInput(id, type);
-
-        if (input !== undefined && input.type === 'keyup') {
-
-            switch (input.id) {
-                case 'globalExit':
-                    if ($('webview:visible').length === 0) {
-                        window.close();
-                    } else {
-                        $('#login').fadeOut();
-                        $('#accounts').fadeOut();
-                        // Register guide inputs.
-                        this.registerInputs(potato.guide);
-                    }
-                    break;
-                case 'globalGuideToggle':
-                    potato.toggleGuide();
-                    break;
-                case 'globalZoomIn':
-                    potato.zoom('in');
-                    break;
-                case 'globalZoomOut':
-                    potato.zoom('out');
-                    break;
-                case 'globalZoomReset':
-                    potato.zoom('reset');
-                    break;
-                default:
-                    break;
             }
         }
 
@@ -319,6 +287,7 @@
             // Check to see the registered input exists,
             // and is of the proper input type.
             if (registered !== undefined) {
+                console.log(input.id, event.type);
                 // Call our registered callback.
                 registered.callback();
             }
@@ -331,9 +300,33 @@
     $(function() {
         input.initializeInputs();
 
-        $(document).keydown(input.onInputEvent.bind(input));
-        $(document).keyup(input.onInputEvent.bind(input));
+        $(document).keydown(function(event) {
+            // Call the input event.
+            input.onInputEvent(event);
+
+            // Store the event.
+            input.lastEvent = event;
+
+            // Clear the repeat timer.
+            clearInterval(input.timer);
+
+            // Reset the repeat timer.
+            input.timer = setInterval(function() {
+                console.log('repeat:');
+                // Repeat the input event.
+                input.onInputEvent(input.lastEvent);
+            }, 100);
+        });
+
+        $(document).keyup(function(event) {
+            // Call the input event.
+            input.onInputEvent(event);
+
+            // Clear the repeat timer.
+            clearInterval(input.timer);
+        });
     });
 
     potato.input = input;
+
 }(window.Potato, window.jQuery, window.chrome));

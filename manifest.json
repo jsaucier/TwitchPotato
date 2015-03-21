@@ -23,6 +23,7 @@
     "webview": {
         "partitions": [{
             "name": "account_*",
+            "accessible_resources": ["index.html"]
         }]
     }
 }

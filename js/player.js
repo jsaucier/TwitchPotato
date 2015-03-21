@@ -24,6 +24,9 @@
                 case 'playerStop':
                     this.stop();
                     break;
+                case 'playerPause':
+                    this.pause();
+                    break;
                 case 'playerMute':
                     this.mute();
                     break;
@@ -104,13 +107,15 @@
                 // Set the id value.
                 id: id,
                 // Set the laoded value.
-                loaded: false,
-                // Set the flashback value.
-                flashback: undefined,
+                isLoaded: false,
+                // Set the playing value.
+                isPlaying: false,
                 // Set the muted value.
                 isMuted: false,
                 // Set the number value.
                 number: numPlayers,
+                // Set the flashback value.
+                flashback: undefined,
                 // Set the webview value.
                 webview: $('#players webview[number="' + numPlayers + '"]')
             };
@@ -125,6 +130,9 @@
 
     Player.prototype.play = function(id, create, isVideo) {
 
+        // Register the player inputs.
+        potato.input.registerInputs(this);
+
         // Get the number of current players
         var numPlayers = this.players.length;
 
@@ -133,12 +141,19 @@
             return;
         }
 
+        // Attempt to get the player by id.
         var player = this.getPlayerById(id);
 
         // Check to see if this player already exists.
         if (player !== undefined) {
             // Select this player.
             this.select();
+
+            // Make sure the video is playing.
+            this.executeEmbedMethod(player, 'playVideo');
+
+            //Set the player as playing.
+            player.isPlaying = true;
 
             return;
         }
@@ -151,14 +166,14 @@
             player = this.getPlayerByNumber(0) || this.create(id);
         }
 
-        if (player.loaded !== true) {
+        if (player.isLoaded !== true) {
             // Load the player after the webview has loaded.
             player.webview.on('loadcommit', function() {
                 setTimeout(function() {
                     // Load the player.
                     this.load(player, id, isVideo);
                     // Set the player as loaded.
-                    player.loaded = true;
+                    player.isLoaded = true;
                 }.bind(this), 1000);
             }.bind(this));
         } else {
@@ -198,16 +213,48 @@
         // Get the selected player.
         var player = this.getSelectedPlayer();
 
-        // We only want to make sure we have one player open at all times
-        // so that we dont have to waste time reloading the .swf when
-        // starting a new one.
-        if (this.players.length > 1) {
-            // We have more than one player, so since we are stopping this one
-            // go ahead and delete the current one.
-            this.remove(player);
-        } else {
-            // Stop the player.
-            this.executeEmbedMethod(player, 'pauseVideo');
+        if (player !== undefined) {
+
+            // We only want to make sure we have one player open at all times
+            // so that we dont have to waste time reloading the .swf when
+            // starting a new one.
+            if (this.players.length > 1) {
+                // We have more than one player, so since we are stopping this one
+                // go ahead and delete the current one.
+                this.remove(player);
+            } else {
+                // Stop the player.
+                this.executeEmbedMethod(player, 'pauseVideo');
+            }
+
+            // Player is no longer playing.
+            player.isPlaying = false;
+
+            // Show the guide.
+            potato.toggleGuide();
+        }
+
+    };
+
+    Player.prototype.pause = function() {
+
+        // Get the selected player.
+        var player = this.getSelectedPlayer();
+
+        if (player !== undefined) {
+
+            // Check to see if the player is currently playing.
+            if (player.isPlaying) {
+                // Pause the video.
+                this.executeEmbedMethod(player, 'pauseVideo');
+            } else {
+                // Play the video.
+                this.executeEmbedMethod(player, 'playVideo');
+            }
+
+            // Update the playing value.
+            player.isPlaying = !player.isPlaying;
+
         }
 
     };
@@ -321,7 +368,7 @@
     Player.prototype.fullscreen = function(state) {
 
         // Default to the  toggle stage.
-        state = state || null;
+        state = (state === undefined) ? null : state;
 
         var nHeight = screen.height;
         var fHeight = nHeight + 32;
@@ -354,6 +401,12 @@
             // Load the video.
             this.executeEmbedMethod(player, 'loadVideo', id);
         }
+
+        // Make sure the video is playing.
+        this.executeEmbedMethod(player, 'playVideo');
+
+        //Set the player as playing.
+        player.isPlaying = true;
 
     };
 
