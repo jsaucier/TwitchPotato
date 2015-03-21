@@ -3,10 +3,26 @@
     var Guide = function() {
         this.input = 'Guide';
 
+        this.lookup = {
+            followed: {},
+            featured: {},
+            channels: {},
+            videos: {},
+            games: {},
+            game: {}
+        };
+
+        this.loading = {
+            channels: 0,
+            videos: 0,
+            games: 0
+        };
+
         this.followed = [];
-        this.channels = [];
         this.featured = [];
-        this.games = [];
+        this.channels = [];
+        this.videos = [];
+        this.games = {};
         this.game = [];
         this.settings = [];
         this.timeTimer = null;
@@ -50,60 +66,233 @@
 
     };
 
-    Guide.prototype.show = function() {
-        this.registerInput();
+    Guide.prototype.onFollowedChannels = function(account, json) {
 
-        $('#guide').fadeIn();
+        // Add the followed channels to the menu.
+        for (var s in json.streams) {
+            // Get the channel name.
+            var channel = json.streams[s].channel.name;
+
+            // Ensure we have not added the channel yet.
+            if (this.lookup.followed[channel] === undefined) {
+                // Add the channel to the lookup table and the menu array.
+                this.lookup.followed[channel] = this.addMenuItem('followed', json.streams[s]);
+            }
+        }
+
+        // Decrement the loading channels.
+        this.loading.channels--;
+
+        // Check to see if we have finished loading.
+        if (this.loading.channels === 0) {
+            // Update the menu items.
+            this.updateMenuItems('followed');
+
+            // Handle the notifications.
+            console.warn('Handle notifications here.');
+        }
+
     };
 
+    Guide.prototype.onFollowedGames = function(account, json) {
 
-    Guide.prototype.createObjectURL = function(blob) {
-        var objURL = URL.createObjectURL(blob);
-        this.objectURLs = this.objectURLs || [];
-        this.objectURLs.push(objURL);
-        return objURL;
+        // Add the followed games to the menu.
+        for (var f in json.follows) {
+            // Get the game name.
+            var game = json.follows[f].name;
+
+            // Ensure we have not added the game yet.
+            if (this.lookup.games[game] === undefined) {
+                // Add the video to the lookup table and the menu array.
+                this.lookup.games[game] = this.addMenuItem('games', {
+                    viewers: -1,
+                    channels: -1,
+                    game: {
+                        name: game,
+                        box: {
+                            large: 'http://static-cdn.jtvnw.net/ttv-boxart/{0}-272x380.jpg'.format(encodeURIComponent(game))
+                        }
+                    }
+                }, true);
+            } else {
+                // Set the game as followed.
+                this.games[this.lookup.games[game]].followed = true;
+            }
+        }
+
+        // Decrement the loading channels.
+        this.loading.games--;
+
+        // Check to see if we have finished loading.
+        if (this.loading.games === 0) {
+            // Update the menu items.
+            this.updateMenuItems('games');
+        }
+
     };
 
-    Guide.prototype.loadImage = function(url, element) {
-        element = element[0];
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url);
-        xhr.responseType = 'blob';
-        xhr.contentType = 'image/jpg';
-        xhr.onload = function() {
-            var img = document.createElement('img');
-            img.setAttribute('data-src', url);
-            //img.className = 'icon';
-            var objURL = this.createObjectURL(xhr.response);
-            img.setAttribute('src', objURL);
-            $(element).empty();
-            element.appendChild(img);
-        }.bind(this);
-        xhr.send();
+    Guide.prototype.onFollowedVideos = function(account, json) {
+
+        // Add the followed videos to the menu.
+        for (var v in json.videos) {
+            // Get the video id.
+            var id = json.videos[v]._id;
+
+            // Ensure we have not added the video yet.
+            if (this.lookup.videos[id] === undefined) {
+                // Add the video to the lookup table and the menu array.
+                this.lookup.videos[id] = this.addMenuItem('video', json.videos[v]);
+            }
+        }
+
+        // Decrement the loading channels.
+        this.loading.videos--;
+
+        // Check to see if we have finished loading.
+        if (this.loading.videos === 0) {
+            // Update the menu items.
+            this.updateMenuItems('videos');
+        }
+
+    };
+
+    Guide.prototype.onFeatured = function(json) {
+
+        // Add the featured channels to the menu.
+        for (var s in json.featured) {
+            // Get the channel name.
+            var channel = json.featured[s].stream.channel.name;
+
+            // Ensure we have not added the featured channel yet.
+            if (this.lookup.featured[channel] === undefined) {
+                // Add the channel to the lookup table and the menu array.
+                this.lookup.featured[channel] = this.addMenuItem('featured', json.featured[s].stream);
+            }
+        }
+
+        // Update the menu items.
+        this.updateMenuItems('featured');
+
+    };
+
+    Guide.prototype.onChannels = function(json) {
+
+        // Add the top channels to the menu.
+        for (var s in json.streams) {
+            // Get the channel name.
+            var channel = json.streams[s].channel.name;
+
+            // Ensure we have not added the featured channel yet.
+            if (this.lookup.channels[channel] === undefined) {
+                // Add the channel to the lookup table and the menu array.
+                this.lookup.channels[channel] = this.addMenuItem('channels', json.streams[s]);
+            }
+        }
+
+        // Update the menu items.
+        this.updateMenuItems('channels');
+
+    };
+
+    Guide.prototype.onGames = function(json) {
+
+        // Add the games to the menu.
+        for (var s in json.top) {
+            // Get the game name.
+            var game = json.top[s].game.name;
+
+            // Ensure we have not added the game yet.
+            if (this.lookup.games[game] === undefined) {
+                // Add the game to the lookup table and the menu array.
+                this.lookup.games[game] = this.addMenuItem('games', json.top[s]);
+            }
+        }
+
+        // Update the menu items.
+        this.updateMenuItems('games');
+
     };
 
     Guide.prototype.addMenuItem = function(type, data, followed) {
+
+        if (type === 'video') {
+
+            return this.videos.push({
+                title: data.title,
+                name: data.channel.name,
+                streamer: data.channel.display_name,
+                views: data.views,
+                length: data.length,
+                preview: data.preview.replace(/320x240/, '640x360'),
+                video: data._id
+            }) - 1;
+
+        }
+
+        if (type === 'games') {
+
+            return this.games.push({
+                title: data.game.name,
+                channels: data.channels,
+                viewers: data.viewers,
+                boxArt: data.game.box.large,
+                followed: followed || false
+            }) - 1;
+
+        }
+
         if (data.channel !== undefined) {
-            this[type].push({
+
+            return this[type].push({
                 title: data.channel.status,
                 name: data.channel.name,
                 streamer: data.channel.display_name,
                 viewers: data.viewers,
                 game: data.game,
                 preview: data.preview.large
-            });
-        } else if (data.game !== undefined) {
-            this.games.push({
-                title: data.game.name,
-                channels: data.channels,
-                viewers: data.viewers,
-                boxArt: data.game.box.large,
-                followed: followed || false
-            });
+            }) - 1;
+
         }
+
+        console.error('Failed to added a menu item.', type, data);
+
+    };
+
+
+    Guide.prototype.createObjectURL = function(blob) {
+
+        var objURL = URL.createObjectURL(blob);
+        this.objectURLs = this.objectURLs || [];
+        this.objectURLs.push(objURL);
+        return objURL;
+
+    };
+
+    Guide.prototype.loadImage = function(url, element) {
+
+        element = element[0];
+        var xhr = new XMLHttpRequest();
+
+        xhr.open('GET', url);
+
+        xhr.responseType = 'blob';
+        xhr.contentType = 'image/jpg';
+
+        xhr.onload = function() {
+            var img = document.createElement('img');
+            img.setAttribute('data-src', url);
+            var objURL = this.createObjectURL(xhr.response);
+            img.setAttribute('src', objURL);
+            $(element).empty();
+            element.appendChild(img);
+        }.bind(this);
+
+        xhr.send();
+
     };
 
     Guide.prototype.updateMenuItems = function(menu, goto) {
+
         var sort = function(a, b) {
             var aViewers = a.viewers;
             var bViewers = b.viewers;
@@ -124,10 +313,31 @@
             return 0;
         };
 
+        var reIndex = function(menu) {
+            // Reset the lookup table.
+            this.lookup[menu] = {};
+
+            // Reindex lookup table.
+            for (var index in this[menu]) {
+                // Get the item.
+                var item = this[menu][index];
+
+                // Set the new lookup index.
+                if (menu === 'games') {
+                    this.lookup[m][item.title] = index * 1;
+                } else if (menu === 'videos') {
+                    this.lookup[menu][item.video] = index * 1;
+                } else {
+                    this.lookup[menu][item.name] = index * 1;
+                }
+            }
+        };
+
         var menus = [
             'followed',
             'featured',
             'channels',
+            'videos',
             'games',
             'game'
         ];
@@ -137,19 +347,27 @@
         }
 
         for (var i = 0; i < menus.length; i++) {
-            // Get the menu nathis.
+            // Get the menu item.
             var m = menus[i];
 
             // Sort the menu items by viewers.
             this[m].sort(sort);
 
+            // Reindex the menu
+            reIndex.call(this, m);
+
             // Save the selected menu item.
-            var selected = $('.list.' + m + ' .items .item.selected').attr('name');
+            var selected = $('.list.' + m + ' .items .item.selected');
+
+            selected =
+                selected.attr('video') ||
+                selected.attr('title') ||
+                selected.attr('name');
 
             // Is the popup shown?
-            var popupShown = ($('.list.' + m + ' .popup:visible').length > 0);
+            var popup = ($('.list.' + m + ' .popup:visible').length > 0);
 
-            if (popupShown === true) {
+            if (popup === true) {
                 // Save the popup state by moving it to the body and hiding it.
                 $('.popup').appendTo($('body')).hide();
             }
@@ -163,60 +381,12 @@
 
                     var item;
 
-                    if (m !== 'games') {
-
-                        item = $($('#channel-item-template').html());
-
-                        // This item was prevoiusly selected.
-                        if (selected == data.name) {
-                            // Set it back as selected.
-                            $(item).addClass('selected');
-
-                            if (popupShown) {
-                                // Reload the popup's previous state
-                                $('.popup').appendTo($(item)).show();
-                            }
-                        }
-
-                        // Set the item streamer.
-                        $(item).find('.streamer').text(data.streamer);
-
-                        // Set the item game.
-                        $(item).find('.game').text(data.game);
-
-                        // Set the item attributes
-                        $(item).attr({
-                            name: data.name,
-                            game: data.game
-                        });
+                    if (m === 'videos') {
+                        item = this.updateMenuVideoItem(data, selected, popup);
+                    } else if (m === 'games') {
+                        item = this.updateMenuGameItem(data, selected, popup);
                     } else {
-                        item = $($('#game-item-template').html());
-
-                        // This item was prevoiusly selected.
-                        if (selected == data.title) {
-                            // Set it back as selected.
-                            $(item).addClass('selected');
-
-                            if (popupShown) {
-                                // Reload the popup's previous state
-                                $('.popup').appendTo($(item)).show();
-                            }
-
-                            selectedUpdated = true;
-                        }
-
-                        // Set the item text.
-                        if (data.followed === true) {
-                            $(item).find('.game').text('* ' + data.title);
-                        } else {
-                            $(item).find('.game').text(data.title);
-                        }
-
-                        // Set the item attributes.
-                        $(item).attr({
-                            name: data.title,
-                            followed: data.followed
-                        });
+                        item = this.updateMenuChannelItem(data, selected, popup);
                     }
 
                     $('.list.' + m + ' .items').append(item);
@@ -242,11 +412,111 @@
                 this.updateMenu(null, 500);
             }
         }
+
+    };
+
+    Guide.prototype.updateMenuChannelItem = function(data, selected, popup) {
+
+        // Load the channel item template
+        var item = $($('#channel-item-template').html());
+
+        // This item was prevoiusly selected.
+        if (selected == data.name) {
+            // Set it back as selected.
+            $(item).addClass('selected');
+
+            if (popup) {
+                // Reload the popup's previous state
+                $('.popup').appendTo($(item)).show();
+            }
+        }
+
+        // Set the item streamer.
+        $(item).find('.streamer').text(data.streamer);
+
+        // Set the item game.
+        $(item).find('.game').text(data.game);
+
+        // Set the item attributes
+        $(item).attr({
+            name: data.name,
+            game: data.game
+        });
+
+        return $(item);
+    };
+
+    Guide.prototype.updateMenuGameItem = function(data, selected, popup) {
+
+        // Load the game item template
+        var item = $($('#game-item-template').html());
+
+        // This item was prevoiusly selected.
+        if (selected == data.title) {
+            // Set it back as selected.
+            $(item).addClass('selected');
+
+            if (popup) {
+                // Reload the popup's previous state
+                $('.popup').appendTo($(item)).show();
+            }
+        }
+
+        // Set the followed class
+        if (data.followed === true) {
+            $(item).addClass('followed');
+        }
+
+        // Set the item text.
+        $(item).find('.game').text(data.title);
+
+        // Set the item attributes.
+        $(item).attr({
+            title: data.title
+        });
+
+        return $(item);
+
+    };
+
+    Guide.prototype.updateMenuVideoItem = function(data, selected, popup) {
+
+        // Load the video item template
+        var item = $($('#video-item-template').html());
+
+        if (selected === data.video) {
+            // Set it back as selected.
+            $(item).addClass('selected');
+
+            if (popup === true) {
+                // Reload the popup's previous state
+                $('.popup').appendTo($(item)).show();
+            }
+        }
+
+        // Set the video streamer.
+        $(item).find('.streamer').text(data.streamer);
+
+        // Set the video game.
+        $(item).find('.game').text(data.game);
+
+        // Set the video title.
+        $(item).find('.title').text(data.title);
+
+        // Set the item attributes
+        $(item).attr({
+            name: data.name,
+            video: data.video
+        });
+
+        return $(item);
+
     };
 
     Guide.prototype.openMenuItem = function() {
         var name = $('.item.selected:visible').attr('name');
         var type = $('.item.selected:visible').attr('type');
+        var video = $('.item.selected:visible').attr('video');
 
         switch (type) {
             case 'channel':
@@ -275,8 +545,23 @@
                 // Load the game search.
                 potato.getGame(name);
                 break;
+            case 'video':
+                // Register the player inputs.
+                potato.input.registerInputs(this);
+
+                // Play the channel.
+                potato.player.play(video, false, true);
+
+                // Show the player
+                $('#players').fadeIn();
+
+                // Hide the content
+                $('#content').fadeOut();
+                break;
             case 'login':
-                $('#login webview').attr('src', 'http://twitch.tv/');
+                // Register only Global inputs.
+                potato.input.registerInputs(this.input);
+                $('#login webview').attr('src', 'http://twitch.tv/login');
                 $('#login').fadeIn();
                 break;
             case 'import':
@@ -300,11 +585,62 @@
         }
     };
 
-    Guide.prototype.updateAll = function() {
-        potato.getFollowed();
-        potato.getFeatured();
-        potato.getChannels();
-        potato.getGames();
+    Guide.prototype.updateAll = function(skipFollowed) {
+
+        // Reset the menu arrays.
+        this.followed = [];
+        this.featured = [];
+        this.channels = [];
+        this.videos = [];
+        this.games = [];
+        this.game = [];
+
+        // Reset the lookup table.
+        this.lookup = {
+            followed: {},
+            featured: {},
+            channels: {},
+            videos: {},
+            games: {},
+            game: {}
+        };
+
+        // Ignore the followed items.
+        if (skipFollowed !== true) {
+            // Get the number of twitch accounts.
+            var num = potato.twitch.accounts.length;
+
+            // Reset the loading table.
+            this.loading = {
+                channels: num,
+                games: num,
+                videos: num
+            };
+
+            // Iterate the accounts.
+            for (var i in potato.twitch.accounts) {
+                // Get the account name.
+                var acc = potato.twitch.accounts[i];
+
+                // Load the followed channels.
+                potato.twitch.followedChannels(acc.account);
+
+                // Load the followed games.
+                potato.twitch.followedGames(acc.account);
+
+                // Load the followed videos.
+                potato.twitch.followedVideos(acc.account);
+            }
+        }
+
+        // Load the featured streams.
+        potato.twitch.getFeatured();
+
+        // Load the top channels.
+        potato.twitch.getChannels();
+
+        // Load the games.
+        potato.twitch.getGames();
 
         // Set the time out here just in case the scrollTo fails.
         // It will be cleared and reset properly on a successful update.
@@ -312,12 +648,13 @@
 
         potato.timers.refresh = setTimeout(function() {
             this.updateAll();
-        }, 1000 * 60 * 1);
+        }.bind(this), 1000 * 60 * 1);
 
         var date = new Date();
 
         // Set the update tithis.
         $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
+
     };
 
     Guide.prototype.updateTime = function() {
@@ -353,7 +690,7 @@
                 return;
             } else {
                 // Update info panel
-                potato.updateInfo();
+                this.updateInfo();
             }
         }
     };
@@ -440,48 +777,46 @@
     };
 
     Guide.prototype.updateInfo = function() {
+
         var type = $('.item.selected:visible').attr('type');
         var menu = $('.list.selected:visible').attr('menu');
         var name = $('.item.selected:visible').attr('name');
         var setting = $('.item.selected:visible').hasClass('setting');
 
-        var html = '';
-
         if (setting) {
-            html = this.showSetting(type);
+            this.showSetting(type);
         } else {
             var data = {};
 
-            for (var item in this[menu]) {
-                if (menu !== 'games') {
-                    if (this[menu][item].name === name) {
-                        data = this[menu][item];
-                        break;
-                    }
-                } else {
-                    if (this[menu][item].title === name) {
-                        data = this[menu][item];
-                        break;
-                    }
-                }
-            }
-
-            if (type === 'channel') {
-                html = this.showChannel(data);
-            } else if (type === 'game') {
-                html = this.showGame(data);
+            if (menu === 'videos') {
+                var video = $('.item.selected:visible').attr('video');
+                console.log(video);
+                this.showVideo(this[menu][this.lookup.videos[video]]);
+            } else if (menu === 'games') {
+                var game = $('.item.selected:visible').attr('title');
+                this.showGame(this[menu][this.lookup.games[game]]);
+            } else {
+                var channel = $('.item.selected:visible').attr('name');
+                this.showChannel(this[menu][this.lookup[menu][channel]]);
             }
         }
 
-        $('#info').removeAttr('menu type name');
-        $('#info').attr({
-            menu: menu,
-            type: type,
-            name: name
-        });
+        $('#info')
+            .removeAttr('menu type name')
+            .attr({
+                menu: menu,
+                type: type,
+                name: name
+            });
+
     };
 
     Guide.prototype.showChannel = function(data) {
+
+        if (data === undefined) {
+            return;
+        }
+
         var html = $($('#channel-template').html());
 
         $(html).find('.title').text(data.title || '');
@@ -495,6 +830,11 @@
     };
 
     Guide.prototype.showGame = function(game) {
+
+        if (game === undefined) {
+            return;
+        }
+
         var html = $($('#game-template').html());
 
         $(html).find('.game').text(game.title);
@@ -520,6 +860,25 @@
             $('#info .sub-head').remove();
             $('#info .head').css('border-bottom', 'none');
         }
+    };
+
+    Guide.prototype.showVideo = function(data) {
+
+        if (data === undefined) {
+            return;
+        }
+
+        // Get the video template
+        var html = $($('#video-template').html());
+
+        $(html).find('.video').text(data.title || '');
+        $(html).find('.streamer').text(data.streamer);
+        $(html).find('.length').text(data.length);
+        $(html).find('.views').text(data.views.deliminate(',') + ' views');
+        this.loadImage(data.preview, $(html).find('.preview'));
+
+        $('#info').empty();
+        $('#info').append(html);
     };
 
     Guide.prototype.showSetting = function(setting) {
@@ -616,7 +975,9 @@
 
     var guide = new Guide(potato);
 
-    $(function() {});
+    $(function() {
+        guide.updateTime();
+    });
 
     potato.guide = guide;
 
