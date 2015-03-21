@@ -86,30 +86,50 @@
         // Register an event for when the webview has finished loading.
         webview.addEventListener('contentload', function() {
 
-            if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize') !== -1) { //}?client_id=60wzh4fjbowe6jwtofuc1jakjfgekry&redirect_uri=https%3A%2F%2Fdl.dropboxusercontent.com%2Fspa%2Ftn9l4tkx2yhpiv3%2Ftwitch%2520potato%2Fpublic%2Fredirect.html&response_type=token&scope=user_read+channel_read') {
-                $(webview).show();
-                $('#accounts').show();
-                this.updateVisibility(acc);
-            } else {
-                $(webview).hide();
-                this.updateVisibility(acc);
+            this.updateVisibility(acc);
 
+            if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize') === -1) {
                 // Initialize the webview.
-                this.post(account, 'Init', [this.clientId]);
+                this.post(account, 'Init', [account, this.clientId]);
             }
 
         }.bind(this));
 
         // Hook the console message event.
         webview.addEventListener('consolemessage', function(e) {
-            //console.log(e);
+            console.log(e);
         });
 
         return acc;
 
     };
 
-    Twitch.prototype.logout = function(acount) {
+    // Removes and clears all of the partition data.
+    Twitch.prototype.remove = function(account) {
+
+        var twitch = this.getTwitch(account);
+
+        if (twitch !== undefined) {
+            twitch.webview.clearData({}, {
+                    appcache: true,
+                    cookies: true,
+                    fileSystems: true,
+                    indexedDB: true,
+                    localStorage: true,
+                    webSQL: true
+                },
+                function() {
+                    // Remove the webview from the document.
+                    $(twitch.webview).remove();
+
+                    // Remove the account from the list.
+                    this.accounts.splice(this.accounts.indexOf(account), 1);
+                }.bind(this));
+        }
+
+    };
+
+    Twitch.prototype.logout = function(account) {
 
         this.post(account, 'Logout');
 
@@ -144,20 +164,40 @@
 
     Twitch.prototype.updateVisibility = function(account) {
 
-        if ($('#accounts webview:visible').length === 0) {
+        $('#accounts .head').text('Enter the login for {0} | Press ESC to Cancel'.format(account.account));
+
+        // Hide all of the webviews.
+        $('#accounts webview').hide();
+
+        // Iterate the webviews.
+        $('#accounts webview').each(function() {
+            // Webview needs user interaction, show this webview.
+            if ($(this).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authenticate') === 0 ||
+                $(this).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize') === 0) {
+                // Register online the global inputs
+                potato.inputs.registerInputs(potato);
+
+                // Show the webview.
+                $(this).show();
+                return $('#accounts').fadeIn();
+            } else {
+                $(this).hide();
+                $('#accounts').fadeOut();
+            }
+        });
+        /*if ($('#accounts webview:visible').length === 0) {
             $('#accounts').hide();
         } else {
             console.log(account);
             // Hide all webviews
             $('#accounts webview').hide();
             // Show the first one
-            ///$('#accounts webview:eq(0)').show();
             $(account.webview).show();
             // Set the title
-            $('#accounts .head').text('Enter the login for {0} | Press ESC to Cancel'.format(account.account));
+
             // Show the container
             $('#accounts').show();
-        }
+        }*/
 
     };
 
@@ -188,14 +228,14 @@
                 args = args || [];
 
                 // Add the account to the beginning of the args.
-                args.unshift(account);
+                //args.unshift(account);
 
                 // Data object we are posting.
                 var data = {
                     method: method,
                     args: args
                 };
-
+                console.log(data);
                 // Post the message to the webview.
                 webview.contentWindow.postMessage(JSON.stringify(data), '*');
             }

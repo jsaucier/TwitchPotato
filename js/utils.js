@@ -1,3 +1,22 @@
+String.prototype.secondsToTime = function() {
+    var totalSecs = this * 1;
+
+    var hours = Math.floor(totalSecs / (60 * 60));
+
+    var divisor_for_minutes = totalSecs % (60 * 60);
+    var minutes = Math.floor(divisor_for_minutes / 60);
+
+    var divisor_for_seconds = divisor_for_minutes % 60;
+    var seconds = Math.ceil(divisor_for_seconds);
+
+    if (seconds < 10) seconds = '0' + seconds;
+    if (minutes < 10) minutes = '0' + minutes;
+
+    var time = minutes + ':' + seconds;
+
+    return (hours > 0) ? hours + ':' + time : time;
+};
+
 String.prototype.format = function() {
     var args = arguments;
     return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function(m, n) {

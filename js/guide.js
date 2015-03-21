@@ -18,6 +18,8 @@
             games: 0
         };
 
+        this.online = {};
+
         this.followed = [];
         this.featured = [];
         this.channels = [];
@@ -25,11 +27,14 @@
         this.games = {};
         this.game = [];
         this.settings = [];
+
         this.timers = {
             info: null,
             time: null,
             refresh: null
         };
+
+        this.showFollowedOnUpdate = false;
     };
 
     Guide.prototype.onInput = function(id, type) {
@@ -39,10 +44,18 @@
         if (input !== undefined && input.type === 'keyup') {
             switch (input.id) {
                 case 'guideUp':
-                    this.updateMenu('up', 200);
+                    if ($('.popup:visible').length === 0) {
+                        this.updateMenu('up', 200);
+                    } else {
+                        this.updatePopupButton('up');
+                    }
                     break;
                 case 'guideDown':
-                    this.updateMenu('down', 200);
+                    if ($('.popup:visible').length === 0) {
+                        this.updateMenu('down', 200);
+                    } else {
+                        this.updatePopupButton('down');
+                    }
                     break;
                 case 'guideLeft':
                     this.updateMenu('left', 200);
@@ -55,7 +68,11 @@
                 case 'guidePageDown':
                     break;
                 case 'guideSelect':
-                    this.openMenuItem();
+                    if ($('.popup:visible').length === 0) {
+                        this.openMenuItem();
+                    } else {
+                        this.openPopupButton();
+                    }
                     break;
                 case 'guideRefresh':
                     this.updateAll();
@@ -82,6 +99,9 @@
                 // Add the channel to the lookup table and the menu array.
                 this.lookup.followed[channel] = this.addMenuItem('followed', json.streams[s]);
             }
+
+            // Add to the list of online streams to handle notifications.
+            this.online[channel] = json.streams[s];
         }
 
         // Decrement the loading channels.
@@ -90,10 +110,10 @@
         // Check to see if we have finished loading.
         if (this.loading.channels === 0) {
             // Update the menu items.
-            this.updateMenuItems('followed');
+            this.updateMenuItems('followed', this.showFollowedOnUpdate);
 
             // Handle the notifications.
-            console.warn('Handle notifications here.');
+            potato.handleNotifications(this.online);
         }
 
     };
@@ -264,7 +284,7 @@
         if (type === 'games') {
 
             return this.games.push({
-                title: data.game.name,
+                game: data.game.name,
                 channels: data.channels,
                 viewers: data.viewers,
                 boxArt: data.game.box.large,
@@ -356,7 +376,7 @@
 
                 // Set the new lookup index.
                 if (menu === 'games') {
-                    this.lookup[m][item.title] = index * 1;
+                    this.lookup[m][item.game] = index * 1;
                 } else if (menu === 'videos') {
                     this.lookup[menu][item.video] = index * 1;
                 } else {
@@ -378,70 +398,72 @@
             menus = [menu];
         }
 
+
         for (var i = 0; i < menus.length; i++) {
-            // Get the menu item.
-            var m = menus[i];
 
-            // Sort the menu items by viewers.
-            this[m].sort(sort);
+            if (menus[i].length > 0) {
+                // Get the menu item.
+                var m = menus[i];
 
-            // Reindex the menu
-            reIndex.call(this, m);
+                // Sort the menu items by viewers.
+                this[m].sort(sort);
 
-            // Save the selected menu item.
-            var selected = $('.list.' + m + ' .items .item.selected');
+                // Reindex the menu
+                reIndex.call(this, m);
 
-            selected =
-                selected.attr('video') ||
-                selected.attr('title') ||
-                selected.attr('name');
+                // Save the selected menu item.
+                var selected = $('.list.' + m + ' .items .item.selected').toArray()[0];
 
-            // Is the popup shown?
-            var popup = ($('.list.' + m + ' .popup:visible').length > 0);
+                // Is the popup shown?
+                var popup = ($('.list.' + m + ' .popup:visible').length > 0);
 
-            if (popup === true) {
-                // Save the popup state by moving it to the body and hiding it.
-                $('.popup').appendTo($('body')).hide();
-            }
-
-            // Get the template item.
-            $('.list.' + m + ' .items').empty();
-
-            if (this[m].length !== 0) {
-                for (var j = 0; j < this[m].length; j++) {
-                    var data = this[m][j];
-
-                    var item;
-
-                    if (m === 'videos') {
-                        item = this.updateMenuVideoItem(data, selected, popup);
-                    } else if (m === 'games') {
-                        item = this.updateMenuGameItem(data, selected, popup);
-                    } else {
-                        item = this.updateMenuChannelItem(data, selected, popup);
-                    }
-
-                    $('.list.' + m + ' .items').append(item);
+                if (popup === true) {
+                    // Save the popup state by moving it to the body and hiding it.
+                    $('.popup').appendTo($('body')).hide();
                 }
 
-                // Show the list.
-                $('.list.' + m).show();
+                // Get the template item.
+                $('.list.' + m + ' .items').empty();
+
+                if (this[m].length !== 0) {
+                    for (var j = 0; j < this[m].length; j++) {
+                        var data = this[m][j];
+
+                        var item;
+
+                        if (m === 'videos') {
+                            item = this.updateMenuVideoItem(data, selected, popup);
+                        } else if (m === 'games') {
+                            item = this.updateMenuGameItem(data, selected, popup);
+                        } else {
+                            item = this.updateMenuChannelItem(data, selected, popup);
+                        }
+
+                        $('.list.' + m + ' .items').append(item);
+                    }
+
+                    // Show the list.
+                    $('.list.' + m).show();
+                } else {
+                    // Hide the list.
+                    $('.list.' + m).hide();
+                }
+
+                if (goto === true) {
+                    // Remove the currently selected list
+                    $('.list.selected').removeClass('selected');
+
+                    // Set the new selected list
+                    $('.list.' + m).addClass('selected');
+
+                    this.updateMenu(true);
+                } else {
+                    // Set a short delay to update so that we do not update multiple times in a row.
+                    this.updateMenu(null, 500);
+                }
             } else {
-                // Hide the list.
-                $('.list.' + m).hide();
-            }
-
-            if (goto === true) {
-                // Remove the currently selected list
-                $('.list.selected').removeClass('selected');
-
-                // Set the new selected list
-                $('.list.' + m).addClass('selected');
-
-                this.updateMenu(true);
-            } else {
-                // Set a short delay to update so that we do not update multiple times in a row.
-                this.updateMenu(null, 500);
+                // Get the template item.
+                $('.list.' + menus[i] + ' .items').empty();
             }
         }
 
@@ -453,7 +475,7 @@
         var item = $($('#channel-item-template').html());
 
         // This item was prevoiusly selected.
-        if (selected == data.name) {
+        if ($(selected).attr('name') == data.name) {
             // Set it back as selected.
             $(item).addClass('selected');
 
@@ -476,6 +498,7 @@
         });
 
         return $(item);
+
     };
 
     Guide.prototype.updateMenuGameItem = function(data, selected, popup) {
@@ -484,7 +507,7 @@
         var item = $($('#game-item-template').html());
 
         // This item was prevoiusly selected.
-        if (selected == data.title) {
+        if ($(selected).attr('game') == data.game) {
             // Set it back as selected.
             $(item).addClass('selected');
 
@@ -500,11 +523,11 @@
         }
 
         // Set the item text.
-        $(item).find('.game').text(data.title);
+        $(item).find('.game').text(data.game);
 
         // Set the item attributes.
         $(item).attr({
-            title: data.title
+            game: data.game
         });
 
         return $(item);
@@ -516,7 +539,7 @@
         // Load the video item template
         var item = $($('#video-item-template').html());
 
-        if (selected === data.video) {
+        if ($(selected).attr('video') === data.video) {
             // Set it back as selected.
             $(item).addClass('selected');
 
@@ -547,6 +570,7 @@
 
     Guide.prototype.openMenuItem = function() {
         var name = $('.item.selected:visible').attr('name');
+        var game = $('.item.selected:visible').attr('game');
         var type = $('.item.selected:visible').attr('type');
         var video = $('.item.selected:visible').attr('video');
 
@@ -562,20 +586,17 @@
                 $('#guide').fadeOut();
                 break;
             case 'game':
-                // Get the game title.
-                var title = $('.item.selected:visible').attr('title');
-
                 // Hide the game menu.
                 $('.list.game').hide();
 
                 // Set the game title
-                $('.list.game .head').text(title);
+                $('.list.game .head').text(game);
 
                 // Update the menu.
                 this.updateMenu();
 
                 // Load the game search.
-                potato.twitch.getGame(title);
+                potato.twitch.getGame(game);
                 break;
             case 'video':
                 // Play the channel.
@@ -593,8 +614,8 @@
                 $('#login webview').attr('src', 'http://twitch.tv/login');
                 $('#login').fadeIn();
                 break;
-            case 'import':
-                $('#import').focus();
+            case 'add-account':
+                $('#add-account').focus();
                 break;
             case 'follow-game':
                 $('#follow-game').focus();
@@ -603,11 +624,7 @@
                 $('#follow-channel').focus();
                 break;
             case 'reset':
-                chrome.storage.sync.clear(function() {
-                    chrome.storage.local.clear(function() {
-                        potato.initialize();
-                    });
-                });
+                potato.resetSettings();
                 break;
             default:
                 break;
@@ -631,6 +648,9 @@
             videos: {},
             games: {},
         };
+
+        // Handle online notifications.
+        this.online = {};
 
         // Ignore the followed items.
         if (skipFollowed !== true) {
@@ -658,7 +678,13 @@
                 // Load the followed videos.
                 potato.twitch.followedVideos(acc.account);
             }
+        } else {
+            this.updateMenuItems('followed');
+            this.updateMenuItems('videos');
         }
+
+        // Jump to followed menu once update is finished.
+        this.showFollowedOnUpdate = skipFollowed;
 
         // Load the featured streams.
         potato.twitch.getFeatured();
@@ -819,7 +845,7 @@
                 var video = $('.item.selected:visible').attr('video');
                 this.showVideo(this[menu][this.lookup.videos[video]]);
             } else if (menu === 'games') {
-                var game = $('.item.selected:visible').attr('title');
+                var game = $('.item.selected:visible').attr('game');
                 this.showGame(this[menu][this.lookup.games[game]]);
             } else {
                 var channel = $('.item.selected:visible').attr('name');
@@ -863,7 +889,7 @@
 
         var html = $($('#game-template').html());
 
-        $(html).find('.game').text(game.title);
+        $(html).find('.game').text(game.game);
 
         if (game.channels === -1) {
             $(html).find('.channels').remove();
@@ -899,7 +925,7 @@
 
         $(html).find('.video').text(data.title || '');
         $(html).find('.streamer').text(data.streamer);
-        $(html).find('.length').text(data.length);
+        $(html).find('.length').text(data.length.toString().secondsToTime());
         $(html).find('.views').text(data.views.deliminate(',') + ' views');
         this.loadImage(data.preview, $(html).find('.preview'));
 
@@ -920,27 +946,49 @@
     };
 
     Guide.prototype.showPopup = function() {
+
+        if ($('.popup:visible').length !== 0) {
+            $('.popup').remove();
+            this.updateMenuScroll();
+            return;
+        }
+
+        $('.popup').remove();
+
         var popup = $($('#popup-template').html());
 
         popup.appendTo($('.lists .item.selected:visible'));
 
         var name = $('.lists .item.selected:visible').attr('name');
+        var game = $('.lists .item.selected:visible').attr('game');
         var type = $('.lists .item.selected:visible').attr('type');
 
         if (type === 'channel') {
             popup.find('.game').show();
         } else if (type === 'game') {
             popup.find('.search').remove();
+            popup.find('.follow-channel').remove();
+            popup.find('.unfollow-channel').remove();
         } else {
             return;
         }
 
-        if (this.followed[type].indexOf(name) !== -1) {
-            popup.find('.follow').remove();
-            popup.find('.unfollow').show();
+        // Update follow-channel button.
+        if (this.lookup.followed[name] !== undefined) {
+            popup.find('.follow-channel').remove();
+            popup.find('.unfollow-channel').show();
         } else {
-            popup.find('.follow').show();
-            popup.find('.unfollow').remove();
+            popup.find('.follow-channel').show();
+            popup.find('.unfollow-channel').remove();
+        }
+
+        // Update follow-game button.
+        if (this.games[this.lookup.games[game]].followed === true) {
+            popup.find('.follow-game').remove();
+            popup.find('.unfollow-game').show();
+        } else {
+            popup.find('.follow-game').show();
+            popup.find('.unfollow-game').remove();
         }
 
         if ($('.popup .button.selected:visible').length === 0) {
@@ -948,6 +996,8 @@
         }
 
         popup.show();
+
+        this.updateMenuScroll();
     };
 
     Guide.prototype.updatePopupButton = function(direction) {
@@ -981,30 +1031,42 @@
         var iType = item.attr('type');
 
         switch (type) {
-            case 'follow':
+            case 'follow-channel':
                 // Follow the channel.
-                potato.follow(iType, name);
+                potato.twitch.followChannel('creditx', name);
                 break;
-            case 'unfollow':
+            case 'unfollow-channel':
                 // Unfollow the channel.
-                potato.unfollow(iType, name);
+                potato.twitch.unfollowChannel('creditx', name);
+                break;
+            case 'follow-game':
+                // Follow the game.
+                potato.twitch.followGame('creditx', game);
+                break;
+            case 'unfollow-game':
+                // Unfollow the game.
+                potato.twitch.unfollowGame('creditx', game);
                 break;
             case 'search':
                 // Search for more games of this type.
                 potato.getGame(game);
                 break;
+            case 'videos':
+                break;
+            default:
+                break;
         }
 
         // Remove the popup menu.
         $('.popup').remove();
+
+        this.updateMenuScroll();
     };
 
-    var guide = new Guide(potato);
+    potato.guide = new Guide(potato);
 
     $(function() {
-        guide.updateTime();
+        potato.guide.updateTime();
     });
-
-    potato.guide = guide;
 
 }(window.Potato, window.jQuery, window.chrome));

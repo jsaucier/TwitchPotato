@@ -13,6 +13,7 @@
         this.addInput('Potato', 'potatoZoomIn', 187, 'Zoom In', 'Increases the application zoom level.');
         this.addInput('Potato', 'potatoZoomOut', 189, 'Zoom Out', 'Decreases the application zoom level.');
         this.addInput('Potato', 'potatoZoomReset', 48, 'Zoom Reset', 'Resets the application zoom level.');
+        this.addInput('Potato', 'potatoSaveSetting', 13, 'Save Setting', 'Saves the setting.');
 
         this.addInput('Guide', 'guideUp', 38, 'Scroll Up', 'Scrolls up the guide items.');
         this.addInput('Guide', 'guideDown', 40, 'Scroll Down', 'Scrolls down the guide items.');
@@ -79,15 +80,17 @@
 
     Input.prototype.getInputFromKeyCode = function(keyCode) {
 
+        var inputs = [];
+
         for (var i in this.inputs) {
             var input = this.inputs[i];
 
             if (input.keyCode === keyCode) {
-                return input;
+                inputs.push(input);
             }
         }
 
-        return undefined;
+        return inputs;
 
     };
 
@@ -273,10 +276,12 @@
     Input.prototype.onInputEvent = function(event) {
 
         // Get the input associated with the keycode.
-        var input = this.getInputFromKeyCode(event.keyCode);
+        var inputs = this.getInputFromKeyCode(event.keyCode);
 
-        // Check to see if an input for this keycode exists.
-        if (input !== undefined) {
+        // Iterate the inputs.
+        for (var i in inputs) {
+            // Get the input
+            var input = inputs[i];
             // Get the registered input.
             var registered = this.getRegisteredInput(input.id, event.type);
             // Check to see the registered input exists,

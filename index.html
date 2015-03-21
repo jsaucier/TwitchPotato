@@ -58,11 +58,8 @@
                             <div class="item setting" type="follow-channel">
                                 <div class="setting">Follow Channel</div>
                             </div>
-                            <div class="item setting" type="follow-game">
-                                <div class="setting">Follow Game</div>
-                            </div>
-                            <div class="item setting" type="import">
-                                <div class="setting">Import Channels</div>
+                            <div class="item setting" type="add-account">
+                                <div class="setting">Add Twitch Account</div>
                             </div>
                             <div class="item setting" type="reset">
                                 <div class="setting">Reset Settings</div>
@@ -113,8 +110,11 @@
             <div class="popup">
                 <div class="main">
                     <div class="button search selected" type="search">Search Game</div>
-                    <div class="button follow" type="follow">Follow</div>
-                    <div class="button unfollow" type="unfollow">Unfollow</div>
+                    <div class="button videos" type="videos">Show Videos</div>
+                    <div class="button follow-channel" type="follow-channel">Follow Channel</div>
+                    <div class="button unfollow-channel" type="unfollow-channel">Unfollow Channel</div>
+                    <!--<div class="button follow-game" type="follow-game">Follow Game</div>
+                    <div class="button unfollow-game" type="unfollow-game">Unfollow Game</div>-->
                 </div>
             </div>
         </script>
@@ -141,11 +141,11 @@
             </div>
         </script>
 
-        <script id="import-setting-template" type="text/template">
+        <script id="add-account-setting-template" type="text/template">
             <div class="head import">
-                <div>Import Channels</div>
+                <div>Add Twitch Account</div>
                 <div class="sub-head">
-                    <div>Import a Twitch account's followed channels.</div>
+                    <div>Add a Twitch account to view and edit followed channels and games.</div>
                 </div>
             </div>
             <div class="left"></div>
@@ -156,7 +156,7 @@
                         <div class="input">
                             Twitch Account
                             <br/>
-                            <input id="import" />
+                            <input id="add-account" />
                         </div>
                     </div>
                 </div>
