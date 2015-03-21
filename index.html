@@ -17,7 +17,7 @@
 
     <body>
 
-        <div id="content" class="content">
+        <div id="guide">
             <div id="time">
                 <div class="updated"></div>
                 <div class="current"></div>
@@ -37,16 +37,16 @@
                         <div class="head">Channels</div>
                         <div class="items"></div>
                     </div>
-                    <div class="list videos" menu="videos">
-                        <div class="head">Videos</div>
-                        <div class="items"></div>
-                    </div>
                     <div class="list games" menu="games">
                         <div class="head" menu="Following">Games</div>
                         <div class="items"></div>
                     </div>
                     <div class="list game" menu="game" style="display: none;">
                         <div class="head">Game</div>
+                        <div class="items"></div>
+                    </div>
+                    <div class="list videos" menu="videos">
+                        <div class="head">Videos</div>
                         <div class="items"></div>
                     </div>
                     <div class="list settings" menu="settings">
@@ -79,13 +79,15 @@
             <div class="selector default"></div>
         </div>
 
-        <div id="login">
-            <div class="head">ESC to Close</div>
-            <webview autosize="on" partition="persist:twitchpotato"></webview>
-        </div>
+        <div id="webviews">
+            <div id="login">
+                <div class="head">ESC to Close</div>
+                <webview autosize="on" partition="persist:twitchpotato"></webview>
+            </div>
 
-        <div id="accounts">
-            <div class="head">ESC to Close</div>
+            <div id="accounts">
+                <div class="head">ESC to Close</div>
+            </div>
         </div>
 
         <div id="notification" class="window">
