@@ -25,7 +25,11 @@
         this.games = {};
         this.game = [];
         this.settings = [];
-        this.timeTimer = null;
+        this.timers = {
+            info: null,
+            time: null,
+            refresh: null
+        };
     };
 
     Guide.prototype.onInput = function(id, type) {
@@ -214,7 +218,7 @@
     };
 
     Guide.prototype.onGame = function(game, json) {
-        console.log(json);
+
         // Reset the games array.
         this.game = [];
 
@@ -548,17 +552,14 @@
 
         switch (type) {
             case 'channel':
-                // Register the player inputs.
-                potato.input.registerInputs(this);
-
                 // Play the channel.
                 potato.player.play(name);
 
                 // Show the player
                 $('#players').fadeIn();
 
-                // Hide the content
-                $('#content').fadeOut();
+                // Hide the guide
+                $('#guide').fadeOut();
                 break;
             case 'game':
                 // Get the game title.
@@ -577,21 +578,18 @@
                 potato.twitch.getGame(title);
                 break;
             case 'video':
-                // Register the player inputs.
-                potato.input.registerInputs(this);
-
                 // Play the channel.
                 potato.player.play(video, false, true);
 
                 // Show the player
                 $('#players').fadeIn();
 
-                // Hide the content
-                $('#content').fadeOut();
+                // Hide the guide
+                $('#guide').fadeOut();
                 break;
             case 'login':
                 // Register only Global inputs.
-                potato.input.registerInputs(this.input);
+                potato.input.registerInputs(potato.input);
                 $('#login webview').attr('src', 'http://twitch.tv/login');
                 $('#login').fadeIn();
                 break;
@@ -673,9 +671,9 @@
 
         // Set the time out here just in case the scrollTo fails.
         // It will be cleared and reset properly on a successful update.
-        clearTimeout(potato.timers.refresh);
+        clearTimeout(this.timers.refresh);
 
-        potato.timers.refresh = setTimeout(function() {
+        this.timers.refresh = setTimeout(function() {
             this.updateAll();
         }.bind(this), 1000 * 60 * 1);
 
@@ -689,13 +687,13 @@
     Guide.prototype.updateTime = function() {
         $('#time .current').text(new Date().toLocaleTimeString());
 
-        clearTimeout(this.timeTimer);
+        clearTimeout(this.timers.time);
 
-        this.timeTimer = setTimeout(this.updateTime.bind(this), 1000);
+        this.timers.time = setTimeout(this.updateTime.bind(this), 1000);
     };
 
     Guide.prototype.updateMenu = function(direction, delay) {
-        if ($('#content').is(':visible')) {
+        if ($('#guide').is(':visible')) {
             // Update the selected menu head
             this.updateMenuList(direction);
 
@@ -710,10 +708,10 @@
 
             if (delay !== undefined) {
                 // Clear timeout
-                clearTimeout(potato.timers.info);
+                clearTimeout(this.timers.info);
 
                 // Set a timer
-                potato.timers.info = setTimeout(function() {
+                this.timers.info = setTimeout(function() {
                     this.updateInfo();
                 }.bind(this), delay);
                 return;
