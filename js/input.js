@@ -4,11 +4,6 @@
         this.inputs = [];
         this.registered = [];
         this.types = ['keyup', 'keydown'];
-
-        // Repeat timer.
-        this.timer = undefined;
-        // Repeat event
-        this.lastEvent = undefined;
     };
 
     Input.prototype.initializeInputs = function() {
@@ -287,7 +282,6 @@
             // Check to see the registered input exists,
             // and is of the proper input type.
             if (registered !== undefined) {
-                console.log(input.id, event.type);
                 // Call our registered callback.
                 registered.callback();
             }
@@ -295,38 +289,13 @@
 
     };
 
-    var input = new Input();
+    potato.input = new Input();
 
     $(function() {
-        input.initializeInputs();
+        potato.input.initializeInputs();
 
-        $(document).keydown(function(event) {
-            // Call the input event.
-            input.onInputEvent(event);
-
-            // Store the event.
-            input.lastEvent = event;
-
-            // Clear the repeat timer.
-            clearInterval(input.timer);
-
-            // Reset the repeat timer.
-            input.timer = setInterval(function() {
-                console.log('repeat:');
-                // Repeat the input event.
-                input.onInputEvent(input.lastEvent);
-            }, 100);
-        });
-
-        $(document).keyup(function(event) {
-            // Call the input event.
-            input.onInputEvent(event);
-
-            // Clear the repeat timer.
-            clearInterval(input.timer);
-        });
+        $(document).keydown(potato.input.onInputEvent.bind(potato.input));
+        $(document).keyup(potato.input.onInputEvent.bind(potato.input));
     });
-
-    potato.input = input;
 
 }(window.Potato, window.jQuery, window.chrome));
