@@ -49,12 +49,12 @@
 
     };
 
-    Player.prototype.getPlayerByChannel = function(channel) {
+    Player.prototype.getPlayerById = function(id) {
 
         for (var i in this.players) {
             var player = this.players[i];
 
-            if (player.channel === channel) {
+            if (player.id === id) {
                 return player;
             }
         }
@@ -85,10 +85,9 @@
 
     };
 
-    Player.prototype.create = function(channel) {
-
-        // Check to see if a player for this channel exists.
-        var player = this.getPlayerByChannel(channel);
+    Player.prototype.create = function(id) {
+        // Check to see if a player for this id exists.
+        var player = this.getPlayerById(id);
 
         if (player === undefined) {
 
@@ -97,13 +96,15 @@
 
             // Append the new player.
             $('#players').append(
-                $($('#player-template').html().format(channel, numPlayers))
+                $($('#player-template').html().format(id, numPlayers))
             );
 
             // Initialize our player object.
             player = {
-                // Set the channel value.
-                channel: channel,
+                // Set the id value.
+                id: id,
+                // Set the laoded value.
+                loaded: false,
                 // Set the flashback value.
                 flashback: undefined,
                 // Set the muted value.
@@ -122,7 +123,7 @@
         return player;
     };
 
-    Player.prototype.play = function(channel, create) {
+    Player.prototype.play = function(id, create, isVideo) {
 
         // Get the number of current players
         var numPlayers = this.players.length;
@@ -132,7 +133,7 @@
             return;
         }
 
-        var player = this.getPlayerByChannel(channel);
+        var player = this.getPlayerById(id);
 
         // Check to see if this player already exists.
         if (player !== undefined) {
@@ -143,26 +144,26 @@
         }
 
         if (create === true) {
-            // Create a new player to display the channel.
-            player = this.getPlayerByChannel(channel) || this.create(channel);
+            // Create a new player.
+            player = this.getPlayerById(id) || this.create(id);
         } else {
             // Get the main player or create a new one if one doesn't exist.
-            player = this.getPlayerByNumber(0) || this.create(channel);
+            player = this.getPlayerByNumber(0) || this.create(id);
         }
 
-        if (player.loaded === undefined) {
-            // Load the stream after the webview has loaded.
+        if (player.loaded !== true) {
+            // Load the player after the webview has loaded.
             player.webview.on('loadcommit', function() {
                 setTimeout(function() {
-                    // Load the channel.
-                    this.load(player, channel);
+                    // Load the player.
+                    this.load(player, id, isVideo);
                     // Set the player as loaded.
                     player.loaded = true;
                 }.bind(this), 1000);
             }.bind(this));
         } else {
-            // Load the channel.
-            this.load(player, channel);
+            // Load the player.
+            this.load(player, id, isVideo);
         }
 
         // Show the player.
@@ -175,7 +176,7 @@
         // Get the current player.
         var current = this.getPlayerByNumber(0);
 
-        // Get the selected channel.
+        // Get the selected player.
         var player = this.getSelectedPlayer();
 
         if (player !== undefined) {
@@ -311,7 +312,7 @@
         var player = this.getSelectedPlayer(0);
 
         if (player.flashback !== undefined) {
-            // Load the previous channel.
+            // Load the previous player.
             this.load(player, player.flashback);
         }
 
@@ -337,17 +338,22 @@
 
     };
 
-    Player.prototype.load = function(player, channel) {
+    Player.prototype.load = function(player, id, video) {
 
         // Set the flashback value.
         player.flashback =
-            (player.channel !== channel) ? player.channel : player.flashback;
+            (player.id !== id) ? player.id : player.flashback;
 
-        // Set the channel value.
-        player.channel = channel;
+        // Set the player id value.
+        player.id = id;
 
-        // Load the channel.
-        this.executeEmbedMethod(player, 'loadStream', channel);
+        if (video !== true) {
+            // Load the player.
+            this.executeEmbedMethod(player, 'loadStream', id);
+        } else {
+            // Load the video.
+            this.executeEmbedMethod(player, 'loadVideo', id);
+        }
 
     };
 
@@ -383,7 +389,7 @@
 
     $(function() {
         // Create an undefined player.
-        player.play();
+        //player.play();
     });
 
     potato.player = player;
