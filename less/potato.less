@@ -167,14 +167,20 @@ body {
                         &:first-child {
                             margin-top: 0;
                         }
+                        &.followed {
+                            background-color: #555;
+                        }
                         &.selected {
                             background-color: #6441a5;
                         }
-                        &.channel {
-                            .streamer {
-                                
-                            }
+                        &[type="channel"] {
                             .game {
+                                font-size: 0.9em;
+                                color: #bbb;
+                            }
+                        }
+                        &[type="video"] {
+                            .title {
                                 font-size: 0.9em;
                                 color: #bbb;
                             }
@@ -261,13 +267,13 @@ body {
     }
 }
 #players {
+    //display: none!important;
     display: none;
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
-    left: 0;
     .selector {
         position: fixed;
         display: none;
@@ -280,7 +286,6 @@ body {
                 bottom: 0;
                 left: 0;
                 right: 0;
-                left: 0;
                 height: 100%;
                 width: 100%;
                 z-index: 1;
@@ -367,31 +372,27 @@ body {
         }
     }
 }
-#login {
+#login,
+#accounts {
     display: none;
     position: fixed;
-    top: 20px;
-    bottom: 20px;
-    right: 20px;
-    left: 20px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
     background-color: #191919;
-    border: 2px solid #6441a5;
+    height: 100%;
+    padding: 20px;
     .head {
+        position: absolute;
         background-color: #6441a5;
         padding: 5px;
         font-size: 1.2em;
     }
-    .content {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-        top: 20px;
-        webview {
-            width: 100%;
-            height: 100%;
-            padding-top: 30px;
-        }
+    webview {
+        width: 100%;
+        height: 100%;
+        border: 5px solid #6441a5;
     }
 }
 ::-webkit-scrollbar {
