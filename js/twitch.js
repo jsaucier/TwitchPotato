@@ -32,6 +32,14 @@
         });
     };
 
+    Twitch.prototype.getGame = function(game) {
+        $.ajax({
+            url: 'https://api.twitch.tv/kraken/streams?game={0}&limit=100'.format(game),
+            success: function(json) {
+                potato.guide.onGame(game, json);
+            }
+        });
+    };
 
 
 

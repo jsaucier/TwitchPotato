@@ -213,6 +213,34 @@
 
     };
 
+    Guide.prototype.onGame = function(game, json) {
+        console.log(json);
+        // Reset the games array.
+        this.game = [];
+
+        // Reset the games lookup table.
+        this.lookup.game = {};
+
+        // Add the games to the menu.
+        for (var s in json.streams) {
+            // Get the stream name.
+            var name = json.streams[s].channel.name;
+
+            // Ensure we have not added the game yet.
+            if (this.lookup.game[name] === undefined) {
+                // Add the game to the lookup table and the menu array.
+                this.lookup.game[name] = this.addMenuItem('game', json.streams[s]);
+            }
+        }
+
+        // Set the game menu name.
+        $('.list.game .head').text(game);
+
+        // Update the menu items and display it.
+        this.updateMenuItems('game', true);
+
+    };
+
     Guide.prototype.addMenuItem = function(type, data, followed) {
 
         if (type === 'video') {
@@ -533,17 +561,20 @@
                 $('#content').fadeOut();
                 break;
             case 'game':
+                // Get the game title.
+                var title = $('.item.selected:visible').attr('title');
+
                 // Hide the game menu.
                 $('.list.game').hide();
 
                 // Set the game title
-                $('.list.game .head').text(name);
+                $('.list.game .head').text(title);
 
                 // Update the menu.
                 this.updateMenu();
 
                 // Load the game search.
-                potato.getGame(name);
+                potato.twitch.getGame(title);
                 break;
             case 'video':
                 // Register the player inputs.
@@ -593,7 +624,6 @@
         this.channels = [];
         this.videos = [];
         this.games = [];
-        this.game = [];
 
         // Reset the lookup table.
         this.lookup = {
@@ -602,7 +632,6 @@
             channels: {},
             videos: {},
             games: {},
-            game: {}
         };
 
         // Ignore the followed items.
@@ -790,7 +819,6 @@
 
             if (menu === 'videos') {
                 var video = $('.item.selected:visible').attr('video');
-                console.log(video);
                 this.showVideo(this[menu][this.lookup.videos[video]]);
             } else if (menu === 'games') {
                 var game = $('.item.selected:visible').attr('title');
