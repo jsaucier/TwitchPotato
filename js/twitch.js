@@ -59,6 +59,15 @@
         });
     };
 
+    Twitch.prototype.getVideo = function(channel) {
+        $.ajax({
+            url: 'https://api.twitch.tv/kraken/channels/{0}/videos?limit=100'.format(channel),
+            success: function(json) {
+                potato.guide.onVideo(channel, json);
+            }
+        });
+    };
+
     Twitch.prototype.new = function(account) {
 
         // Load the webview template
@@ -97,7 +106,7 @@
 
         // Hook the console message event.
         webview.addEventListener('consolemessage', function(e) {
-            console.log(e);
+            //console.log(e);
         });
 
         return acc;
@@ -185,19 +194,6 @@
                 $('#accounts').fadeOut();
             }
         });
-        /*if ($('#accounts webview:visible').length === 0) {
-            $('#accounts').hide();
-        } else {
-            console.log(account);
-            // Hide all webviews
-            $('#accounts webview').hide();
-            // Show the first one
-            $(account.webview).show();
-            // Set the title
-
-            // Show the container
-            $('#accounts').show();
-        }*/
 
     };
 
@@ -235,7 +231,7 @@
                     method: method,
                     args: args
                 };
-                console.log(data);
+
                 // Post the message to the webview.
                 webview.contentWindow.postMessage(JSON.stringify(data), '*');
             }

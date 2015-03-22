@@ -32,6 +32,7 @@
         this.addInput('Player', 'playerMute', 77, 'Mute Volume', '');
         this.addInput('Player', 'playerFlashback', 70, 'Previous Channel', '');
         this.addInput('Player', 'playerSelect', 13, 'Select Channel', '');
+        this.addInput('Player', 'playerLayout', 72, 'Change layout', '');
         this.addInput('Player', 'playerFullscreenToggle', 85, 'Toggle Fullscreen', '');
         this.addInput('Player', 'playerFullscreenEnter', 79, 'Enter Fullscreen', '');
         this.addInput('Player', 'playerFullscreenExit', 73, 'Exit Fullscreen', '');

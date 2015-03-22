@@ -8,6 +8,7 @@
             featured: {},
             channels: {},
             videos: {},
+            video: {},
             games: {},
             game: {}
         };
@@ -24,6 +25,7 @@
         this.featured = [];
         this.channels = [];
         this.videos = [];
+        this.video = [];
         this.games = {};
         this.game = [];
         this.settings = [];
@@ -165,7 +167,7 @@
             // Ensure we have not added the video yet.
             if (this.lookup.videos[id] === undefined) {
                 // Add the video to the lookup table and the menu array.
-                this.lookup.videos[id] = this.addMenuItem('video', json.videos[v]);
+                this.lookup.videos[id] = this.addMenuItem('videos', json.videos[v]);
             }
         }
 
@@ -265,17 +267,46 @@
 
     };
 
+    Guide.prototype.onVideo = function(channel, json) {
+
+        // Reset the video array.
+        this.video = [];
+
+        // Reset the video lookup table.
+        this.lookup.video = {};
+
+        // Add the video to the menu.
+        for (var v in json.videos) {
+            // Get the video id.
+            var id = json.videos[v]._id;
+
+            // Ensure we have not added the video yet.
+            if (this.lookup.video[id] === undefined) {
+                // Add the video to the lookup table and the menu array.
+                this.lookup.video[id] = this.addMenuItem('video', json.videos[v]);
+            }
+        }
+
+        // Set the video menu name.
+        $('.list.video .head').text(channel);
+
+        // Update the menu items and display it.
+        this.updateMenuItems('video', true);
+
+    };
+
     Guide.prototype.addMenuItem = function(type, data, followed) {
 
-        if (type === 'video') {
+        if (type === 'videos' ||
+            type === 'video') {
 
-            return this.videos.push({
+            return this[type].push({
                 title: data.title,
                 name: data.channel.name,
                 streamer: data.channel.display_name,
                 views: data.views,
                 length: data.length,
-                preview: data.preview.replace(/320x240/, '640x360'),
+                preview: (data.preview || '').replace(/320x240/, '640x360'),
                 video: data._id
             }) - 1;
 
@@ -306,7 +337,7 @@
 
         }
 
-        console.error('Failed to added a menu item.', type, data);
+        console.error('Failed to add a menu item.', type, data);
 
     };
 
@@ -314,8 +345,10 @@
     Guide.prototype.createObjectURL = function(blob) {
 
         var objURL = URL.createObjectURL(blob);
+
         this.objectURLs = this.objectURLs || [];
         this.objectURLs.push(objURL);
+
         return objURL;
 
     };
@@ -376,8 +409,8 @@
 
                 // Set the new lookup index.
                 if (menu === 'games') {
-                    this.lookup[m][item.game] = index * 1;
-                } else if (menu === 'videos') {
+                    this.lookup[menu][item.game] = index * 1;
+                } else if (menu === 'videos' || menu === 'video') {
                     this.lookup[menu][item.video] = index * 1;
                 } else {
                     this.lookup[menu][item.name] = index * 1;
@@ -390,6 +423,7 @@
             'featured',
             'channels',
             'videos',
+            'video',
             'games',
             'game'
         ];
@@ -405,11 +439,14 @@
                 // Get the menu item.
                 var m = menus[i];
 
-                // Sort the menu items by viewers.
-                this[m].sort(sort);
+                // Don't sort videos.
+                if (m !== 'videos' && m !== 'video') {
+                    // Sort the menu items by viewers.
+                    this[m].sort(sort);
 
-                // Reindex the menu
-                reIndex.call(this, m);
+                    // Reindex the menu
+                    reIndex.call(this, m);
+                }
 
                 // Save the selected menu item.
                 var selected = $('.list.' + m + ' .items .item.selected').toArray()[0];
@@ -431,7 +468,7 @@
 
                         var item;
 
-                        if (m === 'videos') {
+                        if (m === 'videos' || m === 'video') {
                             item = this.updateMenuVideoItem(data, selected, popup);
                         } else if (m === 'games') {
                             item = this.updateMenuGameItem(data, selected, popup);
@@ -640,14 +677,12 @@
         this.videos = [];
         this.games = [];
 
-        // Reset the lookup table.
-        this.lookup = {
-            followed: {},
-            featured: {},
-            channels: {},
-            videos: {},
-            games: {},
-        };
+        // Reset the lookup tables.
+        this.lookup.followed = {};
+        this.lookup.featured = {};
+        this.lookup.channels = {};
+        this.lookup.videos = {};
+        this.lookup.games = {};
 
         // Handle online notifications.
         this.online = {};
@@ -841,9 +876,9 @@
         } else {
             var data = {};
 
-            if (menu === 'videos') {
+            if (menu === 'videos' || menu === 'video') {
                 var video = $('.item.selected:visible').attr('video');
-                this.showVideo(this[menu][this.lookup.videos[video]]);
+                this.showVideo(this[menu][this.lookup[menu][video]]);
             } else if (menu === 'games') {
                 var game = $('.item.selected:visible').attr('game');
                 this.showGame(this[menu][this.lookup.games[game]]);
@@ -964,17 +999,19 @@
         var type = $('.lists .item.selected:visible').attr('type');
 
         if (type === 'channel') {
-            popup.find('.game').show();
+            //popup.find('.game').show();
         } else if (type === 'game') {
-            popup.find('.search').remove();
-            popup.find('.follow-channel').remove();
-            popup.find('.unfollow-channel').remove();
+            popup.find('.search-game').remove();
+            popup.find('.search-video').remove();
+            popup.find('.pip').remove();
+            //popup.find('.follow-channel').remove();
+            //popup.find('.unfollow-channel').remove();
         } else {
             return;
         }
 
         // Update follow-channel button.
-        if (this.lookup.followed[name] !== undefined) {
+        /*if (this.lookup.followed[name] !== undefined) {
             popup.find('.follow-channel').remove();
             popup.find('.unfollow-channel').show();
         } else {
@@ -989,7 +1026,7 @@
         } else {
             popup.find('.follow-game').show();
             popup.find('.unfollow-game').remove();
-        }
+        }*/
 
         if ($('.popup .button.selected:visible').length === 0) {
             $('.popup .button:eq(0)').addClass('selected');
@@ -1031,28 +1068,41 @@
         var iType = item.attr('type');
 
         switch (type) {
+            case 'view-pip':
+                // Play the channel in pip mode.
+                potato.player.play(name, true);
+
+                // Show the player
+                $('#players').fadeIn();
+
+                // Hide the guide
+                $('#guide').fadeOut();
+                break;
+            case 'search-games':
+                // Search for more games of this type.
+                potato.twitch.getGame(game);
+                break;
+            case 'search-videos':
+                // Search for videos from this streamer
+                potato.twitch.getVideo(name);
+                break;
             case 'follow-channel':
                 // Follow the channel.
-                potato.twitch.followChannel('creditx', name);
+                //potato.twitch.followChannel('creditx', name);
                 break;
             case 'unfollow-channel':
                 // Unfollow the channel.
-                potato.twitch.unfollowChannel('creditx', name);
+                //potato.twitch.unfollowChannel('creditx', name);
                 break;
             case 'follow-game':
                 // Follow the game.
-                potato.twitch.followGame('creditx', game);
+                //potato.twitch.followGame('creditx', game);
                 break;
             case 'unfollow-game':
                 // Unfollow the game.
-                potato.twitch.unfollowGame('creditx', game);
+                //potato.twitch.unfollowGame('creditx', game);
                 break;
-            case 'search':
-                // Search for more games of this type.
-                potato.getGame(game);
-                break;
-            case 'videos':
-                break;
+
             default:
                 break;
         }

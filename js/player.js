@@ -36,6 +36,17 @@
                 case 'playerSelect':
                     this.select();
                     break;
+                case 'playerLayout':
+                    var layout;
+
+                    if (this.layout === 'default') {
+                        layout = 'equal';
+                    } else {
+                        layout = 'default';
+                    }
+
+                    this.updateLayout(layout);
+                    break;
                 case 'playerFullscreenToggle':
                     this.fullscreen();
                     break;
@@ -184,6 +195,8 @@
         // Show the player.
         $('#players').fadeIn();
 
+        this.updateLayout();
+
     };
 
     Player.prototype.select = function() {
@@ -225,13 +238,13 @@
             } else {
                 // Stop the player.
                 this.executeEmbedMethod(player, 'pauseVideo');
+
+                // Player is no longer playing.
+                player.isPlaying = false;
+
+                // Show the guide.
+                potato.toggleGuide();
             }
-
-            // Player is no longer playing.
-            player.isPlaying = false;
-
-            // Show the guide.
-            potato.toggleGuide();
         }
 
     };
@@ -289,6 +302,7 @@
 
             // Update the number.
             player.number = parseInt(i);
+
             // Update the webview
             player.webview.attr('number', i);
         }
@@ -318,6 +332,7 @@
 
         // Remove the selected class from the player.
         $('#players .player').removeClass('selected');
+
         // Reset the selector.
         $('#players .selector').removeAttr('number');
 
@@ -332,25 +347,33 @@
 
         // Set the selected item.
         $('#players .player[number="' + index + '"]').addClass('selected');
+
         // Set the selector
         $('#players .selector').attr('number', index);
 
+        $('#players .selector').attr('number', index);
+        console.log(0, $('#players .selector').attr('number'));
+
         // Update the player numbers.
         this.updateNumbers();
-
+        console.log(1, $('#players .selector').attr('number'));
         // Clear the selected timer.
         clearTimeout(this.selectTimer);
 
         // Set a new selected timer.
         this.selectTimer = setTimeout(this.clearSelected, 5000);
+        console.log(2, $('#players .selector').attr('number'));
 
     };
 
     Player.prototype.clearSelected = function() {
+
         // Remove the selected class from the player.
         $('#players .player').removeClass('selected');
+
         // Reset the selector.
         $('#players .selector').removeAttr('number');
+
     };
 
     Player.prototype.flashback = function() {

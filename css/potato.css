@@ -281,7 +281,7 @@ body {
   right: 0;
   height: 100%;
   width: 100%;
-  z-index: 1;
+  z-index: 1001;
 }
 #players .selector.default[number="1"] {
   display: block;
@@ -308,6 +308,38 @@ body {
   width: 340px;
   z-index: 1001;
 }
+#players .selector.equal[number="0"] {
+  display: block;
+  top: 0;
+  left: 0;
+  height: 50%;
+  width: 50%;
+  z-index: 1001;
+}
+#players .selector.equal[number="1"] {
+  display: block;
+  top: 0;
+  left: 50%;
+  height: 50%;
+  width: 50%;
+  z-index: 1001;
+}
+#players .selector.equal[number="2"] {
+  display: block;
+  left: 0;
+  top: 50%;
+  height: 50%;
+  width: 50%;
+  z-index: 1001;
+}
+#players .selector.equal[number="3"] {
+  display: block;
+  left: 50%;
+  top: 50%;
+  height: 50%;
+  width: 50%;
+  z-index: 1001;
+}
 #players .player {
   position: fixed;
 }
@@ -318,7 +350,7 @@ body {
   left: 0;
   height: 100%;
   width: 100%;
-  z-index: 0;
+  z-index: 1000;
 }
 #players .player.default[number="1"] {
   bottom: 35px;
@@ -340,6 +372,38 @@ body {
   right: 35px;
   height: 200px;
   width: 340px;
+  z-index: 1000;
+}
+#players .player.equal[number="0"] {
+  display: block;
+  top: 0;
+  left: 0;
+  height: 50%;
+  width: 50%;
+  z-index: 1000;
+}
+#players .player.equal[number="1"] {
+  display: block;
+  top: 0;
+  left: 50%;
+  height: 50%;
+  width: 50%;
+  z-index: 1000;
+}
+#players .player.equal[number="2"] {
+  display: block;
+  left: 0;
+  top: 50%;
+  height: 50%;
+  width: 50%;
+  z-index: 1000;
+}
+#players .player.equal[number="3"] {
+  display: block;
+  left: 50%;
+  top: 50%;
+  height: 50%;
+  width: 50%;
   z-index: 1000;
 }
 #players .player webview.video {

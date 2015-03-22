@@ -95,7 +95,7 @@
 
     Potato.prototype.toggleGuide = function() {
 
-        if ($('#guide').is(':visible')) {
+        if ($('#guide:visible').length !== 0) {
             $('#players').fadeIn();
             $('#guide').fadeOut();
             this.input.registerInputs(this.player);

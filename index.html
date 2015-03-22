@@ -49,6 +49,10 @@
                         <div class="head">Videos</div>
                         <div class="items"></div>
                     </div>
+                    <div class="list video" menu="video" style="display: none;">
+                        <div class="head">Video</div>
+                        <div class="items"></div>
+                    </div>
                     <div class="list settings" menu="settings">
                         <div class="head">Settings</div>
                         <div class="items">
@@ -109,11 +113,12 @@
         <script id="popup-template" type="text/template">
             <div class="popup">
                 <div class="main">
-                    <div class="button search selected" type="search">Search Game</div>
-                    <div class="button videos" type="videos">Show Videos</div>
-                    <div class="button follow-channel" type="follow-channel">Follow Channel</div>
+                    <div class="button view-pip selected" type="view-pip">View PiP</div>
+                    <div class="button search-games" type="search-games">Search Game</div>
+                    <div class="button search-videos" type="search-videos">Search Videos</div>
+                    <!--<div class="button follow-channel" type="follow-channel">Follow Channel</div>
                     <div class="button unfollow-channel" type="unfollow-channel">Unfollow Channel</div>
-                    <!--<div class="button follow-game" type="follow-game">Follow Game</div>
+                    <div class="button follow-game" type="follow-game">Follow Game</div>
                     <div class="button unfollow-game" type="unfollow-game">Unfollow Game</div>-->
                 </div>
             </div>
