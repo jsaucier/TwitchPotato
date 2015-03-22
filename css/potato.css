@@ -128,10 +128,13 @@ body {
   margin: 5px;
 }
 #guide .lists .content-lists .list {
-  display: flex;
+  display: none;
   flex-direction: column;
   height: 2.6em;
   background-color: #222;
+}
+#guide .lists .content-lists .list.settings {
+  display: flex;
 }
 #guide .lists .content-lists .list.selected {
   flex: auto;

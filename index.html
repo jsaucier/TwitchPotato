@@ -9,9 +9,9 @@
         <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="js/utils.js"></script>
         <script type="text/javascript" src="js/potato.js"></script>
+        <script type="text/javascript" src="js/input.js"></script>
         <script type="text/javascript" src="js/guide.js"></script>
         <script type="text/javascript" src="js/player.js"></script>
-        <script type="text/javascript" src="js/input.js"></script>
         <script type="text/javascript" src="js/twitch.js"></script>
     </head>
 
@@ -43,10 +43,6 @@
                     </div>
                     <div class="list game" menu="game" style="display: none;">
                         <div class="head">Game</div>
-                        <div class="items"></div>
-                    </div>
-                    <div class="list videos" menu="videos">
-                        <div class="head">Videos</div>
                         <div class="items"></div>
                     </div>
                     <div class="list video" menu="video" style="display: none;">
@@ -123,10 +119,10 @@
                     <div class="button view-pip selected" type="view-pip">View PiP</div>
                     <div class="button search-games" type="search-games">Search Game</div>
                     <div class="button search-videos" type="search-videos">Search Videos</div>
-                    <!--<div class="button follow-channel" type="follow-channel">Follow Channel</div>
+                    <div class="button follow-channel" type="follow-channel">Follow Channel</div>
                     <div class="button unfollow-channel" type="unfollow-channel">Unfollow Channel</div>
                     <div class="button follow-game" type="follow-game">Follow Game</div>
-                    <div class="button unfollow-game" type="unfollow-game">Unfollow Game</div>-->
+                    <div class="button unfollow-game" type="unfollow-game">Unfollow Game</div>
                 </div>
             </div>
         </script>
@@ -332,10 +328,9 @@
             <webview class="player default" number="{1}" autosize="on" partition="persist:twitchpotato" src="http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true"></webview>
         </script>
 
-        <script id="account-template" type="text/template">
-            <webview class="account" account="{0}" autosize="on" partition="persist:account_{0}" src="https://dl.dropboxusercontent.com/spa/tn9l4tkx2yhpiv3/twitch%20potato/public/redirect.html"></webview>
+        <script id="twitch-template" type="text/template">
+            <webview username="{0}" autosize="on" partition="persist:twitch_{0}" src="https://dl.dropboxusercontent.com/spa/tn9l4tkx2yhpiv3/twitch%20potato/public/redirect.html"></webview>
         </script>
-
 
         <script id="chat-template" type="text/template">
             <webview autosize="on" partition="persist:twitchpotato"></webview>

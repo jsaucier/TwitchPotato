@@ -52,7 +52,7 @@
         this.loadStoredSettings();
 
         // Update the guide.
-        this.guide.updateAll(true);
+        //this.guide.updateAll(true);
     };
 
     Potato.prototype.loadStoredSettings = function() {
@@ -67,7 +67,7 @@
             // Load the twitch accounts.
             for (var i in this.accounts) {
                 // Load the twitch account.
-                this.twitch.new(this.accounts[i]);
+                this.twitch.authorize(this.accounts[i]);
             }
         }.bind(this));
     };
@@ -117,11 +117,12 @@
 
     };
 
-    Potato.prototype.handleNotifications = function(channels) {
+    Potato.prototype.handleNotifications = function() {
 
         $('#notification ul').empty();
 
         var channel;
+        var channels = this.guide.online;
         var online = {};
 
         for (var c in channels) {
@@ -245,7 +246,7 @@
     };
 
     Potato.prototype.addAccount = function(account) {
-        console.log(account);
+
         // Ensure we haven't already added the account.
         if (this.accounts.indexOf(account) === -1) {
             // Add the account to the list.
@@ -262,11 +263,17 @@
 
     };
 
+    Potato.prototype.ajaxStopped = function() {
+        this.handleNotifications();
+
+        this.guide.onAjaxCompleted();
+    };
 
 
     var potato = new Potato();
 
     $(function() {
+        $(document).ajaxStop(potato.ajaxStopped.bind(potato));
         potato.initialize();
     });
 

@@ -7,16 +7,9 @@
             followed: {},
             featured: {},
             channels: {},
-            videos: {},
             video: {},
             games: {},
             game: {}
-        };
-
-        this.loading = {
-            channels: 0,
-            videos: 0,
-            games: 0
         };
 
         this.online = {};
@@ -24,9 +17,8 @@
         this.followed = [];
         this.featured = [];
         this.channels = [];
-        this.videos = [];
         this.video = [];
-        this.games = {};
+        this.games = [];
         this.game = [];
         this.settings = [];
 
@@ -36,7 +28,7 @@
             refresh: null
         };
 
-        this.showFollowedOnUpdate = false;
+        this.firstUpdate = true;
     };
 
     Guide.prototype.onInput = function(id, type) {
@@ -89,6 +81,18 @@
 
     };
 
+    Guide.prototype.onAjaxCompleted = function() {
+
+        if (this.firstUpdate === true) {
+            this.updateMenuItems('followed', true);
+            potato.guide.updateMenuItems('featured');
+            potato.guide.updateMenuItems('channels');
+            potato.guide.updateMenuItems('games');
+            this.firstUpdate = false;
+        }
+
+    };
+
     Guide.prototype.onFollowedChannels = function(account, json) {
 
         // Add the followed channels to the menu.
@@ -106,78 +110,9 @@
             this.online[channel] = json.streams[s];
         }
 
-        // Decrement the loading channels.
-        this.loading.channels--;
-
-        // Check to see if we have finished loading.
-        if (this.loading.channels === 0) {
+        if (this.firstUpdate !== true) {
             // Update the menu items.
-            this.updateMenuItems('followed', this.showFollowedOnUpdate);
-
-            // Handle the notifications.
-            potato.handleNotifications(this.online);
-        }
-
-    };
-
-    Guide.prototype.onFollowedGames = function(account, json) {
-
-        // Add the followed games to the menu.
-        for (var f in json.follows) {
-            // Get the game name.
-            var game = json.follows[f].name;
-
-            // Ensure we have not added the game yet.
-            if (this.lookup.games[game] === undefined) {
-                // Add the video to the lookup table and the menu array.
-                this.lookup.games[game] = this.addMenuItem('games', {
-                    viewers: -1,
-                    channels: -1,
-                    game: {
-                        name: game,
-                        box: {
-                            large: 'http://static-cdn.jtvnw.net/ttv-boxart/{0}-272x380.jpg'.format(encodeURIComponent(game))
-                        }
-                    }
-                }, true);
-            } else {
-                // Set the game as followed.
-                this.games[this.lookup.games[game]].followed = true;
-            }
-        }
-
-        // Decrement the loading channels.
-        this.loading.games--;
-
-        // Check to see if we have finished loading.
-        if (this.loading.games === 0) {
-            // Update the menu items.
-            this.updateMenuItems('games');
-        }
-
-    };
-
-    Guide.prototype.onFollowedVideos = function(account, json) {
-
-        // Add the followed videos to the menu.
-        for (var v in json.videos) {
-            // Get the video id.
-            var id = json.videos[v]._id;
-
-            // Ensure we have not added the video yet.
-            if (this.lookup.videos[id] === undefined) {
-                // Add the video to the lookup table and the menu array.
-                this.lookup.videos[id] = this.addMenuItem('videos', json.videos[v]);
-            }
-        }
-
-        // Decrement the loading channels.
-        this.loading.videos--;
-
-        // Check to see if we have finished loading.
-        if (this.loading.videos === 0) {
-            // Update the menu items.
-            this.updateMenuItems('videos');
+            this.updateMenuItems('followed');
         }
 
     };
@@ -196,8 +131,10 @@
             }
         }
 
-        // Update the menu items.
-        this.updateMenuItems('featured');
+        if (this.firstUpdate !== true) {
+            // Update the menu items.
+            this.updateMenuItems('featured');
+        }
 
     };
 
@@ -215,27 +152,54 @@
             }
         }
 
-        // Update the menu items.
-        this.updateMenuItems('channels');
+        if (this.firstUpdate !== true) {
+            // Update the menu items.
+            this.updateMenuItems('channels');
+        }
 
     };
 
-    Guide.prototype.onGames = function(json) {
+    Guide.prototype.onGames = function(account, json) {
 
         // Add the games to the menu.
-        for (var s in json.top) {
+        $.each(json.top, function(index, value) {
             // Get the game name.
-            var game = json.top[s].game.name;
+            var game = value.game.name;
 
             // Ensure we have not added the game yet.
             if (this.lookup.games[game] === undefined) {
                 // Add the game to the lookup table and the menu array.
-                this.lookup.games[game] = this.addMenuItem('games', json.top[s]);
+                this.lookup.games[game] = this.addMenuItem('games', value);
             }
-        }
+        }.bind(this));
 
-        // Update the menu items.
-        this.updateMenuItems('games');
+        // Get the followed games.
+        $.each(json.follows, function(index, value) {
+
+            var game = value.name;
+            // Ensure we have not added the game yet.
+            if (this.lookup.games[game] === undefined) {
+                // Add the video to the lookup table and the menu array.
+                this.lookup.games[game] = this.addMenuItem('games', {
+                    viewers: -1,
+                    channels: -1,
+                    game: {
+                        name: game,
+                        box: {
+                            large: 'http://static-cdn.jtvnw.net/ttv-boxart/{0}-272x380.jpg'.format(encodeURIComponent(game))
+                        }
+                    }
+                }, true);
+            } else {
+                // Set the game as followed.
+                this.games[this.lookup.games[game]].followed = true;
+            }
+        }.bind(this));
+
+        if (this.firstUpdate !== true) {
+            // Update the menu items.
+            this.updateMenuItems('games');
+        }
 
     };
 
@@ -262,8 +226,10 @@
         // Set the game menu name.
         $('.list.game .head').text(game);
 
-        // Update the menu items and display it.
-        this.updateMenuItems('game', true);
+        if (this.firstUpdate !== true) {
+            // Update the menu items and display it.
+            this.updateMenuItems('game', true);
+        }
 
     };
 
@@ -290,15 +256,16 @@
         // Set the video menu name.
         $('.list.video .head').text(channel);
 
-        // Update the menu items and display it.
-        this.updateMenuItems('video', true);
+        if (this.firstUpdate !== true) {
+            // Update the menu items and display it.
+            this.updateMenuItems('video', true);
+        }
 
     };
 
     Guide.prototype.addMenuItem = function(type, data, followed) {
 
-        if (type === 'videos' ||
-            type === 'video') {
+        if (type === 'video') {
 
             return this[type].push({
                 title: data.title,
@@ -410,7 +377,7 @@
                 // Set the new lookup index.
                 if (menu === 'games') {
                     this.lookup[menu][item.game] = index * 1;
-                } else if (menu === 'videos' || menu === 'video') {
+                } else if (menu === 'video') {
                     this.lookup[menu][item.video] = index * 1;
                 } else {
                     this.lookup[menu][item.name] = index * 1;
@@ -422,7 +389,6 @@
             'followed',
             'featured',
             'channels',
-            'videos',
             'video',
             'games',
             'game'
@@ -440,7 +406,7 @@
                 var m = menus[i];
 
                 // Don't sort videos.
-                if (m !== 'videos' && m !== 'video') {
+                if (m !== 'video') {
                     // Sort the menu items by viewers.
                     this[m].sort(sort);
 
@@ -468,7 +434,7 @@
 
                         var item;
 
-                        if (m === 'videos' || m === 'video') {
+                        if (m === 'video') {
                             item = this.updateMenuVideoItem(data, selected, popup);
                         } else if (m === 'games') {
                             item = this.updateMenuGameItem(data, selected, popup);
@@ -480,7 +446,7 @@
                     }
 
                     // Show the list.
-                    $('.list.' + m).show();
+                    $('.list.' + m).css('display', 'flex');
                 } else {
                     // Hide the list.
                     $('.list.' + m).hide();
@@ -633,7 +599,7 @@
                 this.updateMenu();
 
                 // Load the game search.
-                potato.twitch.getGame(game);
+                potato.twitch.game(game);
                 break;
             case 'video':
                 // Play the channel.
@@ -674,61 +640,19 @@
         this.followed = [];
         this.featured = [];
         this.channels = [];
-        this.videos = [];
         this.games = [];
 
         // Reset the lookup tables.
         this.lookup.followed = {};
         this.lookup.featured = {};
         this.lookup.channels = {};
-        this.lookup.videos = {};
         this.lookup.games = {};
 
         // Handle online notifications.
         this.online = {};
 
-        // Ignore the followed items.
-        if (skipFollowed !== true) {
-            // Get the number of twitch accounts.
-            var num = potato.twitch.accounts.length;
-
-            // Reset the loading table.
-            this.loading = {
-                channels: num,
-                games: num,
-                videos: num
-            };
-
-            // Iterate the accounts.
-            for (var i in potato.twitch.accounts) {
-                // Get the account name.
-                var acc = potato.twitch.accounts[i];
-
-                // Load the followed channels.
-                potato.twitch.followedChannels(acc.account);
-
-                // Load the followed games.
-                potato.twitch.followedGames(acc.account);
-
-                // Load the followed videos.
-                potato.twitch.followedVideos(acc.account);
-            }
-        } else {
-            this.updateMenuItems('followed');
-            this.updateMenuItems('videos');
-        }
-
-        // Jump to followed menu once update is finished.
-        this.showFollowedOnUpdate = skipFollowed;
-
-        // Load the featured streams.
-        potato.twitch.getFeatured();
-
-        // Load the top channels.
-        potato.twitch.getChannels();
-
-        // Load the games.
-        potato.twitch.getGames();
+        // Update twitch data.
+        potato.twitch.updateAll();
 
         // Set the time out here just in case the scrollTo fails.
         // It will be cleared and reset properly on a successful update.
@@ -740,7 +664,7 @@
 
         var date = new Date();
 
-        // Set the update tithis.
+        // Set the update time.
         $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
 
     };
@@ -876,7 +800,7 @@
         } else {
             var data = {};
 
-            if (menu === 'videos' || menu === 'video') {
+            if (menu === 'video') {
                 var video = $('.item.selected:visible').attr('video');
                 this.showVideo(this[menu][this.lookup[menu][video]]);
             } else if (menu === 'games') {
@@ -998,20 +922,18 @@
         var game = $('.lists .item.selected:visible').attr('game');
         var type = $('.lists .item.selected:visible').attr('type');
 
-        if (type === 'channel') {
-            //popup.find('.game').show();
+        if (type === 'video') {
+            return false;
         } else if (type === 'game') {
-            popup.find('.search-game').remove();
-            popup.find('.search-video').remove();
-            popup.find('.pip').remove();
-            //popup.find('.follow-channel').remove();
-            //popup.find('.unfollow-channel').remove();
-        } else {
-            return;
+            popup.find('.search-games').remove();
+            popup.find('.search-videos').remove();
+            popup.find('.view-pip').remove();
+            popup.find('.follow-channel').remove();
+            popup.find('.unfollow-channel').remove();
         }
 
         // Update follow-channel button.
-        /*if (this.lookup.followed[name] !== undefined) {
+        if (this.lookup.followed[name] !== undefined) {
             popup.find('.follow-channel').remove();
             popup.find('.unfollow-channel').show();
         } else {
@@ -1026,7 +948,7 @@
         } else {
             popup.find('.follow-game').show();
             popup.find('.unfollow-game').remove();
-        }*/
+        }
 
         if ($('.popup .button.selected:visible').length === 0) {
             $('.popup .button:eq(0)').addClass('selected');
@@ -1084,23 +1006,23 @@
                 break;
             case 'search-videos':
                 // Search for videos from this streamer
-                potato.twitch.getVideo(name);
+                potato.twitch.video(name);
                 break;
             case 'follow-channel':
                 // Follow the channel.
-                //potato.twitch.followChannel('creditx', name);
+                potato.twitch.followChannel('all', name);
                 break;
             case 'unfollow-channel':
                 // Unfollow the channel.
-                //potato.twitch.unfollowChannel('creditx', name);
+                potato.twitch.followChannel('all', name, true);
                 break;
             case 'follow-game':
                 // Follow the game.
-                //potato.twitch.followGame('creditx', game);
+                potato.twitch.followGame('all', game);
                 break;
             case 'unfollow-game':
                 // Unfollow the game.
-                //potato.twitch.unfollowGame('creditx', game);
+                potato.twitch.followGame('all', game, true);
                 break;
 
             default:
@@ -1117,6 +1039,10 @@
 
     $(function() {
         potato.guide.updateTime();
+        potato.guide.updateMenuItems('followed');
+        potato.guide.updateMenuItems('featured');
+        potato.guide.updateMenuItems('channels');
+        potato.guide.updateMenuItems('games');
     });
 
 }(window.Potato, window.jQuery, window.chrome));

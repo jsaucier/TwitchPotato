@@ -127,10 +127,13 @@ body {
             background-color: #191919;
             margin: 5px;
             .list {
-                display: flex;
+                display: none;
                 flex-direction: column;
                 height: 2.6em;
                 background-color: #222;
+                &.settings {
+                    display: flex;
+                }
                 &.selected {
                     flex: auto;
                     padding: 0 0 5px;
