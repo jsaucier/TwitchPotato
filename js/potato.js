@@ -20,7 +20,13 @@
                     if ($('#webviews webview:visible').length === 0) {
                         window.close();
                     } else {
-                        $('#webview webview').fadeOut();
+                        // Load a blank window to stop the video playing.
+                        $('#webviews #login webview').attr('src', 'about:blank');
+
+                        // Hide the webviews
+                        $('#webviews #login').fadeOut();
+                        $('#webviews #accounts').fadeOut();
+
                         // Register guide inputs.
                         this.input.registerInputs(potato.guide);
                     }
@@ -230,35 +236,63 @@
 
     Potato.prototype.saveSetting = function() {
 
-        var input = $('#info input:focus');
+        // Ensure we are on an input setting.
+        if ($('.list.selected.settings .item.selected[input="true"]').length !== 0) {
 
-        if (input.length === 0 || input.val() === '') {
-            // Nothing to do here
-            return input.blur();
+            // Get the focused input.
+            var input = $('input:focus');
+
+            // Input does not have focus.
+            if (input.length === 0) {
+                // Register the global inputs only.
+                this.input.registerInputs(this);
+
+                // Get the setting type.
+                var type = $('.item.selected:visible').attr('type');
+
+                // Focus the input.
+                $('#' + type).focus();
+            } else {
+
+                // Ensure we have input in the control.
+                if (input.val() !== '') {
+                    if (input.attr('id') === 'add-account') {
+                        this.addAccount($.trim(input.val()));
+                    }
+                }
+
+                input.val('');
+                input.blur();
+
+                setTimeout(function() {
+                    // Register the guide inputs.
+                    this.input.registerInputs(this.guide);
+                }.bind(this), 100);
+            }
         }
-
-        if (input.attr('id') === 'add-account') {
-            this.addAccount(input.val());
-        }
-
-        input.val('').blur();
 
     };
 
-    Potato.prototype.addAccount = function(account) {
+    Potato.prototype.addAccount = function(username) {
 
         // Ensure we haven't already added the account.
-        if (this.accounts.indexOf(account) === -1) {
+        if (this.accounts.indexOf(username) === -1) {
             // Add the account to the list.
-            this.accounts.push(account);
+            this.accounts.push(username);
 
             // Sync the accounts.
             chrome.storage.sync.set({
                 accounts: this.accounts
             }, function() {
+                // Display a fake error.
+                this.showError('Waiting for the account login.');
+
                 // Login to the twitch account.
-                this.twitch.new(account);
+                this.twitch.authorize(username);
             }.bind(this));
+        } else {
+            // Display an error.
+            this.showError('{0} has already been added.'.format(username));
         }
 
     };

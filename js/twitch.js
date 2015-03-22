@@ -113,6 +113,14 @@
         // Remove the webview from the document.
         $('#accounts webview[username="' + username + '"]').remove();
 
+        // No webviews are open.
+        if ($('#accounts webview').length === 0) {
+            $('#accounts').fadeOut();
+            $('#guide').fadeIn();
+
+            potato.input.registerInputs(potato.guide);
+        }
+
         // Update the guide.
         this.updateAll(username);
 

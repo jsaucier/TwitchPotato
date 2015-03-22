@@ -81,6 +81,62 @@
 
     };
 
+
+    Guide.prototype.openMenuItem = function() {
+
+        var name = $('.item.selected:visible').attr('name');
+        var game = $('.item.selected:visible').attr('game');
+        var type = $('.item.selected:visible').attr('type');
+        var video = $('.item.selected:visible').attr('video');
+
+        switch (type) {
+            case 'channel':
+                // Play the channel.
+                potato.player.play(name);
+
+                // Show the player
+                $('#players').fadeIn();
+
+                // Hide the guide
+                $('#guide').fadeOut();
+                break;
+            case 'game':
+                // Hide the game menu.
+                $('.list.game').hide();
+
+                // Set the game title
+                $('.list.game .head').text(game);
+
+                // Update the menu.
+                this.updateMenu();
+
+                // Load the game search.
+                potato.twitch.game(game);
+                break;
+            case 'video':
+                // Play the channel.
+                potato.player.play(video, false, true);
+
+                // Show the player
+                $('#players').fadeIn();
+
+                // Hide the guide
+                $('#guide').fadeOut();
+                break;
+            case 'login':
+                // Register only Global inputs.
+                potato.input.registerInputs(potato);
+                $('#login webview').attr('src', 'http://twitch.tv/login');
+                $('#login').fadeIn();
+                break;
+            case 'reset':
+                potato.resetSettings();
+                break;
+            default:
+                break;
+        }
+    };
+
     Guide.prototype.onAjaxCompleted = function() {
 
         if (this.firstUpdate === true) {
@@ -89,6 +145,11 @@
             potato.guide.updateMenuItems('channels');
             potato.guide.updateMenuItems('games');
             this.firstUpdate = false;
+
+            var date = new Date();
+
+            // Set the update time.
+            $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
         }
 
     };
@@ -303,8 +364,6 @@
             }) - 1;
 
         }
-
-        console.error('Failed to add a menu item.', type, data);
 
     };
 
@@ -569,69 +628,6 @@
 
         return $(item);
 
-    };
-
-    Guide.prototype.openMenuItem = function() {
-        var name = $('.item.selected:visible').attr('name');
-        var game = $('.item.selected:visible').attr('game');
-        var type = $('.item.selected:visible').attr('type');
-        var video = $('.item.selected:visible').attr('video');
-
-        switch (type) {
-            case 'channel':
-                // Play the channel.
-                potato.player.play(name);
-
-                // Show the player
-                $('#players').fadeIn();
-
-                // Hide the guide
-                $('#guide').fadeOut();
-                break;
-            case 'game':
-                // Hide the game menu.
-                $('.list.game').hide();
-
-                // Set the game title
-                $('.list.game .head').text(game);
-
-                // Update the menu.
-                this.updateMenu();
-
-                // Load the game search.
-                potato.twitch.game(game);
-                break;
-            case 'video':
-                // Play the channel.
-                potato.player.play(video, false, true);
-
-                // Show the player
-                $('#players').fadeIn();
-
-                // Hide the guide
-                $('#guide').fadeOut();
-                break;
-            case 'login':
-                // Register only Global inputs.
-                potato.input.registerInputs(potato.input);
-                $('#login webview').attr('src', 'http://twitch.tv/login');
-                $('#login').fadeIn();
-                break;
-            case 'add-account':
-                $('#add-account').focus();
-                break;
-            case 'follow-game':
-                $('#follow-game').focus();
-                break;
-            case 'follow-channel':
-                $('#follow-channel').focus();
-                break;
-            case 'reset':
-                potato.resetSettings();
-                break;
-            default:
-                break;
-        }
     };
 
     Guide.prototype.updateAll = function(skipFollowed) {

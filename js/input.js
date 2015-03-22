@@ -289,7 +289,7 @@
             // and is of the proper input type.
             if (registered !== undefined) {
                 // Call our registered callback.
-                registered.callback();
+                setTimeout(registered.callback, 10);
             }
         }
 

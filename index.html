@@ -55,10 +55,10 @@
                             <div class="item setting" type="login">
                                 <div class="setting">Log into Twitch</div>
                             </div>
-                            <div class="item setting" type="follow-channel">
+                            <div class="item setting" type="follow-channel" input="true">
                                 <div class="setting">Follow Channel</div>
                             </div>
-                            <div class="item setting" type="add-account">
+                            <div class="item setting" type="add-account" input="true">
                                 <div class="setting">Add Twitch Account</div>
                             </div>
                             <div class="item setting" type="reset">
@@ -78,12 +78,12 @@
 
         <div id="webviews">
             <div id="login">
-                <div class="head">ESC to Close</div>
+                <div class="head">Press ESC to Close</div>
                 <webview autosize="on" partition="persist:twitchpotato"></webview>
             </div>
 
             <div id="accounts">
-                <div class="head">ESC to Close</div>
+                <div class="head">Press ESC to Close</div>
             </div>
         </div>
 
@@ -173,54 +173,6 @@
             <div class="right"></div>
         </script>
 
-        <script id="follow-channel-setting-template" type="text/template">
-            <div class="head follow-channel">
-                <div>Follow Channel</div>
-                <div class="sub-head">
-                    <div>Follow a Twitch channel.</div>
-                </div>
-            </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content follow-channel">
-                        <div class="input">
-                            Channel Name
-                            <br/>
-                            <input id="follow-channel" />
-                        </div>
-                    </div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
-        </script>
-
-        <script id="follow-game-setting-template" type="text/template">
-            <div class="head follow-game">
-                <div>Follow Game</div>
-                <div class="sub-head">
-                    <div>Follow a Twitch game.</div>
-                </div>
-            </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content follow-game">
-                        <div class="input">
-                            Game Name
-                            <br/>
-                            <input id="follow-game" />
-                        </div>
-                    </div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
-        </script>
-
         <script id="reset-setting-template" type="text/template">
             <div class="head reset">
                 <div>Reset Settings</div>
@@ -241,9 +193,9 @@
 
         <script id="login-setting-template" type="text/template">
             <div class="head login">
-                <div>Reset Settings</div>
+                <div>Log into Twitch.tv</div>
                 <div class="sub-head">
-                    <div>Log into your Twitch account.</div>
+                    <div>Log into your Twitch.tv account. This is needed to stop ads from playing on your subscribed channels or if you have a Turbo account.</div>
                 </div>
             </div>
             <div class="left"></div>

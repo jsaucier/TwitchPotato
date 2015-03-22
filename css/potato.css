@@ -67,7 +67,7 @@ body {
   width: 55%;
   text-align: right;
 }
-.window .main error {
+.window .main .error {
   padding: 5px;
 }
 /* Time */
