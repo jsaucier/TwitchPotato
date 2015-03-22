@@ -28,6 +28,11 @@ body {
         bottom: 10px;
         width: 350px;
     }
+    &#error {
+        left: 10px;
+        bottom: 10px;
+        width: 350px;
+    }
     .head {
         background-color: #6441a5;
         padding: 5px;
@@ -61,6 +66,9 @@ body {
                     text-align: right;
                 }
             }
+        }
+        error {
+            padding: 5px;
         }
     }
 }
@@ -266,7 +274,6 @@ body {
     }
 }
 #players {
-    //display: none!important;
     display: none;
     position: fixed;
     top: 0;
@@ -439,27 +446,29 @@ body {
         }
     }
 }
-#login,
-#accounts {
-    display: none;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #191919;
-    height: 100%;
-    padding: 20px;
-    .head {
-        position: absolute;
-        background-color: #6441a5;
-        padding: 5px;
-        font-size: 1.2em;
-    }
-    webview {
-        width: 100%;
+#webviews {
+    #login,
+    #accounts {
+        display: none;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #191919;
         height: 100%;
-        border: 5px solid #6441a5;
+        padding: 20px;
+        .head {
+            position: absolute;
+            background-color: #6441a5;
+            padding: 5px;
+            font-size: 1.2em;
+        }
+        webview {
+            width: 100%;
+            height: 100%;
+            border: 5px solid #6441a5;
+        }
     }
 }
 ::-webkit-scrollbar {

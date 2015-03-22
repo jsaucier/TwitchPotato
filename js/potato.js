@@ -84,13 +84,23 @@
             }
 
             // Set the value.
-            //for (var prop in store) {
             this[value] = store[value];
-            //}
 
             // Call the callback function
             return callback();
         }.bind(this));
+    };
+
+    Potato.prototype.showError = function(error) {
+
+        $('#error .error').html(error);
+
+        $('#error').fadeIn(function() {
+            setTimeout(function() {
+                $('#error').fadeOut();
+            }, 10000);
+        });
+
     };
 
     Potato.prototype.toggleGuide = function() {

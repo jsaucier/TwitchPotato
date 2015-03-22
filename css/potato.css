@@ -27,6 +27,11 @@ body {
   bottom: 10px;
   width: 350px;
 }
+.window#error {
+  left: 10px;
+  bottom: 10px;
+  width: 350px;
+}
 .window .head {
   background-color: #6441a5;
   padding: 5px;
@@ -61,6 +66,9 @@ body {
   float: right;
   width: 55%;
   text-align: right;
+}
+.window .main error {
+  padding: 5px;
 }
 /* Time */
 #time {
@@ -423,8 +431,8 @@ body {
   width: 100%;
   background-color: #222;
 }
-#login,
-#accounts {
+#webviews #login,
+#webviews #accounts {
   display: none;
   position: fixed;
   top: 0;
@@ -435,15 +443,15 @@ body {
   height: 100%;
   padding: 20px;
 }
-#login .head,
-#accounts .head {
+#webviews #login .head,
+#webviews #accounts .head {
   position: absolute;
   background-color: #6441a5;
   padding: 5px;
   font-size: 1.2em;
 }
-#login webview,
-#accounts webview {
+#webviews #login webview,
+#webviews #accounts webview {
   width: 100%;
   height: 100%;
   border: 5px solid #6441a5;
