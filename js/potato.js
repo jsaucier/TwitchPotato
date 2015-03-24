@@ -56,9 +56,6 @@
     Potato.prototype.initialize = function() {
         // Load the stored settings.
         this.loadStoredSettings();
-
-        // Update the guide.
-        //this.guide.updateAll(true);
     };
 
     Potato.prototype.loadStoredSettings = function() {
@@ -75,6 +72,9 @@
                 // Load the twitch account.
                 this.twitch.authorize(this.accounts[i]);
             }
+
+            // Update the guide.
+            this.guide.updateAll();
         }.bind(this));
     };
 

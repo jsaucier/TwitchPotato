@@ -648,7 +648,14 @@
         this.online = {};
 
         // Update twitch data.
-        potato.twitch.updateAll();
+        //potato.twitch.updateAll();
+        $.each(potato.twitch.users, function(username, token) {
+            potato.twitch.followedChannels(username);
+            potato.twitch.games(username);
+        });
+
+        potato.twitch.featured();
+        potato.twitch.channels();
 
         // Set the time out here just in case the scrollTo fails.
         // It will be cleared and reset properly on a successful update.
