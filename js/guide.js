@@ -139,7 +139,7 @@
     };
 
     Guide.prototype.onAjaxCompleted = function() {
-        console.log('ajax complete');
+
         this.updateMenuItems('followed', this.firstUpdate);
         this.updateMenuItems('featured');
         this.updateMenuItems('channels');
