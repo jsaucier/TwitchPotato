@@ -99,7 +99,7 @@
 
     };
 
-    Player.prototype.create = function(id) {
+    Player.prototype.create = function(id, isVideo) {
         // Check to see if a player for this id exists.
         var player = this.getPlayerById(id);
 
@@ -134,10 +134,24 @@
             // Catch load events.
             player.webview.addEventListener('loadcommit', function() {
 
+                // Inject jquery.
+                player.webview.executeScript({
+                    file: 'js/jquery-2.1.1.min.js'
+                });
+
                 // Inject the script file.
                 player.webview.executeScript({
                     file: 'js/player-inject.js'
                 });
+
+                setTimeout(function() {
+                    // Load the player.
+                    this.load(player, id, isVideo);
+
+                    // Set the player as loaded.
+                    player.isLoaded = true;
+                }.bind(this));
+
 
             }.bind(this));
 
@@ -192,17 +206,7 @@
             player = this.getPlayerByNumber(0) || this.create(id);
         }
 
-        if (player.isLoaded !== true) {
-            // Load the player after the webview has loaded.
-            player.webview.addEventListener('loadcommit', function() {
-                setTimeout(function() {
-                    // Load the player.
-                    this.load(player, id, isVideo);
-                    // Set the player as loaded.
-                    player.isLoaded = true;
-                }.bind(this), 1000);
-            }.bind(this));
-        } else {
+        if (player.isLoaded === true) {
             // Load the player.
             this.load(player, id, isVideo);
         }
@@ -328,11 +332,13 @@
 
         this.layout = layout || this.layout;
 
+        // Update the player class.
         $('#players .player')
             .removeClass('default')
             .removeClass('equal')
             .addClass(this.layout);
 
+        // Update the selector class.
         $('#players .selector')
             .removeClass('default')
             .removeClass('equal')
@@ -367,11 +373,10 @@
         $('#players .selector').attr('number', index);
 
         $('#players .selector').attr('number', index);
-        console.log(0, $('#players .selector').attr('number'));
 
         // Update the player numbers.
         this.updateNumbers();
-        console.log(1, $('#players .selector').attr('number'));
+
         // Clear the selected timer.
         clearTimeout(this.selectTimer);
 
@@ -408,7 +413,7 @@
         var player = this.getSelectedPlayer();
 
         // Execute the injected method.
-        this.executeMethod(player, 'toggleFullscreen', [state]);
+        this.executeMethod(player, 'updateFullscreen', [state]);
 
     };
 
@@ -453,16 +458,13 @@
 
     Player.prototype.executeMethod = function(player, method, args) {
 
-        args = args || undefined;
+        var data = {
+            method: method,
+            args: args || []
+        };
 
-        var code = '{0}()'.format(method, args);
-
-        if (args !== undefined &&
-            args[0] !== undefined &&
-            args[0] !== null) {
-            code = '{0}({1})'.format(method, args);
-        }
-
+        var code = "window.potato.executeMethod.call(window.potato, '" + JSON.stringify(data) + "');";
+        console.log(code);
         player.webview.executeScript({
             code: code
         });

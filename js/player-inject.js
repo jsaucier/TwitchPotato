@@ -1,31 +1,73 @@
-function toggleFullscreen(state) {
+(function(window, undefined) {
 
-    var body = document.body;
-    var html = document.documentElement;
+    var Potato = function() {
+        this.fullscreen = false;
+        this.embed = document.getElementsByTagName("embed")[0];
+    };
 
-    var height = Math.max(
-        body.scrollHeight,
-        body.offsetHeight,
-        html.clientHeight,
-        html.scrollHeight,
-        html.offsetHeight);
+    Potato.prototype.executeMethod = function(data) {
 
-    var embed = document.getElementsByTagName("embed")[0];
+        // Parse the data.
+        data = JSON.parse(data);
 
-    if (state === undefined) {
-        if (embed.height === "100%") {
-            state = true;
+        // Call the method.
+        this[data.method].apply(this, data.args);
+
+    };
+
+    Potato.prototype.updateFullscreen = function(state) {
+
+        var prevHeight = this.embed.height + '';
+
+        if (state !== true)
+            this.embed.height = '100%';
+
+        var body = document.body;
+        var html = document.documentElement;
+
+        var height = Math.max(
+            body.scrollHeight,
+            body.offsetHeight,
+            html.clientHeight,
+            html.scrollHeight,
+            html.offsetHeight);
+
+        if (state === 'update') {
+            if (this.fullscreen) {
+                // Toggle player to fullscreen.
+                height = (height + 32) + 'px';
+            } else {
+                // Toggle player to normal.
+                height = "100%";
+            }
         } else {
-            state = false;
+            if (state === null) {
+                state = !this.fullscreen;
+            } //if (state !== this.fullscreen) {
+
+            if (state === true && this.fullscreen !== true) {
+                // Toggle player to fullscreen.
+                height = (height + 32) + 'px';
+                this.fullscreen = true;
+            } else if (state === false) {
+                // Toggle player to normal.
+                height = "100%";
+                this.fullscreen = false;
+            }
         }
-    }
 
-    if (state === true) {
-        // Toggle player to fullscreen.
-        embed.height = (height + 32) + 'px';
-    } else if (state === false) {
-        // Toggle player to normal.
-        embed.height = "100%";
-    }
+        this.embed.height = height;
 
-}
+    };
+
+    $(function() {
+        window.potato = new Potato();
+
+        potato.updateFullscreen(true);
+    });
+
+    window.addEventListener('resize', function() {
+        window.potato.updateFullscreen('update');
+    }.bind(window.potato));
+
+}(window));
