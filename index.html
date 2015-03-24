@@ -55,11 +55,14 @@
                             <div class="item setting" type="login">
                                 <div class="setting">Log into Twitch</div>
                             </div>
+                            <div class="item setting" type="add-account" input="true">
+                                <div class="setting">Add Twitch User</div>
+                            </div>
                             <div class="item setting" type="follow-channel" input="true">
                                 <div class="setting">Follow Channel</div>
                             </div>
-                            <div class="item setting" type="add-account" input="true">
-                                <div class="setting">Add Twitch Account</div>
+                            <div class="item setting" type="follow-game" input="true">
+                                <div class="setting">Follow Game</div>
                             </div>
                             <div class="item setting" type="reset">
                                 <div class="setting">Reset Settings</div>
@@ -151,9 +154,9 @@
 
         <script id="add-account-setting-template" type="text/template">
             <div class="head import">
-                <div>Add Twitch Account</div>
+                <div>Add Twitch User</div>
                 <div class="sub-head">
-                    <div>Add a Twitch account to view and edit followed channels and games.</div>
+                    <div>Add a Twitch user to view and edit followed channels and games.</div>
                 </div>
             </div>
             <div class="left"></div>
@@ -165,6 +168,54 @@
                             Twitch Account
                             <br/>
                             <input id="add-account" />
+                        </div>
+                    </div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+            <div class="right"></div>
+        </script>
+
+        <script id="follow-channel-setting-template" type="text/template">
+            <div class="head import">
+                <div>Follow Twitch Channel</div>
+                <div class="sub-head">
+                    <div>Enter a Twitch channel below to follow it.</div>
+                </div>
+            </div>
+            <div class="left"></div>
+            <div class="center">
+                <div class="top"></div>
+                <div class="middle">
+                    <div class="content">
+                        <div class="input">
+                            Twitch Channel
+                            <br/>
+                            <input id="follow-channel" />
+                        </div>
+                    </div>
+                </div>
+                <div class="bottom"></div>
+            </div>
+            <div class="right"></div>
+        </script>
+
+        <script id="follow-game-setting-template" type="text/template">
+            <div class="head import">
+                <div>Follow Twitch Game</div>
+                <div class="sub-head">
+                    <div>Enter a Twitch game below to follow it.</div>
+                </div>
+            </div>
+            <div class="left"></div>
+            <div class="center">
+                <div class="top"></div>
+                <div class="middle">
+                    <div class="content">
+                        <div class="input">
+                            Twitch Game
+                            <br/>
+                            <input id="follow-game" />
                         </div>
                     </div>
                 </div>
@@ -193,9 +244,9 @@
 
         <script id="login-setting-template" type="text/template">
             <div class="head login">
-                <div>Log into Twitch.tv</div>
+                <div>Log into Twitch</div>
                 <div class="sub-head">
-                    <div>Log into your Twitch.tv account. This is needed to stop ads from playing on your subscribed channels or if you have a Turbo account.</div>
+                    <div>Log into your Twitch account. This is needed to stop ads from playing on your subscribed channels or if you have a Turbo account.</div>
                 </div>
             </div>
             <div class="left"></div>

@@ -283,6 +283,10 @@
                 if (input.val() !== '') {
                     if (input.attr('id') === 'add-account') {
                         this.addAccount($.trim(input.val()));
+                    } else if (input.attr('id') === 'follow-channel') {
+                        this.twitch.followChannel('all', input.val());
+                    } else if (input.attr('id') === 'follow-game') {
+                        this.twitch.followGame('all', input.val());
                     }
                 }
 
