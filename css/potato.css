@@ -181,7 +181,7 @@ body {
   margin-top: 0;
 }
 #guide .lists .content-lists .list .items .item.followed {
-  background-color: #555;
+  background-color: #444;
 }
 #guide .lists .content-lists .list .items .item.selected {
   background-color: #6441a5;
@@ -216,9 +216,6 @@ body {
 }
 #guide .lists .content-lists .list .items .item .popup .main .button:first-child {
   margin-top: 0;
-}
-#guide .lists .content-lists .list.followed .items .item.followed {
-  background-color: #333;
 }
 #guide #info {
   float: left;
