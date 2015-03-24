@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Twitch Potato",
     "description": "Couch friendly Twitch.TV application.",
-    "version": "1.1.7",
+    "version": "1.1.8",
     "icons": {
         "images/128": "128.png"
     },
