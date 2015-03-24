@@ -79,7 +79,7 @@
     };
 
     // Removes and clears all of the partition data.
-    Twitch.prototype.clearData = function(username) {
+    Twitch.prototype.remove = function(username, callback) {
 
         // Load the webview template
         var html = $($('#twitch-template').html().format(username));
@@ -90,6 +90,7 @@
         // Get the webview.
         var webview = $('#accounts webview[username="' + username + '"]')[0];
 
+        // Clear the partition data.
         webview.clearData({}, {
                 appcache: true,
                 cookies: true,
@@ -99,8 +100,9 @@
                 webSQL: true
             },
             function() {
-                // Remove the webview from the document.
-                $(webview).remove();
+                if (callback !== undefined && typeof(callback) === 'function') {
+                    callback();
+                }
             }.bind(this));
 
     };
@@ -260,28 +262,28 @@
 
     };
 
-    Twitch.prototype.games = function(username) {
+    Twitch.prototype.followedGames = function(username) {
+        $.ajax({
+            url: 'https://api.twitch.tv/api/users/{0}/follows/games?limit=100'.format(username),
+            error: function(xhr, status, error) {
+                this.showError(xhr, status, error);
+            }.bind(this),
+            success: function(json) {
+                // Update the guide.
+                potato.guide.onFollowedGames(username, json);
+            }
+        });
+    };
+
+    Twitch.prototype.games = function() {
         $.ajax({
             url: 'https://api.twitch.tv/kraken/games/top?limit=100',
             error: function(xhr, status, error) {
-                        this.showError(xhr, status, error);
-                    }.bind(this),
+                this.showError(xhr, status, error);
+            }.bind(this),
             success: function(json) {
-                // Get the followed games.
-                $.ajax({
-                    url: 'https://api.twitch.tv/api/users/{0}/follows/games?limit=100'.format(username),
-                    error: function(xhr, status, error) {
-                        this.showError(xhr, status, error);
-                    }.bind(this),
-                    success: function(followed) {
-                        // Add the followed games to the json.
-                        json.follows = followed.follows;
-
-                        // Update the guide.
-                        potato.guide.onGames(username, json);
-                    }
-                });
-            }.bind(this)
+                potato.guide.onGames(json);
+            }
         });
     };
 

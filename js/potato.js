@@ -1,7 +1,7 @@
 (function(window, $, chrome, undefined) {
 
     var Potato = function() {
-        this.accounts = [];
+        this.users = [];
         this.zoom = 100;
 
         // Online channels table.
@@ -20,12 +20,40 @@
                     if ($('#webviews webview:visible').length === 0) {
                         window.close();
                     } else {
-                        // Load a blank window to stop the video playing.
-                        $('#webviews #login webview').attr('src', 'about:blank');
+                        if ($('#webviews #accounts webview').length !== 0) {
+                            var webview = $('#webviews #accounts webview:eq(0)');
+                            var username = webview.attr('username');
+                            console.log(username);
 
-                        // Hide the webviews
-                        $('#webviews #login').fadeOut();
-                        $('#webviews #accounts').fadeOut();
+                            this.twitch.remove(username, function() {
+
+                                // Remove the username from the list.
+                                this.users.splice(this.users.indexOf(username), 1);
+
+                                // Sync the accounts.
+                                chrome.storage.sync.set({
+                                    accounts: this.users
+                                });
+
+                                // Remove the webview.
+                                $('#webviews #accounts webview[username="' + username + '"]').remove();
+
+                                // Check to see if no webviews exist.
+                                if ($('#webviews #accounts webview').length === 0) {
+                                    // Hide the container.
+                                    $('#webviews #accounts').fadeOut();
+                                }
+                            }.bind(this));
+
+                            // Hide the webviews.
+                            //$('#webviews #accounts').fadeOut();
+                        } else if ($('#webviews #login webview').length !== 0) {
+                            // Load a blank window to stop the video playing.
+                            $('#webviews #login webview').attr('src', 'about:blank');
+
+                            // Hide the webviews
+                            $('#webviews #login').fadeOut();
+                        }
 
                         // Register guide inputs.
                         this.input.registerInputs(potato.guide);
@@ -66,11 +94,11 @@
         }.bind(this));
 
         // Retrieve the stored twitch accounts.
-        this.loadStoredValue('sync', 'accounts', [], function() {
+        this.loadStoredValue('sync', 'users', [], function() {
             // Load the twitch accounts.
-            for (var i in this.accounts) {
+            for (var i in this.users) {
                 // Load the twitch account.
-                this.twitch.authorize(this.accounts[i]);
+                this.twitch.authorize(this.users[i]);
             }
 
             // Update the guide.
@@ -219,9 +247,9 @@
     Potato.prototype.resetSettings = function() {
 
         // Iterate the accounts.
-        for (var a in this.accounts) {
+        for (var a in this.users) {
             // Clear the partition data and remove the webview.
-            this.twitch.remove(this.accounts[a]);
+            this.twitch.remove(this.users[a]);
         }
 
         // Reset the stored values.
@@ -276,13 +304,13 @@
     Potato.prototype.addAccount = function(username) {
 
         // Ensure we haven't already added the account.
-        if (this.accounts.indexOf(username) === -1) {
+        if (this.users.indexOf(username) === -1) {
             // Add the account to the list.
-            this.accounts.push(username);
+            this.users.push(username);
 
             // Sync the accounts.
             chrome.storage.sync.set({
-                accounts: this.accounts
+                users: this.users
             }, function() {
                 // Display a fake error.
                 this.showError('Waiting for the account login.');

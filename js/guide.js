@@ -13,6 +13,7 @@
         };
 
         this.online = {};
+        this.followedGames = {};
 
         this.followed = [];
         this.featured = [];
@@ -141,9 +142,10 @@
 
         if (this.firstUpdate === true) {
             this.updateMenuItems('followed', true);
-            potato.guide.updateMenuItems('featured');
-            potato.guide.updateMenuItems('channels');
-            potato.guide.updateMenuItems('games');
+            this.updateMenuItems('featured');
+            this.updateMenuItems('channels');
+            this.updateMenuItems('games');
+
             this.firstUpdate = false;
 
             var date = new Date();
@@ -171,9 +173,36 @@
             this.online[channel] = json.streams[s];
         }
 
-        if (this.firstUpdate !== true) {
-            // Update the menu items.
-            this.updateMenuItems('followed');
+    };
+
+    Guide.prototype.onFollowedGames = function(account, json) {
+
+        // Track the followed games.
+        $.each(json.follows, function(index, game) {
+            this.followedGames[game.name] = true;
+        }.bind(this));
+
+        if (this.games.length !== 0) {
+            // Check the followed games.
+            $.each(this.followedGames, function(game, value) {
+                // Ensure we have not added the game yet.
+                if (this.lookup.games[game] === undefined) {
+                    // Add the video to the lookup table and the menu array.
+                    this.lookup.games[game] = this.addMenuItem('games', {
+                        viewers: -1,
+                        channels: -1,
+                        game: {
+                            name: game,
+                            box: {
+                                large: 'http://static-cdn.jtvnw.net/ttv-boxart/{0}-272x380.jpg'.format(encodeURIComponent(game))
+                            }
+                        }
+                    }, true);
+                } else {
+                    // Set the game as followed.
+                    this.games[this.lookup.games[game]].followed = true;
+                }
+            }.bind(this));
         }
 
     };
@@ -192,11 +221,6 @@
             }
         }
 
-        if (this.firstUpdate !== true) {
-            // Update the menu items.
-            this.updateMenuItems('featured');
-        }
-
     };
 
     Guide.prototype.onChannels = function(json) {
@@ -213,14 +237,9 @@
             }
         }
 
-        if (this.firstUpdate !== true) {
-            // Update the menu items.
-            this.updateMenuItems('channels');
-        }
-
     };
 
-    Guide.prototype.onGames = function(account, json) {
+    Guide.prototype.onGames = function(json) {
 
         // Add the games to the menu.
         $.each(json.top, function(index, value) {
@@ -234,10 +253,8 @@
             }
         }.bind(this));
 
-        // Get the followed games.
-        $.each(json.follows, function(index, value) {
-
-            var game = value.name;
+        // Check the followed games.
+        $.each(this.followedGames, function(game, value) {
             // Ensure we have not added the game yet.
             if (this.lookup.games[game] === undefined) {
                 // Add the video to the lookup table and the menu array.
@@ -256,11 +273,6 @@
                 this.games[this.lookup.games[game]].followed = true;
             }
         }.bind(this));
-
-        if (this.firstUpdate !== true) {
-            // Update the menu items.
-            this.updateMenuItems('games');
-        }
 
     };
 
@@ -644,18 +656,21 @@
         this.lookup.channels = {};
         this.lookup.games = {};
 
+        // Reset the followed games table.
+        this.followedGames = {};
+
         // Handle online notifications.
         this.online = {};
 
         // Update twitch data.
-        //potato.twitch.updateAll();
-        $.each(potato.twitch.users, function(username, token) {
-            potato.twitch.followedChannels(username);
-            potato.twitch.games(username);
-        });
-
         potato.twitch.featured();
         potato.twitch.channels();
+        potato.twitch.games();
+
+        $.each(potato.twitch.users, function(username, token) {
+            potato.twitch.followedChannels(username);
+            potato.twitch.followedGames(username);
+        });
 
         // Set the time out here just in case the scrollTo fails.
         // It will be cleared and reset properly on a successful update.
