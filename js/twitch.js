@@ -6,7 +6,7 @@
         this.scope = 'user_read+user_follows_edit';
     };
 
-    Twitch.prototype.authorize = function(username) {
+    Twitch.prototype.authorize = function(username, update) {
 
         if ($('#accounts .webview[username="' + username + '"]').length !== 0) {
             // Webview has already been created.
@@ -34,6 +34,10 @@
 
         // Hook the console message event.
         webview.addEventListener('consolemessage', function(e) { /* console.log(e);*/ });
+
+        // Update the followed channels and games if requested.
+        this.followedChannels(username);
+        this.followedGames(username);
 
     };
 

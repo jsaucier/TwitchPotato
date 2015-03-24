@@ -4,7 +4,8 @@
         this.input = 'Guide';
 
         this.lookup = {
-            followed: {},
+            followedChannels: {},
+            followedGames: {},
             featured: {},
             channels: {},
             video: {},
@@ -13,7 +14,6 @@
         };
 
         this.online = {};
-        this.followedGames = {};
 
         this.followed = [];
         this.featured = [];
@@ -139,39 +139,47 @@
     };
 
     Guide.prototype.onAjaxCompleted = function() {
+        console.log('ajax complete');
+        this.updateMenuItems('followed', this.firstUpdate);
+        this.updateMenuItems('featured');
+        this.updateMenuItems('channels');
+        this.updateMenuItems('games');
 
-        if (this.firstUpdate === true) {
-            this.updateMenuItems('followed', true);
-            this.updateMenuItems('featured');
-            this.updateMenuItems('channels');
-            this.updateMenuItems('games');
+        this.firstUpdate = false;
 
-            this.firstUpdate = false;
+        var date = new Date();
 
-            var date = new Date();
-
-            // Set the update time.
-            $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
-        }
+        // Set the update time.
+        $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
 
     };
 
     Guide.prototype.onFollowedChannels = function(account, json) {
 
+        var menus = ['featured', 'channels'];
+
         // Add the followed channels to the menu.
-        for (var s in json.streams) {
+        $.each(json.streams, function(index, stream) {
             // Get the channel name.
-            var channel = json.streams[s].channel.name;
+            var channel = stream.channel.name;
 
             // Ensure we have not added the channel yet.
-            if (this.lookup.followed[channel] === undefined) {
+            if (this.lookup.followedChannels[channel] === undefined) {
                 // Add the channel to the lookup table and the menu array.
-                this.lookup.followed[channel] = this.addMenuItem('followed', json.streams[s]);
+                this.lookup.followedChannels[channel] = this.addMenuItem('followed', stream, true);
             }
 
             // Add to the list of online streams to handle notifications.
-            this.online[channel] = json.streams[s];
-        }
+            this.online[channel] = stream;
+
+            $.each(menus, function(index, menu) {
+                if (this[menu].length !== 0) {
+                    if (this.lookup[menu][channel] !== undefined) {
+                        this[menu][this.lookup[menu][channel]].followed = true;
+                    }
+                }
+            }.bind(this));
+        }.bind(this));
 
     };
 
@@ -179,12 +187,12 @@
 
         // Track the followed games.
         $.each(json.follows, function(index, game) {
-            this.followedGames[game.name] = true;
+            this.lookup.followedGames[game.name] = true;
         }.bind(this));
 
         if (this.games.length !== 0) {
             // Check the followed games.
-            $.each(this.followedGames, function(game, value) {
+            $.each(this.lookup.followedGames, function(game, value) {
                 // Ensure we have not added the game yet.
                 if (this.lookup.games[game] === undefined) {
                     // Add the video to the lookup table and the menu array.
@@ -254,7 +262,7 @@
         }.bind(this));
 
         // Check the followed games.
-        $.each(this.followedGames, function(game, value) {
+        $.each(this.lookup.followedGames, function(game, value) {
             // Ensure we have not added the game yet.
             if (this.lookup.games[game] === undefined) {
                 // Add the video to the lookup table and the menu array.
@@ -372,7 +380,8 @@
                 streamer: data.channel.display_name,
                 viewers: data.viewers,
                 game: data.game,
-                preview: data.preview.large
+                preview: data.preview.large,
+                followed: followed || this.lookup.followedChannels[data.channel.name] || false
             }) - 1;
 
         }
@@ -471,73 +480,67 @@
 
 
         for (var i = 0; i < menus.length; i++) {
+            // Get the menu item.
+            var m = menus[i];
 
-            if (menus[i].length > 0) {
-                // Get the menu item.
-                var m = menus[i];
+            // Don't sort videos.
+            if (m !== 'video') {
+                // Sort the menu items by viewers.
+                this[m].sort(sort);
 
-                // Don't sort videos.
-                if (m !== 'video') {
-                    // Sort the menu items by viewers.
-                    this[m].sort(sort);
+                // Reindex the menu
+                reIndex.call(this, m);
+            }
 
-                    // Reindex the menu
-                    reIndex.call(this, m);
-                }
+            // Save the selected menu item.
+            var selected = $('.list.' + m + ' .items .item.selected').toArray()[0];
 
-                // Save the selected menu item.
-                var selected = $('.list.' + m + ' .items .item.selected').toArray()[0];
+            // Is the popup shown?
+            var popup = ($('.list.' + m + ' .popup:visible').length > 0);
 
-                // Is the popup shown?
-                var popup = ($('.list.' + m + ' .popup:visible').length > 0);
+            if (popup === true) {
+                // Save the popup state by moving it to the body and hiding it.
+                $('.popup').appendTo($('body')).hide();
+            }
 
-                if (popup === true) {
-                    // Save the popup state by moving it to the body and hiding it.
-                    $('.popup').appendTo($('body')).hide();
-                }
+            // Get the template item.
+            $('.list.' + m + ' .items').empty();
 
-                // Get the template item.
-                $('.list.' + m + ' .items').empty();
+            if (this[m].length !== 0) {
+                for (var j = 0; j < this[m].length; j++) {
+                    var data = this[m][j];
 
-                if (this[m].length !== 0) {
-                    for (var j = 0; j < this[m].length; j++) {
-                        var data = this[m][j];
+                    var item;
 
-                        var item;
-
-                        if (m === 'video') {
-                            item = this.updateMenuVideoItem(data, selected, popup);
-                        } else if (m === 'games') {
-                            item = this.updateMenuGameItem(data, selected, popup);
-                        } else {
-                            item = this.updateMenuChannelItem(data, selected, popup);
-                        }
-
-                        $('.list.' + m + ' .items').append(item);
+                    if (m === 'video') {
+                        item = this.updateMenuVideoItem(data, selected, popup);
+                    } else if (m === 'games') {
+                        item = this.updateMenuGameItem(data, selected, popup);
+                    } else {
+                        item = this.updateMenuChannelItem(data, selected, popup);
                     }
 
-                    // Show the list.
-                    $('.list.' + m).css('display', 'flex');
-                } else {
-                    // Hide the list.
-                    $('.list.' + m).hide();
+                    $('.list.' + m + ' .items').append(item);
                 }
 
-                if (goto === true) {
-                    // Remove the currently selected list
-                    $('.list.selected').removeClass('selected');
-
-                    // Set the new selected list
-                    $('.list.' + m).addClass('selected');
-
-                    this.updateMenu(true);
-                } else {
-                    // Set a short delay to update so that we do not update multiple times in a row.
-                    this.updateMenu(null, 500);
-                }
+                // Show the list.
+                $('.list.' + m).css('display', 'flex');
             } else {
-                // Get the template item.
-                $('.list.' + menus[i] + ' .items').empty();
+                // Hide the list.
+                $('.list.' + m).hide();
+            }
+
+            if (goto === true) {
+                // Remove the currently selected list
+                $('.list.selected').removeClass('selected');
+
+                // Set the new selected list
+                $('.list.' + m).addClass('selected');
+
+                this.updateMenu(true);
+            } else {
+                // Set a short delay to update so that we do not update multiple times in a row.
+                this.updateMenu(null, 500);
             }
         }
 
@@ -557,6 +560,11 @@
                 // Reload the popup's previous state
                 $('.popup').appendTo($(item)).show();
             }
+        }
+
+        // Set the followed class
+        if (data.followed === true) {
+            $(item).addClass('followed');
         }
 
         // Set the item streamer.
@@ -642,7 +650,7 @@
 
     };
 
-    Guide.prototype.updateAll = function(skipFollowed) {
+    Guide.prototype.updateAll = function() {
 
         // Reset the menu arrays.
         this.followed = [];
@@ -651,23 +659,22 @@
         this.games = [];
 
         // Reset the lookup tables.
-        this.lookup.followed = {};
+        this.lookup.followedChannels = {};
+        this.lookup.followedGames = {};
         this.lookup.featured = {};
         this.lookup.channels = {};
         this.lookup.games = {};
 
-        // Reset the followed games table.
-        this.followedGames = {};
-
-        // Handle online notifications.
+        // Reset the online streamers table.
         this.online = {};
 
         // Update twitch data.
+        potato.twitch.games();
         potato.twitch.featured();
         potato.twitch.channels();
-        potato.twitch.games();
 
-        $.each(potato.twitch.users, function(username, token) {
+        // Update the twitch user data.
+        $.each(potato.users, function(index, username) {
             potato.twitch.followedChannels(username);
             potato.twitch.followedGames(username);
         });
@@ -951,7 +958,7 @@
         }
 
         // Update follow-channel button.
-        if (this.lookup.followed[name] !== undefined) {
+        if (this.lookup.followedChannels[name] !== undefined) {
             popup.find('.follow-channel').remove();
             popup.find('.unfollow-channel').show();
         } else {

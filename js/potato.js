@@ -100,7 +100,6 @@
                 // Load the twitch account.
                 this.twitch.authorize(this.users[i]);
             }
-
             // Update the guide.
             this.guide.updateAll();
         }.bind(this));
@@ -245,12 +244,10 @@
     };
 
     Potato.prototype.resetSettings = function() {
-
-        // Iterate the accounts.
-        for (var a in this.users) {
-            // Clear the partition data and remove the webview.
-            this.twitch.remove(this.users[a]);
-        }
+        console.log('reset');
+        // Reset to the default values.
+        this.users = [];
+        this.zoom = 100;
 
         // Reset the stored values.
         chrome.storage.local.clear(function() {
@@ -308,15 +305,15 @@
             // Add the account to the list.
             this.users.push(username);
 
+            // Update the guide.
+            potato.guide.updateAll();
+
             // Sync the accounts.
             chrome.storage.sync.set({
                 users: this.users
             }, function() {
-                // Display a fake error.
-                this.showError('Waiting for the account login.');
-
                 // Login to the twitch account.
-                this.twitch.authorize(username);
+                this.twitch.authorize(username, true);
             }.bind(this));
         } else {
             // Display an error.

@@ -30,7 +30,6 @@ body {
 .window#error {
   left: 10px;
   bottom: 10px;
-  /* width: 350px; */
 }
 .window .head {
   background-color: #6441a5;
@@ -217,6 +216,9 @@ body {
 }
 #guide .lists .content-lists .list .items .item .popup .main .button:first-child {
   margin-top: 0;
+}
+#guide .lists .content-lists .list.followed .items .item.followed {
+  background-color: #333;
 }
 #guide #info {
   float: left;
