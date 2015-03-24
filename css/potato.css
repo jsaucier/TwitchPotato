@@ -30,7 +30,7 @@ body {
 .window#error {
   left: 10px;
   bottom: 10px;
-  width: 350px;
+  /* width: 350px; */
 }
 .window .head {
   background-color: #6441a5;
