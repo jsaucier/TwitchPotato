@@ -27,13 +27,13 @@
 
         // Register an event for when the webview has finished loading.
         webview.addEventListener('contentload', function() {
-
             this.initializeWebView(username);
-
         }.bind(this));
 
         // Hook the console message event.
-        webview.addEventListener('consolemessage', function(e) { /* console.log(e);*/ });
+        webview.addEventListener('consolemessage', function(e) {
+            console.log(e);
+        });
 
         // Update the followed channels and games if requested.
         this.followedChannels(username);
@@ -127,40 +127,7 @@
             potato.input.registerInputs(potato.guide);
         }
 
-        // Update the guide.
-        //this.updateAll(username);
-
     };
-
-    /*Twitch.prototype.updateAll = function(username) {
-
-        var users = [];
-
-        if (username === undefined) {
-            $.each(this.users, function(index, value) {
-                users.push(index);
-            });
-        } else {
-            users = [username];
-        }
-
-        $.each(users, function(index, value) {
-
-            // Get the followed channels.
-            this.followedChannels(value);
-
-            // Get the top games and followed games.
-            this.games(value);
-
-            // Get the top channels.
-            this.channels();
-
-            // Get the featured channels.
-            this.featured();
-
-        }.bind(this));
-
-    };*/
 
     Twitch.prototype.showError = function(xhr, status, error) {
 
@@ -173,27 +140,33 @@
         var users = [];
 
         if (username === 'all') {
-            $.each(this.users, function(index, value) {
-                users.push(index);
+            $.each(this.users, function(user, value) {
+                users.push(user);
             });
         } else {
             users = [username];
         }
 
-        $.each(users, function(index, value) {
+        $.each(users, function(index, user) {
             $.ajax({
                 url: 'https://api.twitch.tv/kraken/users/{0}/follows/channels/{1}?oauth_token={2}&scope={3}'
-                    .format(value, channel, this.users[value], this.scope),
+                    .format(user, channel, this.users[user], this.scope),
                 type: (unfollow === true) ? 'DELETE' : 'PUT',
-                error: function(error) {
-                    console.log(error);
-                },
+
+                error: function(xhr, status, error) {
+                    this.showError(xhr, status, error);
+                }.bind(this),
+
                 success: function() {
+                    // Update the followed channels immediately.
+                    this.followedChannels(user);
+
                     // Get the time to delay.
-                    var time = (unfollow === true) ? 10000 : 1000;
+                    var time = (unfollow === true) ? 5000 : 1000;
+
                     // Update the followed channels after a delay.
                     setTimeout(function() {
-                        this.followedChannels(value);
+                        this.followedChannels(user);
                     }.bind(this), time);
                 }.bind(this)
             });
@@ -206,27 +179,33 @@
         var users = [];
 
         if (username === 'all') {
-            $.each(this.users, function(index, value) {
-                users.push(index);
+            $.each(this.users, function(user, value) {
+                users.push(user);
             });
         } else {
             users = [username];
         }
 
-        $.each(users, function(index, value) {
+        $.each(users, function(index, user) {
             $.ajax({
                 url: 'https://api.twitch.tv/api/users/{0}/follows/games/{1}?oauth_token={2}&scope={3}&limit=100'
-                    .format(value, game, this.users[value], this.scope),
+                    .format(user, game, this.users[user], this.scope),
                 type: (unfollow === true) ? 'DELETE' : 'PUT',
-                error: function(error) {
-                    console.log(error);
-                },
+
+                error: function(xhr, status, error) {
+                    this.showError(xhr, status, error);
+                }.bind(this),
+
                 success: function() {
+                    // Update the followed games immediately.
+                    this.followedGames(user);
+
                     // Get the time to delay.
-                    var time = (unfollow === true) ? 10000 : 1000;
+                    var time = (unfollow === true) ? 5000 : 1000;
+
                     // Update the followed games after a delay.
                     setTimeout(function() {
-                        this.games(value);
+                        this.games(user);
                     }.bind(this), time);
                 }.bind(this)
             });
@@ -238,9 +217,11 @@
 
         $.ajax({
             url: 'https://api.twitch.tv/kraken/users/{0}/follows/channels?limit=100'.format(username),
+
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
+
             success: function(json) {
                 // Channels list.
                 var channels = [];
@@ -269,9 +250,11 @@
     Twitch.prototype.followedGames = function(username) {
         $.ajax({
             url: 'https://api.twitch.tv/api/users/{0}/follows/games?limit=100'.format(username),
+
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
+
             success: function(json) {
                 // Update the guide.
                 potato.guide.onFollowedGames(username, json);
@@ -282,9 +265,11 @@
     Twitch.prototype.games = function() {
         $.ajax({
             url: 'https://api.twitch.tv/kraken/games/top?limit=100',
+
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
+
             success: function(json) {
                 potato.guide.onGames(json);
             }
@@ -294,9 +279,11 @@
     Twitch.prototype.featured = function() {
         $.ajax({
             url: 'https://api.twitch.tv/kraken/streams/featured?limit=100',
+
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
+
             success: function(json) {
                 potato.guide.onFeatured(json);
             }
@@ -306,9 +293,11 @@
     Twitch.prototype.channels = function() {
         $.ajax({
             url: 'https://api.twitch.tv/kraken/streams?limit=100',
+
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
+
             success: function(json) {
                 potato.guide.onChannels(json);
             }
@@ -318,9 +307,11 @@
     Twitch.prototype.game = function(game) {
         $.ajax({
             url: 'https://api.twitch.tv/kraken/streams?game={0}&limit=100'.format(game),
+
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
+
             success: function(json) {
                 potato.guide.onGame(game, json);
             }
@@ -330,9 +321,11 @@
     Twitch.prototype.video = function(channel) {
         $.ajax({
             url: 'https://api.twitch.tv/kraken/channels/{0}/videos?limit=100'.format(channel),
+
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
+
             success: function(json) {
                 potato.guide.onVideo(channel, json);
             }
