@@ -128,8 +128,23 @@
                 // Set the flashback value.
                 flashback: undefined,
                 // Set the webview value.
-                webview: $('#players webview[number="' + numPlayers + '"]')
+                webview: $('#players webview[number="' + numPlayers + '"]')[0]
             };
+
+            // Catch load events.
+            player.webview.addEventListener('loadcommit', function() {
+
+                // Inject the script file.
+                player.webview.executeScript({
+                    file: 'js/player-inject.js'
+                });
+
+            }.bind(this));
+
+            // Hook the console message event.
+            player.webview.addEventListener('consolemessage', function(e) {
+                console.log(e);
+            });
 
             // Add the player to our list.
             this.players.push(player);
@@ -179,7 +194,7 @@
 
         if (player.isLoaded !== true) {
             // Load the player after the webview has loaded.
-            player.webview.on('loadcommit', function() {
+            player.webview.addEventListener('loadcommit', function() {
                 setTimeout(function() {
                     // Load the player.
                     this.load(player, id, isVideo);
@@ -210,11 +225,11 @@
         if (player !== undefined) {
             // Update number of the currently selected player.
             current.number = player.number;
-            current.webview.attr('number', player.number);
+            $(current.webview).attr('number', player.number);
 
             // Update the number of the selected player.
             player.number = 0;
-            player.webview.attr('number', 0);
+            $(player.webview).attr('number', 0);
         }
 
         this.clearSelected();
@@ -275,7 +290,7 @@
     Player.prototype.remove = function(player) {
 
         // Remove the player from the document.
-        player.webview.remove();
+        $(player.webview).remove();
 
         // Remove the player from the player list.
         var index = this.players.indexOf(player);
@@ -304,7 +319,7 @@
             player.number = parseInt(i);
 
             // Update the webview
-            player.webview.attr('number', i);
+            $(player.webview).attr('number', i);
         }
 
     };
@@ -362,7 +377,6 @@
 
         // Set a new selected timer.
         this.selectTimer = setTimeout(this.clearSelected, 5000);
-        console.log(2, $('#players .selector').attr('number'));
 
     };
 
@@ -390,21 +404,11 @@
 
     Player.prototype.fullscreen = function(state) {
 
-        // Default to the  toggle stage.
-        state = (state === undefined) ? null : state;
+        // Get the selected player or the default.
+        var player = this.getSelectedPlayer();
 
-        var nHeight = screen.height;
-        var fHeight = nHeight + 32;
-
-        var player = this.getPlayerByNumber(0);
-
-        if ((state === null && player.webview.height() === nHeight) || state === true) {
-            // Toggle player to fullscreen.
-            player.webview.height(fHeight);
-        } else if ((state === null && player.webview.height() === fHeight) || state === false) {
-            // Toggle player to normal.
-            player.webview.height(nHeight);
-        }
+        // Execute the injected method.
+        this.executeMethod(player, 'toggleFullscreen', [state]);
 
     };
 
@@ -447,6 +451,24 @@
 
     };
 
+    Player.prototype.executeMethod = function(player, method, args) {
+
+        args = args || undefined;
+
+        var code = '{0}()'.format(method, args);
+
+        if (args !== undefined &&
+            args[0] !== undefined &&
+            args[0] !== null) {
+            code = '{0}({1})'.format(method, args);
+        }
+
+        player.webview.executeScript({
+            code: code
+        });
+
+    };
+
     Player.prototype.executeEmbedMethod = function(player, method, arg) {
 
         var code = 'document.getElementsByTagName("embed")[0].{0}()'.format(method);
@@ -455,7 +477,7 @@
             code = 'document.getElementsByTagName("embed")[0].{0}("{1}")'.format(method, arg);
         }
 
-        player.webview[0].executeScript({
+        player.webview.executeScript({
             code: code
         });
 
