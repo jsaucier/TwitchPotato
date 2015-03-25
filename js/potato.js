@@ -97,10 +97,10 @@
         // Retrieve the stored twitch users.
         this.loadStoredValue('sync', 'users', [], function() {
             // Load the twitch users.
-            for (var i in this.users) {
+            $.each(this.users, function(index, user) {
                 // Load the twitch users.
-                this.twitch.authorize(this.users[i]);
-            }
+                this.twitch.authorize(user);
+            }.bind(this));
             // Update the guide.
             this.guide.updateAll();
         }.bind(this));

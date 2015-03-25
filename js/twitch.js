@@ -8,7 +8,7 @@
 
     Twitch.prototype.authorize = function(username, update) {
 
-        if ($('#accounts .webview[username="' + username + '"]').length !== 0) {
+        if ($('#users .webview[username="' + username + '"]').length !== 0) {
             // Webview has already been created.
             return false;
         }
@@ -20,10 +20,10 @@
         var html = $($('#twitch-template').html().format(username));
 
         // Add the webview to the document.
-        $('#accounts').append(html);
+        $('#users').append(html);
 
         // Get the webview.
-        var webview = $('#accounts webview[username="' + username + '"]')[0];
+        var webview = $('#users webview[username="' + username + '"]')[0];
 
         // Register an event for when the webview has finished loading.
         webview.addEventListener('contentload', function() {
@@ -47,12 +47,12 @@
         var that = this;
 
         // Hide all of the webviews.
-        $('#accounts webview').hide();
+        $('#users webview').hide();
 
         // Iterate the webviews
         // Show remote webviews that need interaction
         // Initialize remote webviews that do not.
-        $('#accounts webview').each(function() {
+        $('#users webview').each(function() {
 
             // Webview needs user interaction, show this webview.
             if ($(this).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2') === 0) {
@@ -60,11 +60,11 @@
                 potato.input.registerInputs(potato);
 
                 // Set the title head.
-                $('#accounts .head').text('Enter the login for {0} | Press ESC to Cancel'.format($(this).attr('username')));
+                $('#users .head').text('Enter the login for {0} | Press ESC to Cancel'.format($(this).attr('username')));
 
                 // Show the webview.
                 $(this).show();
-                $('#accounts').fadeIn();
+                $('#users').fadeIn();
 
                 return false;
 
@@ -89,10 +89,10 @@
         var html = $($('#twitch-template').html().format(username));
 
         // Add the webview to the document.
-        $('#accounts').append(html);
+        $('#users').append(html);
 
         // Get the webview.
-        var webview = $('#accounts webview[username="' + username + '"]')[0];
+        var webview = $('#users webview[username="' + username + '"]')[0];
 
         // Clear the partition data.
         webview.clearData({}, {
@@ -117,11 +117,11 @@
         this.users[username] = token;
 
         // Remove the webview from the document.
-        $('#accounts webview[username="' + username + '"]').remove();
+        $('#users webview[username="' + username + '"]').remove();
 
         // No webviews are open.
-        if ($('#accounts webview').length === 0) {
-            $('#accounts').fadeOut();
+        if ($('#users webview').length === 0) {
+            $('#users').fadeOut();
             $('#guide').fadeIn();
 
             potato.input.registerInputs(potato.guide);
