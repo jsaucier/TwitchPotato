@@ -82,6 +82,9 @@
     };
 
     Potato.prototype.initialize = function() {
+        // Update the version
+        $('#time .version').text('v{0}'.format(chrome.runtime.getManifest().version));
+
         // Load the stored settings.
         this.loadStoredSettings();
     };

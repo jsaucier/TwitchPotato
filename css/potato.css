@@ -78,12 +78,14 @@ body {
   padding: 11px 15px;
   line-height: 1.3em;
 }
-#time .current {
-  float: right;
+#time .current,
+#time .version,
+#time .updated {
+  float: left;
   padding-left: 15px;
 }
 #time .updated {
-  float: left;
+  padding-left: 0;
 }
 #guide {
   position: fixed;
