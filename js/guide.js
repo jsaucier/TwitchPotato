@@ -154,7 +154,7 @@
 
     };
 
-    Guide.prototype.onFollowedChannels = function(account, json) {
+    Guide.prototype.onFollowedChannels = function(username, json) {
 
         var menus = ['featured', 'channels'];
 
@@ -183,7 +183,7 @@
 
     };
 
-    Guide.prototype.onFollowedGames = function(account, json) {
+    Guide.prototype.onFollowedGames = function(username, json) {
 
         // Track the followed games.
         $.each(json.follows, function(index, game) {

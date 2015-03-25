@@ -20,8 +20,8 @@
                     if ($('#webviews webview:visible').length === 0) {
                         window.close();
                     } else {
-                        if ($('#webviews #accounts webview').length !== 0) {
-                            var webview = $('#webviews #accounts webview:eq(0)');
+                        if ($('#webviews #users webview').length !== 0) {
+                            var webview = $('#webviews #users webview:eq(0)');
                             var username = webview.attr('username');
                             console.log(username);
 
@@ -30,23 +30,21 @@
                                 // Remove the username from the list.
                                 this.users.splice(this.users.indexOf(username), 1);
 
-                                // Sync the accounts.
+                                // Sync the users.
                                 chrome.storage.sync.set({
-                                    accounts: this.users
+                                    users: this.users
                                 });
 
                                 // Remove the webview.
-                                $('#webviews #accounts webview[username="' + username + '"]').remove();
+                                $('#webviews #users webview[username="' + username + '"]').remove();
 
                                 // Check to see if no webviews exist.
-                                if ($('#webviews #accounts webview').length === 0) {
+                                if ($('#webviews #users webview').length === 0) {
                                     // Hide the container.
-                                    $('#webviews #accounts').fadeOut();
+                                    $('#webviews #users').fadeOut();
                                 }
                             }.bind(this));
 
-                            // Hide the webviews.
-                            //$('#webviews #accounts').fadeOut();
                         } else if ($('#webviews #login webview').length !== 0) {
                             // Load a blank window to stop the video playing.
                             $('#webviews #login webview').attr('src', 'about:blank');
@@ -96,11 +94,11 @@
             this.updateZoom();
         }.bind(this));
 
-        // Retrieve the stored twitch accounts.
+        // Retrieve the stored twitch users.
         this.loadStoredValue('sync', 'users', [], function() {
-            // Load the twitch accounts.
+            // Load the twitch users.
             for (var i in this.users) {
-                // Load the twitch account.
+                // Load the twitch users.
                 this.twitch.authorize(this.users[i]);
             }
             // Update the guide.
@@ -284,8 +282,8 @@
 
                 // Ensure we have input in the control.
                 if (input.val() !== '') {
-                    if (input.attr('id') === 'add-account') {
-                        this.addAccount($.trim(input.val()));
+                    if (input.attr('id') === 'add-user') {
+                        this.addUser($.trim(input.val()));
                     } else if (input.attr('id') === 'follow-channel') {
                         this.twitch.followChannel('all', input.val());
                     } else if (input.attr('id') === 'follow-game') {
@@ -305,21 +303,21 @@
 
     };
 
-    Potato.prototype.addAccount = function(username) {
+    Potato.prototype.addUser = function(username) {
 
-        // Ensure we haven't already added the account.
+        // Ensure we haven't already added the user.
         if (this.users.indexOf(username) === -1) {
-            // Add the account to the list.
+            // Add the user to the list.
             this.users.push(username);
 
             // Update the guide.
             potato.guide.updateAll();
 
-            // Sync the accounts.
+            // Sync the users.
             chrome.storage.sync.set({
                 users: this.users
             }, function() {
-                // Login to the twitch account.
+                // Login to the twitch user.
                 this.twitch.authorize(username, true);
             }.bind(this));
         } else {
@@ -345,4 +343,4 @@
 
     window.Potato = potato;
 
-})(window, jQuery, chrome);
+})(window, window.jQuery, window.chrome);

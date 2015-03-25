@@ -56,7 +56,7 @@
                             <div class="item setting" type="login">
                                 <div class="setting">Log into Twitch</div>
                             </div>
-                            <div class="item setting" type="add-account" input="true">
+                            <div class="item setting" type="add-user" input="true">
                                 <div class="setting">Add Twitch User</div>
                             </div>
                             <div class="item setting" type="follow-channel" input="true">
@@ -86,7 +86,7 @@
                 <webview autosize="on" partition="persist:twitchpotato"></webview>
             </div>
 
-            <div id="accounts">
+            <div id="users">
                 <div class="head">Press ESC to Close</div>
             </div>
         </div>
@@ -153,7 +153,7 @@
             </div>
         </script>
 
-        <script id="add-account-setting-template" type="text/template">
+        <script id="add-user-setting-template" type="text/template">
             <div class="head import">
                 <div>Add Twitch User</div>
                 <div class="sub-head">
@@ -168,7 +168,7 @@
                         <div class="input">
                             Twitch Account
                             <br/>
-                            <input id="add-account" />
+                            <input id="add-user" />
                         </div>
                     </div>
                 </div>

@@ -436,7 +436,7 @@ body {
   background-color: #222;
 }
 #webviews #login,
-#webviews #accounts {
+#webviews #users {
   display: none;
   position: fixed;
   top: 0;
@@ -448,14 +448,14 @@ body {
   padding: 20px;
 }
 #webviews #login .head,
-#webviews #accounts .head {
+#webviews #users .head {
   position: absolute;
   background-color: #6441a5;
   padding: 5px;
   font-size: 1.2em;
 }
 #webviews #login webview,
-#webviews #accounts webview {
+#webviews #users webview {
   width: 100%;
   height: 100%;
   border: 5px solid #6441a5;
