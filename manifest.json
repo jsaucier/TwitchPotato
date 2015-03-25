@@ -21,8 +21,11 @@
         "webview",
         "fullscreen",
         "overrideEscFullscreen",
-        "<all_urls>",
-        "commands"
+        "commands",
+        "http://www.twitch.tv/*",
+        "https://api.twitch.tv/*",
+        "http://static-cdn.jtvnw.net/*.jpg"
+        /*"<all_urls>",*/
     ],
     "webview": {
         "partitions": [{
