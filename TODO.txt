@@ -1,1 +1,2 @@
+pageup and pagedown.
 Add chat back to the app.
