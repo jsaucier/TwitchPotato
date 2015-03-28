@@ -188,7 +188,7 @@
 
         $.each(users, function(index, user) {
             $.ajax({
-                url: 'https://api.twitch.tv/api/users/{0}/follows/games/{1}?oauth_token={2}&scope={3}&limit=100'
+                url: 'https://api.twitch.tv/api/users/{0}/follows/games/{1}?oauth_token={2}&scope={3}'
                     .format(user, game, this.users[user], this.scope),
                 type: (unfollow === true) ? 'DELETE' : 'PUT',
 
@@ -215,8 +215,35 @@
 
     Twitch.prototype.followedChannels = function(username) {
 
+        var getUserChannels = function(channels, next, current) {
+
+            var limit = 100;
+            var url = next || 'https://api.twitch.tv/kraken/streams?channel={0}&limit={1}'.format(channels.join(','), limit);
+
+            current = current || 0;
+
+            // Get the online channels.
+            $.ajax({
+                url: url,
+
+                error: function(xhr, status, error) {
+                    this.showError(xhr, status, error);
+                }.bind(this),
+
+                success: function(json) {
+                    // Return the json to the guide.
+                    potato.guide.onFollowedChannels(username, json);
+
+                    // Load the next page of results
+                    if (current + limit < json._total) {
+                        getUserChannels(channels, json._links.next, current + limit);
+                    }
+                }.bind(this)
+            });
+        };
+
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/users/{0}/follows/channels?limit=100'.format(username),
+            url: 'https://api.twitch.tv/kraken/users/{0}/follows/channels'.format(username),
 
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
@@ -231,25 +258,23 @@
                     channels.push(value.channel.name);
                 });
 
-                // Get the online channels.
-                $.ajax({
-                    url: 'https://api.twitch.tv/kraken/streams?channel={0}&limit=100'.format(channels.join(',')),
-                    error: function(xhr, status, error) {
-                        this.showError(xhr, status, error);
-                    }.bind(this),
-                    success: function(json) {
-                        // Return the json to the guide.
-                        potato.guide.onFollowedChannels(username, json);
-                    }.bind(this)
-                });
+                // Get the channels the user is following.
+                getUserChannels(channels);
+
             }.bind(this)
         });
 
     };
 
-    Twitch.prototype.followedGames = function(username) {
+    Twitch.prototype.followedGames = function(username, next, current) {
+
+        var limit = 100;
+        var url = next || 'https://api.twitch.tv/api/users/{0}/follows/games?limit={1}'.format(username, limit);
+
+        current = current || 0;
+
         $.ajax({
-            url: 'https://api.twitch.tv/api/users/{0}/follows/games?limit=100'.format(username),
+            url: url,
 
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
@@ -258,77 +283,147 @@
             success: function(json) {
                 // Update the guide.
                 potato.guide.onFollowedGames(username, json);
-            }
+
+                // Load the next page of results
+                if (current + limit < json._total) {
+                    this.followedGames(username, json._links.next, current + limit);
+                }
+            }.bind(this)
         });
+
     };
 
-    Twitch.prototype.games = function() {
+    Twitch.prototype.games = function(next, current) {
+
+        var limit = 100;
+        var url = next || 'https://api.twitch.tv/kraken/games/top?limit={0}'.format(limit);
+
+        current = current || 0;
+
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/games/top?limit=100',
+            url: url,
 
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
 
             success: function(json) {
+                // Update the guide.
                 potato.guide.onGames(json);
-            }
+
+                // Load the next page of results
+                if (current + limit < json._total) {
+                    this.games(json._links.next, current + limit);
+                }
+            }.bind(this)
         });
+
     };
 
-    Twitch.prototype.featured = function() {
+    Twitch.prototype.featured = function(next, current) {
+
+        var limit = 100;
+        var url = next || 'https://api.twitch.tv/kraken/streams/featured?limit={0}'.format(limit);
+
+        current = current || 0;
+
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/streams/featured?limit=100',
+            url: url,
 
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
 
             success: function(json) {
+                // Update the guide.
                 potato.guide.onFeatured(json);
-            }
+
+                // Load the next page of results
+                if (current + limit < json._total) {
+                    this.featured(json._links.next, current + limit);
+                }
+            }.bind(this)
         });
+
     };
 
-    Twitch.prototype.channels = function() {
+    Twitch.prototype.channels = function(next, current) {
+
+        var limit = 100;
+        var url = next || 'https://api.twitch.tv/kraken/streams?limit={0}'.format(limit);
+
+        current = current || 0;
+
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/streams?limit=100',
+            url: url,
 
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
 
             success: function(json) {
+                // Update the guide.
                 potato.guide.onChannels(json);
-            }
+
+                // Load the next page of results
+                /*if (current + limit < json._total) {
+                    this.channels(json._links.next, current + limit);
+                }*/
+            }.bind(this)
         });
+
     };
 
-    Twitch.prototype.game = function(game) {
+    Twitch.prototype.game = function(game, next, current) {
+
+        var limit = 100;
+        var url = next || 'https://api.twitch.tv/kraken/streams?game={0}&limit={1}'.format(game, limit);
+
+        current = current || 0;
+
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/streams?game={0}&limit=100'.format(game),
+            url: url,
 
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
 
             success: function(json) {
+                // Update the guide.
                 potato.guide.onGame(game, json);
-            }
+
+                // Load the next page of results
+                if (current + limit < json._total) {
+                    this.game(game, json._links.next, current + limit);
+                }
+            }.bind(this)
         });
+
     };
 
     Twitch.prototype.video = function(channel) {
+
+        var limit = 100;
+        var url = next || 'https://api.twitch.tv/kraken/channels/{0}/videos?&limit={1}'.format(channel, limit);
+
+        current = current || 0;
+
         $.ajax({
-            url: 'https://api.twitch.tv/kraken/channels/{0}/videos?limit=100'.format(channel),
+            url: url,
 
             error: function(xhr, status, error) {
                 this.showError(xhr, status, error);
             }.bind(this),
 
             success: function(json) {
+                // Update the guide.
                 potato.guide.onVideo(channel, json);
-            }
+
+                // Load the next page of results
+                if (current + limit < json._total) {
+                    this.video(channel, json._links.next, current + limit);
+                }
+            }.bind(this)
         });
     };
 
