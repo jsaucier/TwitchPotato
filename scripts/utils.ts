@@ -1,7 +1,7 @@
 module TwitchPotato {
     export module Utils {
         /** Formats seconds to time. */
-        export function formatSeconds(seconds: number): string {
+        export function FormatSeconds(seconds: number): string {
             var hours = Math.floor(seconds / (60 * 60));
 
             var minDiv = seconds % (60 * 60);
@@ -16,7 +16,7 @@ module TwitchPotato {
     }
 
         /** Formats the string. */
-        export function format(str: string, ...args: any[]): string {
+        export function Format(str: string, ...args: any[]): string {
             //    var args = arguments;
             return str.replace(/\{\{|\}\}|\{(\d+)\}/g, function(m, n) {
                 if (m === "{{") {
@@ -30,7 +30,7 @@ module TwitchPotato {
         }
 
         /** Deliminates a number with commas or a given character */
-        export function deliminate(num: number, char = ','): string {
+        export function Deliminate(num: number, char = ','): string {
             var str = num + '';
             var x = str.split('.');
             var x1 = x[0];

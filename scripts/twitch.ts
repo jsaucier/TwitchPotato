@@ -1,12 +1,108 @@
 module TwitchPotato {
     "use strict";
 
-    export interface UserToken {
+    export interface UserTokens {
         [key: string]: string;
     }
 
+    export interface Game {
+        name: string,
+        channels: number,
+        viewers: number,
+        boxArt: string,
+        followed?: boolean
+    }
+
+    export interface Games {
+        [name: string]: Game
+    }
+
     export class Twitch {
+
+        static clientId = '60wzh4fjbowe6jwtofuc1jakjfgekry';
+        static scope = 'user_read+user_follows_edit';
+        static limit = 100;
+
+        static urls = {
+            featured: '',
+            streams: '',
+
+            games: Utils.Format('https://api.twitch.tv/kraken/games/top?limit={0}', Twitch.limit),
+
+        }
+
+        public users: UserTokens = {};
+        public games: Games = {};
+
         constructor() { }
+
+        public Authorize(username, update): void {
+
+            if ($('#users .webview[username="' + username + '"]').length !== 0) {
+                // Webview has already been created.
+                return;
+            }
+
+            // Add the user to the users list.
+            //this.users[username] = true;
+
+            // Load the webview template
+            var html = $($('#twitch-template').html().format(username));
+
+            // Add the webview to the document.
+            $('#users').append(html);
+
+            // Get the webview.
+            var webview = $('#users webview[username="' + username + '"]')[0];
+
+            // Register an event for when the webview has finished loading.
+            webview.addEventListener('contentload', () => this.InitializeWebView(username));
+
+            // Hook the console message event.
+            webview.addEventListener('consolemessage', function(e) {
+                console.log(e);
+            });
+
+            // Update the followed channels and games if requested.
+            //this.FollowedChannels(username);
+            //this.FollowedGames(username);
+            console.log('Uncomment');
+        }
+
+        private InitializeWebView = function(username): void {
+            // Hide all of the webviews.
+            $('#users webview').hide();
+
+            // Iterate the webviews
+            // Show remote webviews that need interaction
+            // Initialize remote webviews that do not.
+            $('#users webview').each((index: number, webview: Webview) => {
+                // Webview needs user interaction, show this webview.
+                if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2') === 0) {
+                    // Load the global inputs.
+                    Application.Input.RegisterInputs(InputType.Global);
+
+                    // Set the title head.
+                    $('#users .head').text(Utils.Format('Enter the login for {0} | Press ESC to Cancel', $(webview).attr('username')));
+
+                    // Show the webview.
+                    $(webview).show();
+                    $('#users').fadeIn();
+
+                    return false;
+
+                } else {
+                    // Data to post.
+                    var data = {
+                        method: 'Init',
+                        args: [username, Twitch.clientId, Twitch.scope]
+                    };
+
+                    // Post the data to the remote webview.
+                    webview[0].contentWindow.postMessage(JSON.stringify(data), '*');
+                }
+            });
+        }
 
         // Removes and clears all of the partition data.
         public ClearPartition(username: string, callback = () => { }) {
@@ -40,146 +136,112 @@ module TwitchPotato {
                     // Call the callback.
                     callback();
                 });
-
         }
+
+        public OnAuthorized = function(username, token) {
+            // Store the token.
+            this.users[username] = token;
+
+            // Remove the webview from the document.
+            $('#users webview[username="' + username + '"]').remove();
+
+            // No webviews are open.
+            if ($('#users webview').length === 0) {
+                $('#users').fadeOut();
+                $('#guide').fadeIn();
+
+                Application.Guide.LoadInputs();
+            }
+        }
+
+        private ShowError = function(xhr, status, error) {
+            var json = xhr.responseJSON;
+            Application.ShowError(Utils.Format('{0} - {1}: {2}', json.status, json.error, json.message));
+        };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public UpdateGames = function(): void {
+            this.games = {};
+
+            $.ajax({
+                url: Twitch.urls.games,
+                error: this.ShowError,
+                success: (json) => {
+                    this.ParseGameJson(json);
+
+                    // Load the next page of results
+                    if (json._total > Twitch.limit)
+                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                            this.GetNextGames(Twitch.urls.games, offset);
+                }
+            });
+        }
+
+        private GetNextGames(url: string, offset: number): void {
+            $.ajax({
+                url: Utils.Format('&offset={0}', offset),
+                error: this.ShowError,
+                success: (json) => this.ParseGameJson(json),
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private ParseGameJson(json): void {
+            $.each(json.top, (index, g) => {
+                this.games[g.game.name] = {
+                    name: g.game.name,
+                    channels: g.channels,
+                    viewers: g.viewers,
+                    boxArt: g.game.box.large
+                };
+            });
+        }
+
+
     }
 }
 /*(function(potato, $, chrome, undefined) {
 
-    var Twitch = function() {
-        this.users = {};
-        this.clientId = '60wzh4fjbowe6jwtofuc1jakjfgekry';
-        this.scope = 'user_read+user_follows_edit';
-    };
-
-    Twitch.prototype.authorize = function(username, update) {
-
-        if ($('#users .webview[username="' + username + '"]').length !== 0) {
-            // Webview has already been created.
-            return false;
-        }
-
-        // Add the user to the users list.
-        this.users[username] = true;
-
-        // Load the webview template
-        var html = $($('#twitch-template').html().format(username));
-
-        // Add the webview to the document.
-        $('#users').append(html);
-
-        // Get the webview.
-        var webview = $('#users webview[username="' + username + '"]')[0];
-
-        // Register an event for when the webview has finished loading.
-        webview.addEventListener('contentload', function() {
-            this.initializeWebView(username);
-        }.bind(this));
-
-        // Hook the console message event.
-        webview.addEventListener('consolemessage', function(e) {
-            console.log(e);
-        });
-
-        // Update the followed channels and games if requested.
-        this.followedChannels(username);
-        this.followedGames(username);
-
-    };
-
-    Twitch.prototype.initializeWebView = function(username) {
-
-        // Reference to this.
-        var that = this;
-
-        // Hide all of the webviews.
-        $('#users webview').hide();
-
-        // Iterate the webviews
-        // Show remote webviews that need interaction
-        // Initialize remote webviews that do not.
-        $('#users webview').each(function() {
-
-            // Webview needs user interaction, show this webview.
-            if ($(this).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2') === 0) {
-                // Register online the global inputs
-                potato.input.registerInputs(potato);
-
-                // Set the title head.
-                $('#users .head').text('Enter the login for {0} | Press ESC to Cancel'.format($(this).attr('username')));
-
-                // Show the webview.
-                $(this).show();
-                $('#users').fadeIn();
-
-                return false;
-
-            } else {
-                // Data to post.
-                var data = {
-                    method: 'Init',
-                    args: [username, that.clientId, that.scope]
-                };
-
-                // Post the data to the remote webview.
-                $(this)[0].contentWindow.postMessage(JSON.stringify(data), '*');
-            }
-        });
-
-    };
-
-    // Removes and clears all of the partition data.
-    Twitch.prototype.remove = function(username, callback) {
-
-        // Load the webview template
-        var html = $($('#twitch-template').html().format(username));
-
-        // Add the webview to the document.
-        $('#users').append(html);
-
-        // Get the webview.
-        var webview = $('#users webview[username="' + username + '"]')[0];
-
-        // Clear the partition data.
-        webview.clearData({}, {
-                appcache: true,
-                cookies: true,
-                fileSystems: true,
-                indexedDB: true,
-                localStorage: true,
-                webSQL: true
-            },
-            function() {
-                if (callback !== undefined && typeof(callback) === 'function') {
-                    callback();
-                }
-            }.bind(this));
-
-    };
-
-    Twitch.prototype.onAuthorized = function(username, token) {
-
-        // Store the token.
-        this.users[username] = token;
-
-        // Remove the webview from the document.
-        $('#users webview[username="' + username + '"]').remove();
-
-        // No webviews are open.
-        if ($('#users webview').length === 0) {
-            $('#users').fadeOut();
-            $('#guide').fadeIn();
-
-            potato.input.registerInputs(potato.guide);
-        }
-
-    };
-
-    Twitch.prototype.showError = function(xhr, status, error) {
-
-        var json = xhr.responseJSON;
-        potato.showError('{0} - {1}: {2}'.format(json.status, json.error, json.message));
-    };
 
     Twitch.prototype.followChannel = function(username, channel, unfollow) {
 
@@ -339,32 +401,7 @@ module TwitchPotato {
 
     };
 
-    Twitch.prototype.games = function(next, current) {
 
-        var limit = 100;
-        var url = next || 'https://api.twitch.tv/kraken/games/top?limit={0}'.format(limit);
-
-        current = current || 0;
-
-        $.ajax({
-            url: url,
-
-            error: function(xhr, status, error) {
-                this.showError(xhr, status, error);
-            }.bind(this),
-
-            success: function(json) {
-                // Update the guide.
-                potato.guide.onGames(json);
-
-                // Load the next page of results
-                if (current + limit < json._total) {
-                    this.games(json._links.next, current + limit);
-                }
-            }.bind(this)
-        });
-
-    };
 
     Twitch.prototype.featured = function(next, current) {
 

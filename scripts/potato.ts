@@ -33,7 +33,7 @@ module TwitchPotato {
             $(() => this.Initialize())
         }
 
-        static ShowError(error): void {
+        public ShowError(error): void {
             $('#error .error').html(error);
             $('#error').fadeIn(() => setTimeout(() => { $('#error').fadeOut(); }, 10000));
         }
@@ -166,7 +166,7 @@ module TwitchPotato {
 
                 // Update the chat font size.
                 webview.insertCSS({
-                    code: Utils.format('body { font-size: {0}%!important; }', this.Storage.settings.zoom)
+                    code: Utils.Format('body { font-size: {0}%!important; }', this.Storage.settings.zoom)
                 });
             }
         }

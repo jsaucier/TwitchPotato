@@ -9,7 +9,7 @@ module TwitchPotato {
 
         private Initialize(): void {
             // Update the version
-            $('#time .version').text(Utils.format('v{0}', chrome.runtime.getManifest().version));
+            $('#time .version').text(Utils.Format('v{0}', chrome.runtime.getManifest().version));
         }
 
         /** Loads the Guide inputs. */
