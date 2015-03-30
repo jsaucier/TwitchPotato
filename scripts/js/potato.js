@@ -230,70 +230,34 @@ var TwitchPotato;
     })();
     TwitchPotato.Storage = Storage;
 })(TwitchPotato || (TwitchPotato = {}));
+"use strict";
 var TwitchPotato;
 (function (TwitchPotato) {
-    "use strict";
     var Twitch = (function () {
         function Twitch() {
+            var _this = this;
+            this.channelsTable = {};
+            this.gamesTable = {};
+            this.videosTable = {};
+            this.followedChannels = {};
+            this.followedGames = {};
+            this.featuredChannels = {};
+            this.topChannels = {};
+            this.gameChannels = {};
+            this.topGames = {};
+            this.gameVideos = {};
             this.users = {};
-            this.games = {};
-            this.InitializeWebView = function (username) {
-                $('#users webview').hide();
-                $('#users webview').each(function (index, webview) {
-                    if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2') === 0) {
-                        TwitchPotato.Application.Input.RegisterInputs(TwitchPotato.InputType.Global);
-                        $('#users .head').text(TwitchPotato.Utils.Format('Enter the login for {0} | Press ESC to Cancel', $(webview).attr('username')));
-                        $(webview).show();
-                        $('#users').fadeIn();
-                        return false;
-                    }
-                    else {
-                        var data = {
-                            method: 'Init',
-                            args: [
-                                username,
-                                Twitch.clientId,
-                                Twitch.scope
-                            ]
-                        };
-                        webview[0].contentWindow.postMessage(JSON.stringify(data), '*');
-                    }
-                });
-            };
-            this.OnAuthorized = function (username, token) {
-                this.users[username] = token;
-                $('#users webview[username="' + username + '"]').remove();
-                if ($('#users webview').length === 0) {
-                    $('#users').fadeOut();
-                    $('#guide').fadeIn();
-                    TwitchPotato.Application.Guide.LoadInputs();
-                }
-            };
-            this.ShowError = function (xhr, status, error) {
-                var json = xhr.responseJSON;
-                TwitchPotato.Application.ShowError(TwitchPotato.Utils.Format('{0} - {1}: {2}', json.status, json.error, json.message));
-            };
-            this.UpdateGames = function () {
-                var _this = this;
-                this.games = {};
-                $.ajax({
-                    url: Twitch.urls.games,
-                    error: this.ShowError,
-                    success: function (json) {
-                        _this.ParseGameJson(json);
-                        if (json._total > Twitch.limit)
-                            for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                                _this.GetNextGames(Twitch.urls.games, offset);
-                    }
-                });
-            };
+            window.addEventListener('message', function (event) {
+                var json = JSON.parse(event.data);
+                _this['on' + json.method].apply(_this, json.args);
+            });
         }
-        Twitch.prototype.Authorize = function (username, update) {
+        Twitch.prototype.Authorize = function (username) {
             var _this = this;
             if ($('#users .webview[username="' + username + '"]').length !== 0) {
                 return;
             }
-            var html = $($('#twitch-template').html().format(username));
+            var html = $(TwitchPotato.Utils.Format($('#twitch-template').html(), username));
             $('#users').append(html);
             var webview = $('#users webview[username="' + username + '"]')[0];
             webview.addEventListener('contentload', function () {
@@ -302,14 +266,38 @@ var TwitchPotato;
             webview.addEventListener('consolemessage', function (e) {
                 console.log(e);
             });
-            console.log('Uncomment');
+            this.GetFollowedChannels(username);
+            this.GetFollowedGames(username);
+        };
+        Twitch.prototype.InitializeWebView = function (username) {
+            $('#users webview').hide();
+            $('#users webview').each(function (index, webview) {
+                if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2') === 0) {
+                    TwitchPotato.Application.Input.RegisterInputs(TwitchPotato.InputType.Global);
+                    $('#users .head').text(TwitchPotato.Utils.Format('Enter the login for {0} | Press ESC to Cancel', $(webview).attr('username')));
+                    $(webview).show();
+                    $('#users').fadeIn();
+                    return false;
+                }
+                else {
+                    var data = {
+                        method: 'Init',
+                        args: [
+                            username,
+                            Twitch.clientId,
+                            Twitch.scope
+                        ]
+                    };
+                    webview[0].contentWindow.postMessage(JSON.stringify(data), '*');
+                }
+            });
         };
         Twitch.prototype.ClearPartition = function (username, callback) {
             if (callback === void 0) { callback = function () {
             }; }
             var webview = $('#users webview[username="' + username + '"]')[0];
             if (webview !== undefined) {
-                var html = $($('#twitch-template').html().format(username));
+                var html = $(TwitchPotato.Utils.Format($('#twitch-template').html(), username));
                 $('#users').append(html);
                 webview = $('#users webview[username="' + username + '"]')[0];
             }
@@ -325,24 +313,275 @@ var TwitchPotato;
                 callback();
             });
         };
-        Twitch.prototype.GetNextGames = function (url, offset) {
+        Twitch.prototype.OnAuthorized = function (username, token) {
+            this.users[username] = token;
+            $('#users webview[username="' + username + '"]').remove();
+            if ($('#users webview').length === 0) {
+                $('#users').fadeOut();
+                $('#guide').fadeIn();
+                TwitchPotato.Application.Guide.LoadInputs();
+            }
+        };
+        Twitch.prototype.ShowError = function (xhr, status, error) {
+            var json = xhr.responseJSON;
+            TwitchPotato.Application.ShowError(TwitchPotato.Utils.Format('{0} - {1}: {2}', json.status, json.error, json.message));
+        };
+        Twitch.prototype.FollowChannel = function (username, channel, unfollow) {
             var _this = this;
+            if (unfollow === void 0) { unfollow = false; }
+            var users = [];
+            if (username === 'all') {
+                $.each(this.users, function (user, value) {
+                    users.push(user);
+                });
+            }
+            else {
+                users = [
+                    username
+                ];
+            }
+            $.each(users, function (index, user) {
+                var url = TwitchPotato.Utils.Format(Twitch.urls.followChannel, user, channel, _this.users[user], Twitch.scope);
+                $.ajax({
+                    url: url,
+                    type: (unfollow === true) ? 'DELETE' : 'PUT',
+                    error: _this.ShowError,
+                    success: function () {
+                        _this.GetFollowedChannels(user);
+                        var time = (unfollow === true) ? 5000 : 1000;
+                        setTimeout(function () {
+                            return _this.GetFollowedChannels(user);
+                        }, time);
+                    }
+                });
+            });
+        };
+        Twitch.prototype.FollowGame = function (username, game, unfollow) {
+            var _this = this;
+            if (unfollow === void 0) { unfollow = false; }
+            var users = [];
+            if (username === 'all') {
+                $.each(this.users, function (user, value) {
+                    users.push(user);
+                });
+            }
+            else {
+                users = [
+                    username
+                ];
+            }
+            $.each(users, function (index, user) {
+                var url = TwitchPotato.Utils.Format(Twitch.urls.followGame, user, game, _this.users[user], Twitch.scope);
+                $.ajax({
+                    url: url,
+                    type: (unfollow === true) ? 'DELETE' : 'PUT',
+                    error: _this.ShowError,
+                    success: function () {
+                        _this.GetFollowedGames(user);
+                        var time = (unfollow === true) ? 5000 : 1000;
+                        setTimeout(function () {
+                            return _this.GetFollowedGames(user);
+                        }, time);
+                    }
+                });
+            });
+        };
+        Twitch.prototype.GetFeatured = function (getAll) {
+            var _this = this;
+            if (getAll === void 0) { getAll = true; }
+            this.featuredChannels = {};
+            var url = TwitchPotato.Utils.Format(Twitch.urls.featured, Twitch.limit);
             $.ajax({
-                url: TwitchPotato.Utils.Format('&offset={0}', offset),
+                url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    return _this.ParseGameJson(json);
+                    _this.ParseChannelsObject(json.featured, _this.featuredChannels);
+                    if (getAll === true && json._total > Twitch.limit)
+                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                            _this.GetNextChannels(url, offset, _this.featuredChannels);
+                }
+            });
+        };
+        Twitch.prototype.GetTopChannels = function (getAll) {
+            var _this = this;
+            if (getAll === void 0) { getAll = false; }
+            this.topChannels = {};
+            var url = TwitchPotato.Utils.Format(Twitch.urls.topChannels, Twitch.limit);
+            $.ajax({
+                url: url,
+                error: this.ShowError,
+                success: function (json) {
+                    _this.ParseChannelsObject(json.streams, _this.topChannels);
+                    if (getAll === true && json._total > Twitch.limit)
+                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                            _this.GetNextChannels(url, offset, _this.topChannels);
+                }
+            });
+        };
+        Twitch.prototype.GetTopGames = function (getAll) {
+            var _this = this;
+            if (getAll === void 0) { getAll = true; }
+            this.topGames = {};
+            var url = TwitchPotato.Utils.Format(Twitch.urls.games, Twitch.limit);
+            $.ajax({
+                url: url,
+                error: this.ShowError,
+                success: function (json) {
+                    _this.ParseGamesObject(json.top, _this.topGames);
+                    if (getAll === true && json._total > Twitch.limit)
+                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                            _this.GetNextGames(url, offset, _this.topGames);
+                }
+            });
+        };
+        Twitch.prototype.GetGameChannels = function (game, getAll) {
+            var _this = this;
+            if (getAll === void 0) { getAll = true; }
+            this.gameChannels = {};
+            var url = TwitchPotato.Utils.Format(Twitch.urls.game, game, Twitch.limit);
+            $.ajax({
+                url: url,
+                error: this.ShowError,
+                success: function (json) {
+                    _this.ParseChannelsObject(json.streams, _this.gameChannels);
+                    if (getAll === true && json._total > Twitch.limit)
+                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                            _this.GetNextChannels(url, offset, _this.gameChannels);
+                }
+            });
+        };
+        Twitch.prototype.GetChannelVideos = function (channel, getAll) {
+            var _this = this;
+            if (getAll === void 0) { getAll = true; }
+            this.gameVideos = {};
+            var url = TwitchPotato.Utils.Format(Twitch.urls.videos, channel, Twitch.limit);
+            $.ajax({
+                url: url,
+                error: this.ShowError,
+                success: function (json) {
+                    _this.ParseVideosObject(json.videos, _this.gameVideos);
+                    if (getAll === true && json._total > Twitch.limit)
+                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                            _this.GetNextVideos(url, offset, _this.gameVideos);
+                }
+            });
+        };
+        Twitch.prototype.GetFollowedChannels = function (username) {
+            var _this = this;
+            var search = [];
+            this.followedChannels = {};
+            var url = TwitchPotato.Utils.Format(Twitch.urls.followedChannels, username);
+            $.ajax({
+                url: url,
+                error: this.ShowError,
+                success: function (json) {
+                    $.each(json.follows, function (index, channel) {
+                        search.push(channel.channel.name);
+                    });
+                    _this.GetChannelsByName(search, _this.followedChannels);
+                }
+            });
+        };
+        Twitch.prototype.GetFollowedGames = function (username) {
+            var _this = this;
+            var search = [];
+            this.followedGames = {};
+            var url = TwitchPotato.Utils.Format(Twitch.urls.followedGames, username);
+            $.ajax({
+                url: url,
+                error: this.ShowError,
+                success: function (json) {
+                    $.each(json.follows, function (index, game) {
+                        _this.followedGames[game.name] = game.name;
+                    });
+                }
+            });
+        };
+        Twitch.prototype.GetChannelsByName = function (channels, dictionary) {
+            var _this = this;
+            var url = TwitchPotato.Utils.Format(Twitch.urls.searchChannels, channels.join(), Twitch.limit);
+            $.ajax({
+                url: url,
+                error: this.ShowError,
+                success: function (json) {
+                    _this.ParseChannelsObject(json.streams, dictionary);
+                    if (json._total > Twitch.limit)
+                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                            _this.GetNextChannels(url, offset, dictionary);
+                }
+            });
+        };
+        Twitch.prototype.GetNextChannels = function (url, offset, dictionary) {
+            var _this = this;
+            $.ajax({
+                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
+                error: this.ShowError,
+                success: function (json) {
+                    return _this.ParseChannelsObject(json.streams, dictionary);
                 },
             });
         };
-        Twitch.prototype.ParseGameJson = function (json) {
+        Twitch.prototype.GetNextGames = function (url, offset, dictionary) {
             var _this = this;
-            $.each(json.top, function (index, g) {
-                _this.games[g.game.name] = {
-                    name: g.game.name,
-                    channels: g.channels,
-                    viewers: g.viewers,
-                    boxArt: g.game.box.large
+            $.ajax({
+                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
+                error: this.ShowError,
+                success: function (json) {
+                    return _this.ParseGamesObject(json.top, dictionary);
+                },
+            });
+        };
+        Twitch.prototype.GetNextVideos = function (url, offset, dictionary) {
+            var _this = this;
+            $.ajax({
+                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
+                error: this.ShowError,
+                success: function (json) {
+                    return _this.ParseVideosObject(json.videos, dictionary);
+                },
+            });
+        };
+        Twitch.prototype.ParseChannelsObject = function (object, dictionary) {
+            var _this = this;
+            $.each(object, function (index, data) {
+                if (data.stream !== undefined)
+                    data = data.stream;
+                dictionary[data.channel.name] = data.channel.name;
+                _this.channelsTable[data.channel.name] = {
+                    name: data.channel.name,
+                    streamer: data.channel.display_name,
+                    title: data.channel.status,
+                    viewers: data.viewers,
+                    game: data.game,
+                    preview: data.preview.large
+                };
+            });
+        };
+        Twitch.prototype.ParseGamesObject = function (object, dictionary, followed) {
+            var _this = this;
+            if (followed === void 0) { followed = false; }
+            $.each(object, function (index, data) {
+                dictionary[data.game.name] = data.game.name;
+                _this.gamesTable[data.game.name] = {
+                    name: data.game.name,
+                    channels: data.channels || -1,
+                    viewers: data.viewers || -1,
+                    boxArt: data.game.box.large
+                };
+            });
+        };
+        Twitch.prototype.ParseVideosObject = function (object, dictionary) {
+            var _this = this;
+            $.each(object, function (index, data) {
+                dictionary[data._id] = data._id;
+                _this.videosTable[data._id] = {
+                    id: data._id,
+                    name: data.channel.name,
+                    streamer: data.channel.display_name,
+                    title: data.title,
+                    views: data.views,
+                    length: data.length,
+                    preview: (data.preview || '').replace(/320x240/, '640x360')
                 };
             });
         };
@@ -350,9 +589,17 @@ var TwitchPotato;
         Twitch.scope = 'user_read+user_follows_edit';
         Twitch.limit = 100;
         Twitch.urls = {
-            featured: '',
-            streams: '',
-            games: TwitchPotato.Utils.Format('https://api.twitch.tv/kraken/games/top?limit={0}', Twitch.limit),
+            followChannel: 'https://api.twitch.tv/kraken/users/{0}/follows/channels/{1}?oauth_token={2}&scope={3}',
+            followGame: 'https://api.twitch.tv/api/users/{0}/follows/games/{1}?oauth_token={2}&scope={3}',
+            followedChannels: 'https://api.twitch.tv/kraken/users/{0}/follows/channels',
+            followedGames: 'https://api.twitch.tv/api/users/{0}/follows/games',
+            featured: 'https://api.twitch.tv/kraken/streams/featured?limit={0}',
+            topChannels: 'https://api.twitch.tv/kraken/streams?limit={0}',
+            games: 'https://api.twitch.tv/kraken/games/top?limit={0}',
+            game: 'https://api.twitch.tv/kraken/streams?game={0}&limit={1}',
+            videos: 'https://api.twitch.tv/kraken/channels/{0}/videos?&limit={1}',
+            searchChannels: 'https://api.twitch.tv/kraken/streams?channel={0}&limit={1}',
+            searchGame: 'https://api.twitch.tv/kraken/search/games?q={0}&type=suggest&limit={1}'
         };
         return Twitch;
     })();
