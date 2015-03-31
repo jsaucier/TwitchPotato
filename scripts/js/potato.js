@@ -6,10 +6,10 @@ var TwitchPotato;
             this.Initialize();
         }
         Guide.prototype.Initialize = function () {
-            $('#time .version').text(Utils.Format('v{0}', chrome.runtime.getManifest().version));
+            $('#time .version').text(TwitchPotato.Utils.Format('v{0}', chrome.runtime.getManifest().version));
         };
         Guide.prototype.LoadInputs = function () {
-            Application.Input.RegisterInputs(TwitchPotato.InputType.Guide);
+            TwitchPotato.Application.Input.RegisterInputs(TwitchPotato.InputType.Guide);
         };
         Guide.prototype.OnInput = function (input) {
         };
@@ -21,13 +21,14 @@ var TwitchPotato;
 (function (TwitchPotato) {
     "use strict";
     (function (InputType) {
-        InputType[InputType['Global'] = 0] = 'Global';
-        InputType[InputType['Guide'] = 1] = 'Guide';
-        InputType[InputType['Player'] = 2] = 'Player';
+        InputType[InputType["Global"] = 0] = "Global";
+        InputType[InputType["Guide"] = 1] = "Guide";
+        InputType[InputType["Player"] = 2] = "Player";
     })(TwitchPotato.InputType || (TwitchPotato.InputType = {}));
     var InputType = TwitchPotato.InputType;
     var Input = (function () {
         function Input() {
+            var _this = this;
             this.registered = {};
             this.inputs = {};
             this.AddInput(InputType.Global, 'globalExit', 27, 'Exit');
@@ -57,7 +58,7 @@ var TwitchPotato;
             this.AddInput(InputType.Player, 'playerFullscreenEnter', 79, 'Enter Fullscreen');
             this.AddInput(InputType.Player, 'playerFullscreenExit', 73, 'Exit Fullscreen');
             $(document).keydown(function (event) {
-                this.OnInputEvent(event);
+                _this.OnInputEvent(event);
             });
         }
         Input.prototype.AddInput = function (type, id, code, name, desc) {
@@ -96,7 +97,7 @@ var TwitchPotato;
         Input.prototype.OnInputEvent = function (event) {
             if (this.registered[event.keyCode] !== undefined) {
                 $.each(this.registered[event.keyCode], function (index, input) {
-                    var context = (input.type === InputType.Global) ? Application : Application[InputType[input.type]];
+                    var context = (input.type === InputType.Global) ? TwitchPotato.Application : TwitchPotato.Application[InputType[input.type]];
                     context['OnInput'].call(context, input);
                 });
             }
@@ -122,14 +123,14 @@ var TwitchPotato;
     "use strict";
     var PlayerLayout;
     (function (PlayerLayout) {
-        PlayerLayout[PlayerLayout['Default'] = 0] = 'Default';
-        PlayerLayout[PlayerLayout['Equal'] = 1] = 'Equal';
+        PlayerLayout[PlayerLayout["Default"] = 0] = "Default";
+        PlayerLayout[PlayerLayout["Equal"] = 1] = "Equal";
     })(PlayerLayout || (PlayerLayout = {}));
     var Fullscreen;
     (function (Fullscreen) {
-        Fullscreen[Fullscreen['Enter'] = 0] = 'Enter';
-        Fullscreen[Fullscreen['Exit'] = 1] = 'Exit';
-        Fullscreen[Fullscreen['Toggle'] = 2] = 'Toggle';
+        Fullscreen[Fullscreen["Enter"] = 0] = "Enter";
+        Fullscreen[Fullscreen["Exit"] = 1] = "Exit";
+        Fullscreen[Fullscreen["Toggle"] = 2] = "Toggle";
     })(Fullscreen || (Fullscreen = {}));
     var Player = (function () {
         function Player() {
@@ -303,9 +304,7 @@ var TwitchPotato;
             this.ClearSelected();
         };
         Player.prototype.UpdateNumbers = function () {
-            this.players.sort(function (a, b) {
-                return a.number - b.number;
-            });
+            console.log('UpdateNumbers sort?');
             for (var i in this.players) {
                 var player = this.players[i];
                 player.number = parseInt(i);
@@ -470,14 +469,16 @@ var TwitchPotato;
             this.Load();
         }
         Storage.prototype.Load = function () {
+            var _this = this;
             chrome.storage.local.get(null, function (store) {
                 if ($.isEmptyObject(store) === true)
-                    store.settings = this.LoadDefaults(true);
-                this.settings = store.settings;
-                Application.OnStorageLoaded(store.settings);
+                    store.settings = _this.LoadDefaults(true);
+                _this.settings = store.settings;
+                TwitchPotato.Application.OnStorageLoaded(store.settings);
             });
         };
         Storage.prototype.LoadDefaults = function (clearStorage) {
+            var _this = this;
             if (clearStorage === void 0) { clearStorage = false; }
             this.settings = {
                 zoom: 100,
@@ -487,7 +488,7 @@ var TwitchPotato;
             };
             if (clearStorage)
                 this.ClearStorage(function () {
-                    this.Save();
+                    _this.Save();
                 });
             return this.settings;
         };
@@ -518,6 +519,7 @@ var TwitchPotato;
 (function (TwitchPotato) {
     var Twitch = (function () {
         function Twitch() {
+            var _this = this;
             this.channelsTable = {};
             this.gamesTable = {};
             this.videosTable = {};
@@ -531,18 +533,19 @@ var TwitchPotato;
             this.users = {};
             window.addEventListener('message', function (event) {
                 var json = JSON.parse(event.data);
-                this['on' + json.method].apply(this, json.args);
+                _this['on' + json.method].apply(_this, json.args);
             });
         }
         Twitch.prototype.Authorize = function (username) {
+            var _this = this;
             if ($('#users .webview[username="' + username + '"]').length !== 0) {
                 return;
             }
-            var html = $(Utils.Format($('#twitch-template').html(), username));
+            var html = $(TwitchPotato.Utils.Format($('#twitch-template').html(), username));
             $('#users').append(html);
             var webview = $('#users webview[username="' + username + '"]')[0];
             webview.addEventListener('contentload', function () {
-                return this.InitializeWebView(username);
+                return _this.InitializeWebView(username);
             });
             webview.addEventListener('consolemessage', function (e) {
                 console.log(e);
@@ -554,8 +557,8 @@ var TwitchPotato;
             $('#users webview').hide();
             $('#users webview').each(function (index, webview) {
                 if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2') === 0) {
-                    Application.Input.RegisterInputs(InputType.Global);
-                    $('#users .head').text(Utils.Format('Enter the login for {0} | Press ESC to Cancel', $(webview).attr('username')));
+                    TwitchPotato.Application.Input.RegisterInputs(TwitchPotato.InputType.Global);
+                    $('#users .head').text(TwitchPotato.Utils.Format('Enter the login for {0} | Press ESC to Cancel', $(webview).attr('username')));
                     $(webview).show();
                     $('#users').fadeIn();
                     return false;
@@ -578,7 +581,7 @@ var TwitchPotato;
             }; }
             var webview = $('#users webview[username="' + username + '"]')[0];
             if (webview !== undefined) {
-                var html = $(Utils.Format($('#twitch-template').html(), username));
+                var html = $(TwitchPotato.Utils.Format($('#twitch-template').html(), username));
                 $('#users').append(html);
                 webview = $('#users webview[username="' + username + '"]')[0];
             }
@@ -600,14 +603,15 @@ var TwitchPotato;
             if ($('#users webview').length === 0) {
                 $('#users').fadeOut();
                 $('#guide').fadeIn();
-                Application.Guide.LoadInputs();
+                TwitchPotato.Application.Guide.LoadInputs();
             }
         };
         Twitch.prototype.ShowError = function (xhr, status, error) {
             var json = xhr.responseJSON;
-            Application.ShowError(Utils.Format('{0} - {1}: {2}', json.status, json.error, json.message));
+            TwitchPotato.Application.ShowError(TwitchPotato.Utils.Format('{0} - {1}: {2}', json.status, json.error, json.message));
         };
         Twitch.prototype.FollowChannel = function (username, channel, unfollow) {
+            var _this = this;
             if (unfollow === void 0) { unfollow = false; }
             var users = [];
             if (username === 'all') {
@@ -621,22 +625,23 @@ var TwitchPotato;
                 ];
             }
             $.each(users, function (index, user) {
-                var url = Utils.Format(Twitch.urls.followChannel, user, channel, this.users[user], Twitch.scope);
+                var url = TwitchPotato.Utils.Format(Twitch.urls.followChannel, user, channel, _this.users[user], Twitch.scope);
                 $.ajax({
                     url: url,
                     type: (unfollow === true) ? 'DELETE' : 'PUT',
-                    error: this.ShowError,
+                    error: _this.ShowError,
                     success: function () {
-                        this.GetFollowedChannels(user);
+                        _this.GetFollowedChannels(user);
                         var time = (unfollow === true) ? 5000 : 1000;
                         setTimeout(function () {
-                            return this.GetFollowedChannels(user);
+                            return _this.GetFollowedChannels(user);
                         }, time);
                     }
                 });
             });
         };
         Twitch.prototype.FollowGame = function (username, game, unfollow) {
+            var _this = this;
             if (unfollow === void 0) { unfollow = false; }
             var users = [];
             if (username === 'all') {
@@ -650,100 +655,106 @@ var TwitchPotato;
                 ];
             }
             $.each(users, function (index, user) {
-                var url = Utils.Format(Twitch.urls.followGame, user, game, this.users[user], Twitch.scope);
+                var url = TwitchPotato.Utils.Format(Twitch.urls.followGame, user, game, _this.users[user], Twitch.scope);
                 $.ajax({
                     url: url,
                     type: (unfollow === true) ? 'DELETE' : 'PUT',
-                    error: this.ShowError,
+                    error: _this.ShowError,
                     success: function () {
-                        this.GetFollowedGames(user);
+                        _this.GetFollowedGames(user);
                         var time = (unfollow === true) ? 5000 : 1000;
                         setTimeout(function () {
-                            return this.GetFollowedGames(user);
+                            return _this.GetFollowedGames(user);
                         }, time);
                     }
                 });
             });
         };
         Twitch.prototype.GetFeatured = function (getAll) {
+            var _this = this;
             if (getAll === void 0) { getAll = true; }
             this.featuredChannels = {};
-            var url = Utils.Format(Twitch.urls.featured, Twitch.limit);
+            var url = TwitchPotato.Utils.Format(Twitch.urls.featured, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    this.ParseChannelsObject(json.featured, this.featuredChannels);
+                    _this.ParseChannelsObject(json.featured, _this.featuredChannels);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            this.GetNextChannels(url, offset, this.featuredChannels);
+                            _this.GetNextChannels(url, offset, _this.featuredChannels);
                 }
             });
         };
         Twitch.prototype.GetTopChannels = function (getAll) {
+            var _this = this;
             if (getAll === void 0) { getAll = false; }
             this.topChannels = {};
-            var url = Utils.Format(Twitch.urls.topChannels, Twitch.limit);
+            var url = TwitchPotato.Utils.Format(Twitch.urls.topChannels, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    this.ParseChannelsObject(json.streams, this.topChannels);
+                    _this.ParseChannelsObject(json.streams, _this.topChannels);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            this.GetNextChannels(url, offset, this.topChannels);
+                            _this.GetNextChannels(url, offset, _this.topChannels);
                 }
             });
         };
         Twitch.prototype.GetTopGames = function (getAll) {
+            var _this = this;
             if (getAll === void 0) { getAll = true; }
             this.topGames = {};
-            var url = Utils.Format(Twitch.urls.games, Twitch.limit);
+            var url = TwitchPotato.Utils.Format(Twitch.urls.games, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    this.ParseGamesObject(json.top, this.topGames);
+                    _this.ParseGamesObject(json.top, _this.topGames);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            this.GetNextGames(url, offset, this.topGames);
+                            _this.GetNextGames(url, offset, _this.topGames);
                 }
             });
         };
         Twitch.prototype.GetGameChannels = function (game, getAll) {
+            var _this = this;
             if (getAll === void 0) { getAll = true; }
             this.gameChannels = {};
-            var url = Utils.Format(Twitch.urls.game, game, Twitch.limit);
+            var url = TwitchPotato.Utils.Format(Twitch.urls.game, game, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    this.ParseChannelsObject(json.streams, this.gameChannels);
+                    _this.ParseChannelsObject(json.streams, _this.gameChannels);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            this.GetNextChannels(url, offset, this.gameChannels);
+                            _this.GetNextChannels(url, offset, _this.gameChannels);
                 }
             });
         };
         Twitch.prototype.GetChannelVideos = function (channel, getAll) {
+            var _this = this;
             if (getAll === void 0) { getAll = true; }
             this.gameVideos = {};
-            var url = Utils.Format(Twitch.urls.videos, channel, Twitch.limit);
+            var url = TwitchPotato.Utils.Format(Twitch.urls.videos, channel, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    this.ParseVideosObject(json.videos, this.gameVideos);
+                    _this.ParseVideosObject(json.videos, _this.gameVideos);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            this.GetNextVideos(url, offset, this.gameVideos);
+                            _this.GetNextVideos(url, offset, _this.gameVideos);
                 }
             });
         };
         Twitch.prototype.GetFollowedChannels = function (username) {
+            var _this = this;
             var search = [];
             this.followedChannels = {};
-            var url = Utils.Format(Twitch.urls.followedChannels, username);
+            var url = TwitchPotato.Utils.Format(Twitch.urls.followedChannels, username);
             $.ajax({
                 url: url,
                 error: this.ShowError,
@@ -751,70 +762,76 @@ var TwitchPotato;
                     $.each(json.follows, function (index, channel) {
                         search.push(channel.channel.name);
                     });
-                    this.GetChannelsByName(search, this.followedChannels);
+                    _this.GetChannelsByName(search, _this.followedChannels);
                 }
             });
         };
         Twitch.prototype.GetFollowedGames = function (username) {
+            var _this = this;
             var search = [];
             this.followedGames = {};
-            var url = Utils.Format(Twitch.urls.followedGames, username);
+            var url = TwitchPotato.Utils.Format(Twitch.urls.followedGames, username);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
                     $.each(json.follows, function (index, game) {
-                        this.followedGames[game.name] = game.name;
+                        _this.followedGames[game.name] = game.name;
                     });
                 }
             });
         };
         Twitch.prototype.GetChannelsByName = function (channels, dictionary) {
-            var url = Utils.Format(Twitch.urls.searchChannels, channels.join(), Twitch.limit);
+            var _this = this;
+            var url = TwitchPotato.Utils.Format(Twitch.urls.searchChannels, channels.join(), Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    this.ParseChannelsObject(json.streams, dictionary);
+                    _this.ParseChannelsObject(json.streams, dictionary);
                     if (json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            this.GetNextChannels(url, offset, dictionary);
+                            _this.GetNextChannels(url, offset, dictionary);
                 }
             });
         };
         Twitch.prototype.GetNextChannels = function (url, offset, dictionary) {
+            var _this = this;
             $.ajax({
-                url: Utils.Format(url + '&offset={0}', offset),
+                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
                 error: this.ShowError,
                 success: function (json) {
-                    return this.ParseChannelsObject(json.streams, dictionary);
+                    return _this.ParseChannelsObject(json.streams, dictionary);
                 },
             });
         };
         Twitch.prototype.GetNextGames = function (url, offset, dictionary) {
+            var _this = this;
             $.ajax({
-                url: Utils.Format(url + '&offset={0}', offset),
+                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
                 error: this.ShowError,
                 success: function (json) {
-                    return this.ParseGamesObject(json.top, dictionary);
+                    return _this.ParseGamesObject(json.top, dictionary);
                 },
             });
         };
         Twitch.prototype.GetNextVideos = function (url, offset, dictionary) {
+            var _this = this;
             $.ajax({
-                url: Utils.Format(url + '&offset={0}', offset),
+                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
                 error: this.ShowError,
                 success: function (json) {
-                    return this.ParseVideosObject(json.videos, dictionary);
+                    return _this.ParseVideosObject(json.videos, dictionary);
                 },
             });
         };
         Twitch.prototype.ParseChannelsObject = function (object, dictionary) {
+            var _this = this;
             $.each(object, function (index, data) {
                 if (data.stream !== undefined)
                     data = data.stream;
                 dictionary[data.channel.name] = data.channel.name;
-                this.channelsTable[data.channel.name] = {
+                _this.channelsTable[data.channel.name] = {
                     name: data.channel.name,
                     streamer: data.channel.display_name,
                     title: data.channel.status,
@@ -825,10 +842,11 @@ var TwitchPotato;
             });
         };
         Twitch.prototype.ParseGamesObject = function (object, dictionary, followed) {
+            var _this = this;
             if (followed === void 0) { followed = false; }
             $.each(object, function (index, data) {
                 dictionary[data.game.name] = data.game.name;
-                this.gamesTable[data.game.name] = {
+                _this.gamesTable[data.game.name] = {
                     name: data.game.name,
                     channels: data.channels || -1,
                     viewers: data.viewers || -1,
@@ -837,9 +855,10 @@ var TwitchPotato;
             });
         };
         Twitch.prototype.ParseVideosObject = function (object, dictionary) {
+            var _this = this;
             $.each(object, function (index, data) {
                 dictionary[data._id] = data._id;
-                this.videosTable[data._id] = {
+                _this.videosTable[data._id] = {
                     id: data._id,
                     name: data.channel.name,
                     streamer: data.channel.display_name,
@@ -883,22 +902,23 @@ var TwitchPotato;
     "use strict";
     var ZoomType;
     (function (ZoomType) {
-        ZoomType[ZoomType['Update'] = 0] = 'Update';
-        ZoomType[ZoomType['In'] = 1] = 'In';
-        ZoomType[ZoomType['Out'] = 2] = 'Out';
-        ZoomType[ZoomType['Reset'] = 3] = 'Reset';
+        ZoomType[ZoomType["Update"] = 0] = "Update";
+        ZoomType[ZoomType["In"] = 1] = "In";
+        ZoomType[ZoomType["Out"] = 2] = "Out";
+        ZoomType[ZoomType["Reset"] = 3] = "Reset";
     })(ZoomType || (ZoomType = {}));
     (function (Direction) {
-        Direction[Direction['Up'] = 0] = 'Up';
-        Direction[Direction['Down'] = 1] = 'Down';
-        Direction[Direction['Left'] = 2] = 'Left';
-        Direction[Direction['Right'] = 3] = 'Right';
+        Direction[Direction["Up"] = 0] = "Up";
+        Direction[Direction["Down"] = 1] = "Down";
+        Direction[Direction["Left"] = 2] = "Left";
+        Direction[Direction["Right"] = 3] = "Right";
     })(TwitchPotato.Direction || (TwitchPotato.Direction = {}));
     var Direction = TwitchPotato.Direction;
     var Main = (function () {
         function Main() {
+            var _this = this;
             $(function () {
-                return this.Initialize();
+                return _this.Initialize();
             });
         }
         Main.prototype.ShowError = function (error) {
@@ -910,11 +930,11 @@ var TwitchPotato;
             });
         };
         Main.prototype.Initialize = function () {
-            this.Storage = new Storage();
-            this.Input = new Input();
-            this.Guide = new Guide();
-            this.Player = new Player();
-            this.Twitch = new Twitch();
+            this.Storage = new TwitchPotato.Storage();
+            this.Input = new TwitchPotato.Input();
+            this.Guide = new TwitchPotato.Guide();
+            this.Player = new TwitchPotato.Player();
+            this.Twitch = new TwitchPotato.Twitch();
             this.Guide.LoadInputs();
         };
         Main.prototype.OnStorageLoaded = function (storage) {
@@ -989,7 +1009,7 @@ var TwitchPotato;
             if ($('#players .chat webview').length > 0) {
                 var webview = $('#players .chat webview')[0];
                 webview.insertCSS({
-                    code: Utils.Format('body { font-size: {0}%!important; }', this.Storage.settings.zoom)
+                    code: TwitchPotato.Utils.Format('body { font-size: {0}%!important; }', this.Storage.settings.zoom)
                 });
             }
         };

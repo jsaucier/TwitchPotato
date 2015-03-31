@@ -11,17 +11,17 @@ module TwitchPotato {
     "use strict";
 
     enum ZoomType {
-        'Update',
-        'In',
-        'Out',
-        'Reset'
+        Update,
+        In,
+        Out,
+        Reset
     }
 
     export enum Direction {
-        'Up',
-        'Down',
-        'Left',
-        'Right'
+        Up,
+        Down,
+        Left,
+        Right
     }
 
     export class Main {

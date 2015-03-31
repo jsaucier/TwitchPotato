@@ -2,9 +2,9 @@ module TwitchPotato {
     "use strict";
 
     export enum InputType {
-        'Global',
-        'Guide',
-        'Player'
+        Global,
+        Guide,
+        Player
     }
 
     export class Input {

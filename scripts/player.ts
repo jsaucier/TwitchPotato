@@ -2,14 +2,14 @@ module TwitchPotato {
     "use strict";
 
     enum PlayerLayout {
-        'Default',
-        'Equal'
+        Default,
+        Equal
     }
 
     enum Fullscreen {
-        'Enter',
-        'Exit',
-        'Toggle'
+        Enter,
+        Exit,
+        Toggle
     }
 
     export class Player {
@@ -274,9 +274,10 @@ module TwitchPotato {
 
         private UpdateNumbers(): void {
             /* Sort the players by their number value. */
-            this.players.sort((a, b) => {
+            /*this.players.sort((a, b) => {
                 return a.number - b.number;
-            });
+            });*/
+            console.log('UpdateNumbers sort?');
 
             /* Reset their number values based on their new index. */
             for (var i in this.players) {
