@@ -221,7 +221,7 @@ var TwitchPotato;
                         file: 'js/jquery-2.1.1.min.js'
                     });
                     player.webview.executeScript({
-                        file: 'js/player-inject.js'
+                        file: 'js/inject.js'
                     });
                     setTimeout(function () {
                         _this.Load(player, id, isVideo);

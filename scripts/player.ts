@@ -122,7 +122,7 @@ module TwitchPotato {
 
                     /* Inject the script file. */
                     player.webview.executeScript({
-                        file: 'js/player-inject.js'
+                        file: 'js/inject.js'
                     });
 
                     setTimeout(() => {

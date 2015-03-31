@@ -18,7 +18,6 @@ module TwitchPotato {
         }
 
         public OnInput(input: InputData): void {
-
         }
     }
 }
