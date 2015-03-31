@@ -1,5 +1,13 @@
 module TwitchPotato {
     export module Utils {
+        /* Gets the number of entries in a dictionary. */
+        export function DictionarySize(dictionary: Dictionary<any>): number {
+            var count = 0;
+            for (var key in dictionary) {
+                count++;
+            }
+            return count;
+        }
         /** Formats seconds to time. */
         export function FormatSeconds(seconds: number): string {
             var hours = Math.floor(seconds / (60 * 60));

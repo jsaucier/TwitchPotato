@@ -7,25 +7,9 @@ module TwitchPotato {
         'Player'
     }
 
-    export interface InputData {
-        id: string;
-        type: InputType;
-        name: string;
-        desc: string;
-        code: number;
-    }
-
-    interface Inputs {
-        [id: string]: InputData;
-    }
-
-    interface RegisteredInputs {
-        [id: number]: InputData[]
-    }
-
     export class Input {
-        private registered: RegisteredInputs = {};
-        private inputs: Inputs = {};
+        private registered: Dictionary<InputData[]> = {};
+        private inputs: Dictionary<InputData> = {};
 
         constructor() {
             this.AddInput(InputType.Global, 'globalExit', 27, 'Exit');
@@ -70,8 +54,8 @@ module TwitchPotato {
             };
         }
 
-        private GetInputsByType(type: InputType): Inputs {
-            var inputs: Inputs = {};
+        private GetInputsByType(type: InputType): Dictionary<InputData> {
+            var inputs: Dictionary<InputData> = {};
 
             $.each(this.inputs, (id: string, input: InputData) => {
                 if (input.type === type) {

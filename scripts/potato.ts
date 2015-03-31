@@ -10,15 +10,18 @@
 module TwitchPotato {
     "use strict";
 
-    interface OnlineChannel {
-        [id: string]: string;
-    }
-
     enum ZoomType {
         'Update',
         'In',
         'Out',
         'Reset'
+    }
+
+    export enum Direction {
+        'Up',
+        'Down',
+        'Left',
+        'Right'
     }
 
     export class Main {
@@ -123,7 +126,7 @@ module TwitchPotato {
         }
 
         /** Toggles the Guide. */
-        private ToggleGuide(): void {
+        public ToggleGuide(): void {
             if ($('#guide:visible').length !== 0) {
                 $('#players').fadeIn();
                 $('#guide').fadeOut();

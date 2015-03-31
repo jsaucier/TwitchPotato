@@ -6,10 +6,10 @@ var TwitchPotato;
             this.Initialize();
         }
         Guide.prototype.Initialize = function () {
-            $('#time .version').text(TwitchPotato.Utils.Format('v{0}', chrome.runtime.getManifest().version));
+            $('#time .version').text(Utils.Format('v{0}', chrome.runtime.getManifest().version));
         };
         Guide.prototype.LoadInputs = function () {
-            TwitchPotato.Application.Input.RegisterInputs(TwitchPotato.InputType.Guide);
+            Application.Input.RegisterInputs(TwitchPotato.InputType.Guide);
         };
         Guide.prototype.OnInput = function (input) {
         };
@@ -28,7 +28,6 @@ var TwitchPotato;
     var InputType = TwitchPotato.InputType;
     var Input = (function () {
         function Input() {
-            var _this = this;
             this.registered = {};
             this.inputs = {};
             this.AddInput(InputType.Global, 'globalExit', 27, 'Exit');
@@ -58,7 +57,7 @@ var TwitchPotato;
             this.AddInput(InputType.Player, 'playerFullscreenEnter', 79, 'Enter Fullscreen');
             this.AddInput(InputType.Player, 'playerFullscreenExit', 73, 'Exit Fullscreen');
             $(document).keydown(function (event) {
-                _this.OnInputEvent(event);
+                this.OnInputEvent(event);
             });
         }
         Input.prototype.AddInput = function (type, id, code, name, desc) {
@@ -97,7 +96,7 @@ var TwitchPotato;
         Input.prototype.OnInputEvent = function (event) {
             if (this.registered[event.keyCode] !== undefined) {
                 $.each(this.registered[event.keyCode], function (index, input) {
-                    var context = (input.type === InputType.Global) ? TwitchPotato.Application : TwitchPotato.Application[InputType[input.type]];
+                    var context = (input.type === InputType.Global) ? Application : Application[InputType[input.type]];
                     context['OnInput'].call(context, input);
                 });
             }
@@ -121,13 +120,291 @@ var TwitchPotato;
 var TwitchPotato;
 (function (TwitchPotato) {
     "use strict";
+    var PlayerLayout;
+    (function (PlayerLayout) {
+        PlayerLayout[PlayerLayout['Default'] = 0] = 'Default';
+        PlayerLayout[PlayerLayout['Equal'] = 1] = 'Equal';
+    })(PlayerLayout || (PlayerLayout = {}));
+    var Fullscreen;
+    (function (Fullscreen) {
+        Fullscreen[Fullscreen['Enter'] = 0] = 'Enter';
+        Fullscreen[Fullscreen['Exit'] = 1] = 'Exit';
+        Fullscreen[Fullscreen['Toggle'] = 2] = 'Toggle';
+    })(Fullscreen || (Fullscreen = {}));
     var Player = (function () {
         function Player() {
+            this.layout = PlayerLayout.Default;
         }
         Player.prototype.LoadInputs = function () {
             TwitchPotato.Application.Input.RegisterInputs(TwitchPotato.InputType.Player);
         };
         Player.prototype.OnInput = function (input) {
+            switch (input.id) {
+                case 'playerUp':
+                    this.UpdateSelected(-1);
+                    break;
+                case 'playerDown':
+                    this.UpdateSelected(1);
+                    break;
+                case 'playerStop':
+                    this.Stop();
+                    break;
+                case 'playerPause':
+                    this.Pause();
+                    break;
+                case 'playerMute':
+                    this.Mute(undefined);
+                    break;
+                case 'playerFlashback':
+                    this.Flashback();
+                    break;
+                case 'playerSelect':
+                    this.Select();
+                    break;
+                case 'playerLayout':
+                    this.UpdateLayout();
+                    break;
+                case 'playerFullscreenToggle':
+                    this.Fullscreen(Fullscreen.Toggle);
+                    break;
+                case 'playerFullscreenEnter':
+                    this.Fullscreen(Fullscreen.Enter);
+                    break;
+                case 'playerFullscreenExit':
+                    this.Fullscreen(Fullscreen.Exit);
+                    break;
+                default:
+                    break;
+            }
+        };
+        Player.prototype.GetPlayerById = function (id) {
+            for (var i in this.players) {
+                var player = this.players[i];
+                if (player.id === id) {
+                    return player;
+                }
+            }
+            return undefined;
+        };
+        Player.prototype.GetPlayerByNumber = function (number) {
+            for (var i in this.players) {
+                var player = this.players[i];
+                if (player.number === number) {
+                    return player;
+                }
+            }
+            return undefined;
+        };
+        Player.prototype.GetSelectedPlayer = function () {
+            var number = parseInt($('#players .player.selected').attr('number')) || 0;
+            return this.GetPlayerByNumber(number);
+        };
+        Player.prototype.Create = function (id, isVideo) {
+            var _this = this;
+            if (isVideo === void 0) { isVideo = false; }
+            var player = this.GetPlayerById(id);
+            if (player === undefined) {
+                var numPlayers = TwitchPotato.Utils.DictionarySize(this.players);
+                $('#players').append($(TwitchPotato.Utils.Format($('#player-template').html(), id, numPlayers)));
+                player = {
+                    id: id,
+                    isLoaded: false,
+                    isPlaying: false,
+                    isMuted: false,
+                    number: numPlayers,
+                    flashback: undefined,
+                    webview: $('#players webview[number="' + numPlayers + '"]')[0]
+                };
+                player.webview.addEventListener('loadcommit', function () {
+                    player.webview.executeScript({
+                        file: 'js/jquery-2.1.1.min.js'
+                    });
+                    player.webview.executeScript({
+                        file: 'js/player-inject.js'
+                    });
+                    setTimeout(function () {
+                        _this.Load(player, id, isVideo);
+                        player.isLoaded = true;
+                    });
+                });
+                player.webview.addEventListener('consolemessage', function (e) {
+                    console.log(e);
+                });
+                this.players[player.id] = player;
+            }
+            return player;
+        };
+        Player.prototype.Play = function (id, create, isVideo) {
+            if (create === void 0) { create = false; }
+            if (isVideo === void 0) { isVideo = false; }
+            this.LoadInputs();
+            var numPlayers = TwitchPotato.Utils.DictionarySize(this.players);
+            if (numPlayers === 4)
+                return;
+            var player = this.GetPlayerById(id);
+            if (player !== undefined) {
+                this.Select();
+                this.ExecuteEmbedMethod(player, 'playVideo');
+                player.isPlaying = true;
+                return;
+            }
+            if (create === true) {
+                player = this.GetPlayerById(id) || this.Create(id);
+            }
+            else {
+                player = this.GetPlayerByNumber(0) || this.Create(id);
+            }
+            if (player.isLoaded === true) {
+                this.Load(player, id, isVideo);
+            }
+            $('#players').fadeIn();
+            this.UpdateLayout();
+        };
+        Player.prototype.Select = function () {
+            var current = this.GetPlayerByNumber(0);
+            var player = this.GetSelectedPlayer();
+            if (player !== undefined) {
+                current.number = player.number;
+                $(current.webview).attr('number', player.number);
+                player.number = 0;
+                $(player.webview).attr('number', 0);
+            }
+            this.ClearSelected();
+        };
+        Player.prototype.Stop = function () {
+            var player = this.GetSelectedPlayer();
+            if (player !== undefined) {
+                if (TwitchPotato.Utils.DictionarySize(this.players) > 1) {
+                    this.Remove(player);
+                }
+                else {
+                    this.ExecuteEmbedMethod(player, 'pauseVideo');
+                    player.isPlaying = false;
+                    TwitchPotato.Application.ToggleGuide();
+                }
+            }
+        };
+        Player.prototype.Pause = function () {
+            var player = this.GetSelectedPlayer();
+            if (player !== undefined) {
+                if (player.isPlaying) {
+                    this.ExecuteEmbedMethod(player, 'pauseVideo');
+                }
+                else {
+                    this.ExecuteEmbedMethod(player, 'playVideo');
+                }
+                player.isPlaying = !player.isPlaying;
+            }
+        };
+        Player.prototype.Remove = function (player) {
+            $(player.webview).remove();
+            delete this.players[player.id];
+            this.UpdateNumbers();
+            this.ClearSelected();
+        };
+        Player.prototype.UpdateNumbers = function () {
+            this.players.sort(function (a, b) {
+                return a.number - b.number;
+            });
+            for (var i in this.players) {
+                var player = this.players[i];
+                player.number = parseInt(i);
+                $(player.webview).attr('number', i);
+            }
+        };
+        Player.prototype.UpdateLayout = function (update) {
+            if (update === void 0) { update = false; }
+            if (update !== true) {
+                if (this.layout === PlayerLayout.Default)
+                    this.layout = PlayerLayout.Equal;
+                else
+                    this.layout = PlayerLayout.Default;
+            }
+            $('#players .player').removeClass('default').removeClass('equal').addClass(PlayerLayout[this.layout]);
+            $('#players .selector').removeClass('default').removeClass('equal').addClass(PlayerLayout[this.layout]);
+        };
+        Player.prototype.UpdateSelected = function (direction) {
+            var index = parseInt($('#players .player.selected').attr('number')) || 0;
+            $('#players .player').removeClass('selected');
+            $('#players .selector').removeAttr('number');
+            if (direction === TwitchPotato.Direction.Up)
+                index--;
+            else if (direction === TwitchPotato.Direction.Down)
+                index++;
+            if (index < 0) {
+                index = $('#players .player').length - 1;
+            }
+            else if (index > $('#players .player').length - 1) {
+                index = 0;
+            }
+            $('#players .player[number="' + index + '"]').addClass('selected');
+            $('#players .selector').attr('number', index);
+            $('#players .selector').attr('number', index);
+            this.UpdateNumbers();
+            clearTimeout(this.selectionTimer);
+            this.selectionTimer = setTimeout(this.ClearSelected, 5000);
+        };
+        Player.prototype.ClearSelected = function () {
+            $('#players .player').removeClass('selected');
+            $('#players .selector').removeAttr('number');
+        };
+        Player.prototype.Flashback = function () {
+            var player = this.GetSelectedPlayer();
+            if (player.flashback !== undefined) {
+                this.Load(player, player.flashback);
+            }
+        };
+        Player.prototype.Fullscreen = function (fullscreen) {
+            var player = this.GetSelectedPlayer();
+            this.ExecuteMethod(player, 'updateFullscreen', [
+                Fullscreen[fullscreen]
+            ]);
+        };
+        Player.prototype.Load = function (player, id, video) {
+            if (video === void 0) { video = false; }
+            player.flashback = (player.id !== id) ? player.id : player.flashback;
+            player.id = id;
+            if (video !== true) {
+                this.ExecuteEmbedMethod(player, 'loadStream', [
+                    id
+                ]);
+            }
+            else {
+                this.ExecuteEmbedMethod(player, 'loadVideo', [
+                    id
+                ]);
+            }
+            this.ExecuteEmbedMethod(player, 'playVideo');
+            player.isPlaying = true;
+        };
+        Player.prototype.Mute = function (mute) {
+            var player = this.GetSelectedPlayer();
+            player.isMuted = mute || !player.isMuted;
+            if (player.isMuted === true) {
+                this.ExecuteEmbedMethod(player, 'mute');
+            }
+            else {
+                this.ExecuteEmbedMethod(player, 'unmute');
+            }
+        };
+        Player.prototype.ExecuteMethod = function (player, method, args) {
+            var data = {
+                method: method,
+                args: args || []
+            };
+            var code = "window.potato.executeMethod.call(window.potato, '" + JSON.stringify(data) + "');";
+            player.webview.executeScript({
+                code: code
+            });
+        };
+        Player.prototype.ExecuteEmbedMethod = function (player, method, arg) {
+            if (arg === void 0) { arg = []; }
+            var code = TwitchPotato.Utils.Format('document.getElementsByTagName("embed")[0].{0}()', method);
+            if (arg !== undefined)
+                code = TwitchPotato.Utils.Format('document.getElementsByTagName("embed")[0].{0}("{1}")', method, arg);
+            player.webview.executeScript({
+                code: code
+            });
         };
         return Player;
     })();
@@ -137,6 +414,14 @@ var TwitchPotato;
 (function (TwitchPotato) {
     var Utils;
     (function (Utils) {
+        function DictionarySize(dictionary) {
+            var count = 0;
+            for (var key in dictionary) {
+                count++;
+            }
+            return count;
+        }
+        Utils.DictionarySize = DictionarySize;
         function FormatSeconds(seconds) {
             var hours = Math.floor(seconds / (60 * 60));
             var minDiv = seconds % (60 * 60);
@@ -185,16 +470,14 @@ var TwitchPotato;
             this.Load();
         }
         Storage.prototype.Load = function () {
-            var _this = this;
             chrome.storage.local.get(null, function (store) {
                 if ($.isEmptyObject(store) === true)
-                    store.settings = _this.LoadDefaults(true);
-                _this.settings = store.settings;
-                TwitchPotato.Application.OnStorageLoaded(store.settings);
+                    store.settings = this.LoadDefaults(true);
+                this.settings = store.settings;
+                Application.OnStorageLoaded(store.settings);
             });
         };
         Storage.prototype.LoadDefaults = function (clearStorage) {
-            var _this = this;
             if (clearStorage === void 0) { clearStorage = false; }
             this.settings = {
                 zoom: 100,
@@ -204,7 +487,7 @@ var TwitchPotato;
             };
             if (clearStorage)
                 this.ClearStorage(function () {
-                    _this.Save();
+                    this.Save();
                 });
             return this.settings;
         };
@@ -235,7 +518,6 @@ var TwitchPotato;
 (function (TwitchPotato) {
     var Twitch = (function () {
         function Twitch() {
-            var _this = this;
             this.channelsTable = {};
             this.gamesTable = {};
             this.videosTable = {};
@@ -249,19 +531,18 @@ var TwitchPotato;
             this.users = {};
             window.addEventListener('message', function (event) {
                 var json = JSON.parse(event.data);
-                _this['on' + json.method].apply(_this, json.args);
+                this['on' + json.method].apply(this, json.args);
             });
         }
         Twitch.prototype.Authorize = function (username) {
-            var _this = this;
             if ($('#users .webview[username="' + username + '"]').length !== 0) {
                 return;
             }
-            var html = $(TwitchPotato.Utils.Format($('#twitch-template').html(), username));
+            var html = $(Utils.Format($('#twitch-template').html(), username));
             $('#users').append(html);
             var webview = $('#users webview[username="' + username + '"]')[0];
             webview.addEventListener('contentload', function () {
-                return _this.InitializeWebView(username);
+                return this.InitializeWebView(username);
             });
             webview.addEventListener('consolemessage', function (e) {
                 console.log(e);
@@ -273,8 +554,8 @@ var TwitchPotato;
             $('#users webview').hide();
             $('#users webview').each(function (index, webview) {
                 if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2') === 0) {
-                    TwitchPotato.Application.Input.RegisterInputs(TwitchPotato.InputType.Global);
-                    $('#users .head').text(TwitchPotato.Utils.Format('Enter the login for {0} | Press ESC to Cancel', $(webview).attr('username')));
+                    Application.Input.RegisterInputs(InputType.Global);
+                    $('#users .head').text(Utils.Format('Enter the login for {0} | Press ESC to Cancel', $(webview).attr('username')));
                     $(webview).show();
                     $('#users').fadeIn();
                     return false;
@@ -297,7 +578,7 @@ var TwitchPotato;
             }; }
             var webview = $('#users webview[username="' + username + '"]')[0];
             if (webview !== undefined) {
-                var html = $(TwitchPotato.Utils.Format($('#twitch-template').html(), username));
+                var html = $(Utils.Format($('#twitch-template').html(), username));
                 $('#users').append(html);
                 webview = $('#users webview[username="' + username + '"]')[0];
             }
@@ -319,15 +600,14 @@ var TwitchPotato;
             if ($('#users webview').length === 0) {
                 $('#users').fadeOut();
                 $('#guide').fadeIn();
-                TwitchPotato.Application.Guide.LoadInputs();
+                Application.Guide.LoadInputs();
             }
         };
         Twitch.prototype.ShowError = function (xhr, status, error) {
             var json = xhr.responseJSON;
-            TwitchPotato.Application.ShowError(TwitchPotato.Utils.Format('{0} - {1}: {2}', json.status, json.error, json.message));
+            Application.ShowError(Utils.Format('{0} - {1}: {2}', json.status, json.error, json.message));
         };
         Twitch.prototype.FollowChannel = function (username, channel, unfollow) {
-            var _this = this;
             if (unfollow === void 0) { unfollow = false; }
             var users = [];
             if (username === 'all') {
@@ -341,23 +621,22 @@ var TwitchPotato;
                 ];
             }
             $.each(users, function (index, user) {
-                var url = TwitchPotato.Utils.Format(Twitch.urls.followChannel, user, channel, _this.users[user], Twitch.scope);
+                var url = Utils.Format(Twitch.urls.followChannel, user, channel, this.users[user], Twitch.scope);
                 $.ajax({
                     url: url,
                     type: (unfollow === true) ? 'DELETE' : 'PUT',
-                    error: _this.ShowError,
+                    error: this.ShowError,
                     success: function () {
-                        _this.GetFollowedChannels(user);
+                        this.GetFollowedChannels(user);
                         var time = (unfollow === true) ? 5000 : 1000;
                         setTimeout(function () {
-                            return _this.GetFollowedChannels(user);
+                            return this.GetFollowedChannels(user);
                         }, time);
                     }
                 });
             });
         };
         Twitch.prototype.FollowGame = function (username, game, unfollow) {
-            var _this = this;
             if (unfollow === void 0) { unfollow = false; }
             var users = [];
             if (username === 'all') {
@@ -371,106 +650,100 @@ var TwitchPotato;
                 ];
             }
             $.each(users, function (index, user) {
-                var url = TwitchPotato.Utils.Format(Twitch.urls.followGame, user, game, _this.users[user], Twitch.scope);
+                var url = Utils.Format(Twitch.urls.followGame, user, game, this.users[user], Twitch.scope);
                 $.ajax({
                     url: url,
                     type: (unfollow === true) ? 'DELETE' : 'PUT',
-                    error: _this.ShowError,
+                    error: this.ShowError,
                     success: function () {
-                        _this.GetFollowedGames(user);
+                        this.GetFollowedGames(user);
                         var time = (unfollow === true) ? 5000 : 1000;
                         setTimeout(function () {
-                            return _this.GetFollowedGames(user);
+                            return this.GetFollowedGames(user);
                         }, time);
                     }
                 });
             });
         };
         Twitch.prototype.GetFeatured = function (getAll) {
-            var _this = this;
             if (getAll === void 0) { getAll = true; }
             this.featuredChannels = {};
-            var url = TwitchPotato.Utils.Format(Twitch.urls.featured, Twitch.limit);
+            var url = Utils.Format(Twitch.urls.featured, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    _this.ParseChannelsObject(json.featured, _this.featuredChannels);
+                    this.ParseChannelsObject(json.featured, this.featuredChannels);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            _this.GetNextChannels(url, offset, _this.featuredChannels);
+                            this.GetNextChannels(url, offset, this.featuredChannels);
                 }
             });
         };
         Twitch.prototype.GetTopChannels = function (getAll) {
-            var _this = this;
             if (getAll === void 0) { getAll = false; }
             this.topChannels = {};
-            var url = TwitchPotato.Utils.Format(Twitch.urls.topChannels, Twitch.limit);
+            var url = Utils.Format(Twitch.urls.topChannels, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    _this.ParseChannelsObject(json.streams, _this.topChannels);
+                    this.ParseChannelsObject(json.streams, this.topChannels);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            _this.GetNextChannels(url, offset, _this.topChannels);
+                            this.GetNextChannels(url, offset, this.topChannels);
                 }
             });
         };
         Twitch.prototype.GetTopGames = function (getAll) {
-            var _this = this;
             if (getAll === void 0) { getAll = true; }
             this.topGames = {};
-            var url = TwitchPotato.Utils.Format(Twitch.urls.games, Twitch.limit);
+            var url = Utils.Format(Twitch.urls.games, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    _this.ParseGamesObject(json.top, _this.topGames);
+                    this.ParseGamesObject(json.top, this.topGames);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            _this.GetNextGames(url, offset, _this.topGames);
+                            this.GetNextGames(url, offset, this.topGames);
                 }
             });
         };
         Twitch.prototype.GetGameChannels = function (game, getAll) {
-            var _this = this;
             if (getAll === void 0) { getAll = true; }
             this.gameChannels = {};
-            var url = TwitchPotato.Utils.Format(Twitch.urls.game, game, Twitch.limit);
+            var url = Utils.Format(Twitch.urls.game, game, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    _this.ParseChannelsObject(json.streams, _this.gameChannels);
+                    this.ParseChannelsObject(json.streams, this.gameChannels);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            _this.GetNextChannels(url, offset, _this.gameChannels);
+                            this.GetNextChannels(url, offset, this.gameChannels);
                 }
             });
         };
         Twitch.prototype.GetChannelVideos = function (channel, getAll) {
-            var _this = this;
             if (getAll === void 0) { getAll = true; }
             this.gameVideos = {};
-            var url = TwitchPotato.Utils.Format(Twitch.urls.videos, channel, Twitch.limit);
+            var url = Utils.Format(Twitch.urls.videos, channel, Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    _this.ParseVideosObject(json.videos, _this.gameVideos);
+                    this.ParseVideosObject(json.videos, this.gameVideos);
                     if (getAll === true && json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            _this.GetNextVideos(url, offset, _this.gameVideos);
+                            this.GetNextVideos(url, offset, this.gameVideos);
                 }
             });
         };
         Twitch.prototype.GetFollowedChannels = function (username) {
-            var _this = this;
             var search = [];
             this.followedChannels = {};
-            var url = TwitchPotato.Utils.Format(Twitch.urls.followedChannels, username);
+            var url = Utils.Format(Twitch.urls.followedChannels, username);
             $.ajax({
                 url: url,
                 error: this.ShowError,
@@ -478,76 +751,70 @@ var TwitchPotato;
                     $.each(json.follows, function (index, channel) {
                         search.push(channel.channel.name);
                     });
-                    _this.GetChannelsByName(search, _this.followedChannels);
+                    this.GetChannelsByName(search, this.followedChannels);
                 }
             });
         };
         Twitch.prototype.GetFollowedGames = function (username) {
-            var _this = this;
             var search = [];
             this.followedGames = {};
-            var url = TwitchPotato.Utils.Format(Twitch.urls.followedGames, username);
+            var url = Utils.Format(Twitch.urls.followedGames, username);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
                     $.each(json.follows, function (index, game) {
-                        _this.followedGames[game.name] = game.name;
+                        this.followedGames[game.name] = game.name;
                     });
                 }
             });
         };
         Twitch.prototype.GetChannelsByName = function (channels, dictionary) {
-            var _this = this;
-            var url = TwitchPotato.Utils.Format(Twitch.urls.searchChannels, channels.join(), Twitch.limit);
+            var url = Utils.Format(Twitch.urls.searchChannels, channels.join(), Twitch.limit);
             $.ajax({
                 url: url,
                 error: this.ShowError,
                 success: function (json) {
-                    _this.ParseChannelsObject(json.streams, dictionary);
+                    this.ParseChannelsObject(json.streams, dictionary);
                     if (json._total > Twitch.limit)
                         for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
-                            _this.GetNextChannels(url, offset, dictionary);
+                            this.GetNextChannels(url, offset, dictionary);
                 }
             });
         };
         Twitch.prototype.GetNextChannels = function (url, offset, dictionary) {
-            var _this = this;
             $.ajax({
-                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
+                url: Utils.Format(url + '&offset={0}', offset),
                 error: this.ShowError,
                 success: function (json) {
-                    return _this.ParseChannelsObject(json.streams, dictionary);
+                    return this.ParseChannelsObject(json.streams, dictionary);
                 },
             });
         };
         Twitch.prototype.GetNextGames = function (url, offset, dictionary) {
-            var _this = this;
             $.ajax({
-                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
+                url: Utils.Format(url + '&offset={0}', offset),
                 error: this.ShowError,
                 success: function (json) {
-                    return _this.ParseGamesObject(json.top, dictionary);
+                    return this.ParseGamesObject(json.top, dictionary);
                 },
             });
         };
         Twitch.prototype.GetNextVideos = function (url, offset, dictionary) {
-            var _this = this;
             $.ajax({
-                url: TwitchPotato.Utils.Format(url + '&offset={0}', offset),
+                url: Utils.Format(url + '&offset={0}', offset),
                 error: this.ShowError,
                 success: function (json) {
-                    return _this.ParseVideosObject(json.videos, dictionary);
+                    return this.ParseVideosObject(json.videos, dictionary);
                 },
             });
         };
         Twitch.prototype.ParseChannelsObject = function (object, dictionary) {
-            var _this = this;
             $.each(object, function (index, data) {
                 if (data.stream !== undefined)
                     data = data.stream;
                 dictionary[data.channel.name] = data.channel.name;
-                _this.channelsTable[data.channel.name] = {
+                this.channelsTable[data.channel.name] = {
                     name: data.channel.name,
                     streamer: data.channel.display_name,
                     title: data.channel.status,
@@ -558,11 +825,10 @@ var TwitchPotato;
             });
         };
         Twitch.prototype.ParseGamesObject = function (object, dictionary, followed) {
-            var _this = this;
             if (followed === void 0) { followed = false; }
             $.each(object, function (index, data) {
                 dictionary[data.game.name] = data.game.name;
-                _this.gamesTable[data.game.name] = {
+                this.gamesTable[data.game.name] = {
                     name: data.game.name,
                     channels: data.channels || -1,
                     viewers: data.viewers || -1,
@@ -571,10 +837,9 @@ var TwitchPotato;
             });
         };
         Twitch.prototype.ParseVideosObject = function (object, dictionary) {
-            var _this = this;
             $.each(object, function (index, data) {
                 dictionary[data._id] = data._id;
-                _this.videosTable[data._id] = {
+                this.videosTable[data._id] = {
                     id: data._id,
                     name: data.channel.name,
                     streamer: data.channel.display_name,
@@ -623,11 +888,17 @@ var TwitchPotato;
         ZoomType[ZoomType['Out'] = 2] = 'Out';
         ZoomType[ZoomType['Reset'] = 3] = 'Reset';
     })(ZoomType || (ZoomType = {}));
+    (function (Direction) {
+        Direction[Direction['Up'] = 0] = 'Up';
+        Direction[Direction['Down'] = 1] = 'Down';
+        Direction[Direction['Left'] = 2] = 'Left';
+        Direction[Direction['Right'] = 3] = 'Right';
+    })(TwitchPotato.Direction || (TwitchPotato.Direction = {}));
+    var Direction = TwitchPotato.Direction;
     var Main = (function () {
         function Main() {
-            var _this = this;
             $(function () {
-                return _this.Initialize();
+                return this.Initialize();
             });
         }
         Main.prototype.ShowError = function (error) {
@@ -639,11 +910,11 @@ var TwitchPotato;
             });
         };
         Main.prototype.Initialize = function () {
-            this.Storage = new TwitchPotato.Storage();
-            this.Input = new TwitchPotato.Input();
-            this.Guide = new TwitchPotato.Guide();
-            this.Player = new TwitchPotato.Player();
-            this.Twitch = new TwitchPotato.Twitch();
+            this.Storage = new Storage();
+            this.Input = new Input();
+            this.Guide = new Guide();
+            this.Player = new Player();
+            this.Twitch = new Twitch();
             this.Guide.LoadInputs();
         };
         Main.prototype.OnStorageLoaded = function (storage) {
@@ -718,7 +989,7 @@ var TwitchPotato;
             if ($('#players .chat webview').length > 0) {
                 var webview = $('#players .chat webview')[0];
                 webview.insertCSS({
-                    code: TwitchPotato.Utils.Format('body { font-size: {0}%!important; }', this.Storage.settings.zoom)
+                    code: Utils.Format('body { font-size: {0}%!important; }', this.Storage.settings.zoom)
                 });
             }
         };
