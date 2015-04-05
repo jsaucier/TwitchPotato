@@ -1,5 +1,3 @@
-UpdateType only games and followed when needed.
 Authorize and reset settings.
-Follow and unfollow throwing unhandled errors.
 Add chat back to the app.
 Add account selectors to specify follows.
