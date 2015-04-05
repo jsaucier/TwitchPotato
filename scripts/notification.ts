@@ -1,66 +1,72 @@
 module TwitchPotato {
 
-    export interface OnlineChannel {
-        [id: string]: string;
-    }
-
     export class Notification {
 
-        private online: OnlineChannel = {};
+        /** Dictionary containing the online channels and the current game for the channel. */
+        private online: Dictionary<string> = {};
 
-        constructor() {
+        constructor() { }
 
-        }
+        /**
+         * Displays a notification of the new channels that are online or when
+         * a channel changes games. */
+        public Notify() {
 
-        public notify(online: OnlineChannel) {
+            $('#notification ul').empty();
 
-            /*$('#notification ul').empty();
+            /** The online followed channels. */
+            var followed = Application.Twitch.followed[FollowType.Channel];
 
-            var channel;
-            var channels: OnlineChannel = this.guide.online;
-            var online = {};
+            /** Temporary dictionary containing the online channels and the current game for the channel. */
+            var online: Dictionary<string> = {};
 
-            for (var c in channels) {
-                // Get the channel data.
-                channel = channels[c];
+            /** The data for the channel. */
+            var channel: Channel;
 
-                // Only notify new streamers that just come online or
-                // when a streamer changes games.
-                if (this.online[c] === undefined ||
-                    this.online[c] !== (channel.channel.game || '')) {
-                    online[c] = channel;
+            for (var o in followed) {
+                /* Update the channel. */
+                channel = Application.Twitch.menus[MenuType.Channels][o];
+
+                /**
+                 * Only notify new streamers that just come online or
+                 * when a streamer changes games. */
+                if (this.online[o] === undefined ||
+                    this.online[o] !== channel.game) {
+                    online[o] = channel.game || online[o] || '';
                 }
             }
 
-            // Add the online channels to the notification window.
+            /* Add the online channels to the notification window. */
             for (var o in online) {
-                // Get the channel data.
-                channel = online[o];
+                /* Update the channel. */
+                channel = Application.Twitch.menus[MenuType.Channels][o];
 
+                /** The notification item template. */
                 var item = $($('#notify-template').html());
 
-                item.find('.streamer').text(channel.channel.display_name);
-                item.find('.game').text(channel.channel.game);
+                /* Set the notification data for this channel. */
+                item.find('.streamer').text(channel.streamer);
+                item.find('.game').text(channel.game);
 
+                /* Append the notification item to the container. */
                 item.appendTo($('#notification ul'));
 
-                // Track this streamer as online.
-                this.online[channel.channel.name] = channel.channel.game || '';
+                /* Track the user as now online. */
+                this.online[o] = channel.game || '';
             }
 
+            /** Temporary dictionary containing only online channels.  */
+            var cleanup: Dictionary<string> = {};
 
-            online = {};
+            /* Iterate the online channels and ensure they are truely online. */
+            for (var i in this.online)
+                /* Ensure channel is online. */
+                if (followed[i] !== undefined) cleanup[i] = this.online[i];
 
-            // Clean up the online table, removing the offline channels.
-            for (var i in this.online) {
-                if (channels[i] !== undefined) {
-                    // Channel is online.
-                    online[i] = this.online[i];
-                }
-            }
+            /* Update the online channels. */
+            this.online = cleanup;
 
-            this.online = online;
-
+            /* Display the notification window. */
             if ($('#notification li').length > 0) {
                 $('#notification').fadeIn(function() {
                     setTimeout(function() {
@@ -68,7 +74,6 @@ module TwitchPotato {
                     }, 5000);
                 });
             }
-*/
         }
     }
 }
