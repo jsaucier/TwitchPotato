@@ -29,6 +29,9 @@ module TwitchPotato {
             /* Update the version */
             $('#time .version').text(Utils.Format('v{0}', chrome.runtime.getManifest().version));
 
+            /* Start the time timer. */
+            this.UpdateTime();
+
             $(document).ajaxStop(() => this.OnAjaxCompleted());
 
             this.UpdateMenu(Direction.None);
@@ -461,7 +464,7 @@ module TwitchPotato {
 
             clearTimeout(this.timeTimeout);
 
-            this.timeTimeout = setTimeout(this.UpdateTime);
+            this.timeTimeout = setTimeout(() => this.UpdateTime(), 1000);
         }
 
         public UpdateMenu(direction: Direction, delay = 0) {
