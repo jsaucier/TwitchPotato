@@ -183,19 +183,19 @@ module TwitchPotato {
                     break;
                 case 'follow-channel':
                     /* Follow the channel. */
-                    Application.Twitch.FollowChannel('all', key);
+                    Application.Twitch.FollowChannel(undefined, key);
                     break;
                 case 'unfollow-channel':
                     /* Unfollow the channel. */
-                    Application.Twitch.FollowChannel('all', key, true);
+                    Application.Twitch.FollowChannel(undefined, key, true);
                     break;
                 case 'follow-game':
                     /* Follow the game. */
-                    Application.Twitch.FollowGame('all', key);
+                    Application.Twitch.FollowGame(undefined, key);
                     break;
                 case 'unfollow-game':
                     /* Unfollow the game. */
-                    Application.Twitch.FollowGame('all', key, true);
+                    Application.Twitch.FollowGame(undefined, key, true);
                     break;
 
                 default:
@@ -274,6 +274,7 @@ module TwitchPotato {
                 default:
                     break;
             }
+
             this.UpdateMenu(Direction.None);
 
             this.updateType = UpdateType.All;
