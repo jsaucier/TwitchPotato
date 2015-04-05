@@ -8,12 +8,6 @@ module TwitchPotato {
         Setting
     }
 
-    enum UpdateType {
-        All,
-        Game,
-        Videos
-    }
-
     export class Guide {
 
         private objectURLs: string[] = [];
@@ -23,7 +17,7 @@ module TwitchPotato {
         private timeTimeout: number;
         private infoTimeout: number;
 
-        private updateType: UpdateType = UpdateType.All;
+        public updateType: UpdateType = UpdateType.All;
 
         constructor() {
             /* Update the version */
@@ -224,6 +218,9 @@ module TwitchPotato {
 
             /* Set the update time. */
             $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
+
+            /* Display the notification window. */
+            Application.Notification.Notify();
         }
 
         private CreateObjectURL(blob): string {
@@ -257,18 +254,26 @@ module TwitchPotato {
         }
 
         private UpdateAllMenuItems(): void {
-
-            if (this.updateType === UpdateType.All) {
-                this.UpdateMenuItems(MenuType.Channels, this.firstUpdate);
-                this.UpdateMenuItems(MenuType.Games);
+            switch (this.updateType) {
+                case UpdateType.All:
+                    this.UpdateMenuItems(MenuType.Channels, this.firstUpdate);
+                    this.UpdateMenuItems(MenuType.Games);
+                    break;
+                case UpdateType.Channels:
+                    this.UpdateMenuItems(MenuType.Channels);
+                    break;
+                case UpdateType.Games:
+                    this.UpdateMenuItems(MenuType.Games);
+                    break;
+                case UpdateType.Game:
+                    this.UpdateMenuItems(MenuType.Game, true);
+                    break;
+                case UpdateType.Videos:
+                    this.UpdateMenuItems(MenuType.Videos, true);
+                    break;
+                default:
+                    break;
             }
-
-            if (this.updateType === UpdateType.Game)
-                this.UpdateMenuItems(MenuType.Game, true);
-
-            if (this.updateType === UpdateType.Videos)
-                this.UpdateMenuItems(MenuType.Videos, true);
-
             this.UpdateMenu(Direction.None);
 
             this.updateType = UpdateType.All;
@@ -402,8 +407,8 @@ module TwitchPotato {
                 'game': channel.game,
                 'menu': menu,
                 'viewers': channel.viewers,
-                'followed': Application.Twitch.followed[FollowType.Channel][channel.name],
-                'followed-game': Application.Twitch.followed[FollowType.Game][channel.game]
+                'followed': Application.Twitch.followed[FollowType.Channel][channel.name] !== undefined,
+                'followed-game': Application.Twitch.followed[FollowType.Game][channel.game] !== undefined
             });
 
             /* Set the item streamer. */
@@ -428,7 +433,7 @@ module TwitchPotato {
                 menu: MenuType.Games,
                 viewers: game.viewers,
                 channels: game.channels,
-                followed: Application.Twitch.followed[FollowType.Game][game.name]
+                followed: Application.Twitch.followed[FollowType.Game][game.name] !== undefined
             });
 
             /* Set the item text. */
