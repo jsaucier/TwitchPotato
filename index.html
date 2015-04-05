@@ -7,13 +7,15 @@
         <link type="text/css" rel="stylesheet" href="css/potato.css" />
 
         <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
-        <script type="text/javascript" src="scripts/js/potato.js"></script>
-        <!--<script type="text/javascript" src="js/ts/js/utils.js"></script>
-        <script type="text/javascript" src="js/ts/js/potato.js"></script>
-        <script type="text/javascript" src="js/ts/js/input.js"></script>
-        <script type="text/javascript" src="js/ts/js/guide.js"></script>
-        <script type="text/javascript" src="js/ts/js/player.js"></script>
-        <script type="text/javascript" src="js/ts/js/twitch.js"></script>-->
+
+        <script type="text/javascript" src="js/utils.js"></script>
+        <script type="text/javascript" src="js/potato.js"></script>
+        <script type="text/javascript" src="js/storage.js"></script>
+        <script type="text/javascript" src="js/input.js"></script>
+        <script type="text/javascript" src="js/guide.js"></script>
+        <script type="text/javascript" src="js/player.js"></script>
+        <script type="text/javascript" src="js/twitch.js"></script>
+        <script type="text/javascript" src="js/notification.js"></script>
     </head>
 
     <body>
@@ -27,31 +29,23 @@
             <div class="left"></div>
             <div class="lists">
                 <div class="content-lists">
-                    <div class="list followed" menu="followed">
-                        <div class="head">Following</div>
-                        <div class="items"></div>
-                    </div>
-                    <div class="list featured" menu="featured">
-                        <div class="head">Featured</div>
-                        <div class="items"></div>
-                    </div>
-                    <div class="list channels" menu="channels">
+                    <div class="list">
                         <div class="head">Channels</div>
                         <div class="items"></div>
                     </div>
-                    <div class="list games" menu="games">
-                        <div class="head" menu="Following">Games</div>
+                    <div class="list">
+                        <div class="head">Games</div>
                         <div class="items"></div>
                     </div>
-                    <div class="list game" menu="game" style="display: none;">
+                    <div class="list" style="display: none;">
                         <div class="head">Game</div>
                         <div class="items"></div>
                     </div>
-                    <div class="list video" menu="video" style="display: none;">
-                        <div class="head">Video</div>
+                    <div class="list" style="display: none;">
+                        <div class="head">Videos</div>
                         <div class="items"></div>
                     </div>
-                    <div class="list settings" menu="settings">
+                    <div class="list" style="display: flex;">
                         <div class="head">Settings</div>
                         <div class="items">
                             <div class="item setting" type="login">
@@ -79,12 +73,13 @@
 
         <div id="players">
             <div class="selector default"></div>
+            <div class="quality">Quality</div>
         </div>
 
         <div id="webviews">
             <div id="login">
                 <div class="head">Press ESC to Close</div>
-                <webview autosize="on" partition="persist:twitchpotato"></webview>
+                <webview type="login" autosize="on" partition="persist:twitchpotato"></webview>
             </div>
 
             <div id="users">
@@ -330,15 +325,15 @@
         </script>
 
         <script id="player-template" type="text/template">
-            <webview class="player default" number="{1}" autosize="on" partition="persist:twitchpotato" src="http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true"></webview>
+            <webview type="player" class="player default" number="{1}" autosize="on" partition="persist:twitchpotato" src="http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true"></webview>
         </script>
 
         <script id="twitch-template" type="text/template">
-            <webview username="{0}" autosize="on" partition="persist:twitch_{0}" src="https://dl.dropboxusercontent.com/spa/tn9l4tkx2yhpiv3/twitch%20potato/public/redirect.html"></webview>
+            <webview type="twitch" username="{0}" autosize="on " partition="persist:player" src="https://dl.dropboxusercontent.com/spa/tn9l4tkx2yhpiv3/twitch%20potato/public/redirect.html"></webview>
         </script>
 
         <script id="chat-template" type="text/template">
-            <webview autosize="on" partition="persist:twitchpotato"></webview>
+            <webview type="chat" autosize="on" partition="persist:twitchpotato"></webview>
         </script>
 
     </body>

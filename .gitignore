@@ -1,3 +1,6 @@
 smalltile.png
 screenshot.png
 manifest*.zip
+*.map
+css/*.*
+js/*.*

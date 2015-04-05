@@ -1,1097 +1,821 @@
 module TwitchPotato {
     "use strict";
 
+    enum MenuItemType {
+        Channel,
+        Game,
+        Video,
+        Setting
+    }
+
+    enum UpdateType {
+        All,
+        Game,
+        Videos
+    }
+
     export class Guide {
 
+        private objectURLs: string[] = [];
+        private firstUpdate = true;
+
+        private refreshTimeout: number;
+        private timeTimeout: number;
+        private infoTimeout: number;
+
+        private updateType: UpdateType = UpdateType.All;
+
         constructor() {
-            this.Initialize();
-        }
-
-        private Initialize(): void {
-            // Update the version
+            /* Update the version */
             $('#time .version').text(Utils.Format('v{0}', chrome.runtime.getManifest().version));
+
+            $(document).ajaxStop(() => this.OnAjaxCompleted());
+
+            this.UpdateMenu(Direction.None);
         }
 
-        /** Loads the Guide inputs. */
-        public LoadInputs(): void {
-            Application.Input.RegisterInputs(TwitchPotato.InputType.Guide);
-        }
-
-        public OnInput(input: InputData): void {
-        }
-    }
-}
-/*(function(potato, $, chrome, undefined) {
-
-    var Guide = function() {
-        this.input = 'Guide';
-
-        this.lookup = {
-            followedChannels: {},
-            followedGames: {},
-            featured: {},
-            channels: {},
-            video: {},
-            games: {},
-            game: {}
-        };
-
-        this.online = {};
-
-        this.followed = [];
-        this.featured = [];
-        this.channels = [];
-        this.video = [];
-        this.games = [];
-        this.game = [];
-        this.settings = [];
-
-        this.timers = {
-            info: null,
-            time: null,
-            refresh: null
-        };
-
-        this.firstUpdate = true;
-    };
-
-    Guide.prototype.onInput = function(id, type) {
-
-        var input = potato.input.getRegisteredInput(id, type);
-
-        if (input !== undefined && input.type === 'keyup') {
-            switch (input.id) {
-                case 'guideUp':
+        public OnInput(input: Input): void {
+            switch (input.input) {
+                case Inputs.Guide_Up:
                     if ($('.popup:visible').length === 0) {
-                        this.updateMenu('up', 200);
+                        this.UpdateMenu(Direction.Up, 200);
                     } else {
-                        this.updatePopupButton('up');
+                        this.UpdatePopupButton(Direction.Up);
                     }
                     break;
-                case 'guideDown':
+                case Inputs.Guide_Down:
                     if ($('.popup:visible').length === 0) {
-                        this.updateMenu('down', 200);
+                        this.UpdateMenu(Direction.Down, 200);
                     } else {
-                        this.updatePopupButton('down');
+                        this.UpdatePopupButton(Direction.Down);
                     }
                     break;
-                case 'guideLeft':
-                    this.updateMenu('left', 200);
+                case Inputs.Guide_Left:
+                    this.UpdateMenu(Direction.Left, 200);
                     break;
-                case 'guideRight':
-                    this.updateMenu('right', 200);
+                case Inputs.Guide_Right:
+                    this.UpdateMenu(Direction.Right, 200);
                     break;
-                case 'guidePageUp':
+                case Inputs.Guide_PageUp:
+                    this.UpdateMenu(Direction.JumpUp, 200);
                     break;
-                case 'guidePageDown':
+                case Inputs.Guide_PageDown:
+                    this.UpdateMenu(Direction.JumpDown, 200);
                     break;
-                case 'guideSelect':
+                case Inputs.Guide_Select:
                     if ($('.popup:visible').length === 0) {
-                        this.openMenuItem();
+                        this.OpenMenuItem();
                     } else {
-                        this.openPopupButton();
+                        this.OpenPopupButton();
                     }
                     break;
-                case 'guideRefresh':
-                    this.updateAll();
+                case Inputs.Guide_Refresh:
+                    Application.Twitch.Refresh();
                     break;
-                case 'guideMenu':
-                    this.showPopup();
+                case Inputs.Guide_ContextMenu:
+                    this.ShowPopup();
                     break;
                 default:
                     break;
             }
         }
 
-    };
+        private OpenMenuItem(): void {
+            var key = $('#guide .item.selected:visible').attr('key');
+            var menu = parseInt($('#guide .item.selected:visible').attr('menu'));
 
+            var isSetting = $('#guide .item.selected:visible').hasClass('setting');
 
-    Guide.prototype.openMenuItem = function() {
+            if (isSetting !== true) {
+                switch (menu) {
+                    case MenuType.Channels:
+                    case MenuType.Game:
+                        /* Play the channel. */
+                        Application.Player.Play(key);
 
-        var name = $('.item.selected:visible').attr('name');
-        var game = $('.item.selected:visible').attr('game');
-        var type = $('.item.selected:visible').attr('type');
-        var video = $('.item.selected:visible').attr('video');
+                        /* Show the player */
+                        $('#players').fadeIn();
 
-        switch (type) {
-            case 'channel':
-                // Play the channel.
-                potato.player.play(name);
+                        /* Hide the guide */
+                        $('#guide').fadeOut();
 
-                // Show the player
-                $('#players').fadeIn();
+                        return;
+                    case MenuType.Games:
+                        /* Hide the game menu. */
+                        $('.list').eq(MenuType.Game).hide();
 
-                // Hide the guide
-                $('#guide').fadeOut();
-                break;
-            case 'game':
-                // Hide the game menu.
-                $('.list.game').hide();
+                        /* Set the game title */
+                        $('.list').eq(MenuType.Game).find('.head').text(key);
 
-                // Set the game title
-                $('.list.game .head').text(game);
+                        /* Update the menu. */
+                        this.UpdateMenu(Direction.None);
 
-                // Update the menu.
-                this.updateMenu();
+                        /* Set the update type. */
+                        this.updateType = UpdateType.Game;
 
-                // Load the game search.
-                potato.twitch.game(game);
-                break;
-            case 'video':
-                // Play the channel.
-                potato.player.play(video, false, true);
+                        /* Load the game search. */
+                        Application.Twitch.GetGameChannels(key);
 
-                // Show the player
-                $('#players').fadeIn();
+                        return;
+                    case MenuType.Videos:
+                        /* Play the channel. */
+                        Application.Player.Play(key, false, true);
 
-                // Hide the guide
-                $('#guide').fadeOut();
-                break;
-            case 'login':
-                // Register only Global inputs.
-                potato.input.registerInputs(potato);
-                $('#login webview').attr('src', 'http://twitch.tv/login');
-                $('#login').fadeIn();
-                break;
-            case 'reset':
-                potato.resetSettings();
-                break;
-            default:
-                break;
-        }
-    };
+                        /* Show the player */
+                        $('#players').fadeIn();
 
-    Guide.prototype.onAjaxCompleted = function() {
+                        /* Hide the guide */
+                        $('#guide').fadeOut();
 
-        this.updateMenuItems('followed', this.firstUpdate);
-        this.updateMenuItems('featured');
-        this.updateMenuItems('channels');
-        this.updateMenuItems('games');
-
-        this.firstUpdate = false;
-
-        var date = new Date();
-
-        // Set the update time.
-        $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
-
-    };
-
-    Guide.prototype.onFollowedChannels = function(username, json) {
-
-        var menus = ['featured', 'channels'];
-
-        // Add the followed channels to the menu.
-        $.each(json.streams, function(index, stream) {
-            // Get the channel name.
-            var channel = stream.channel.name;
-
-            // Ensure we have not added the channel yet.
-            if (this.lookup.followedChannels[channel] === undefined) {
-                // Add the channel to the lookup table and the menu array.
-                this.lookup.followedChannels[channel] = this.addMenuItem('followed', stream, true);
-            }
-
-            // Add to the list of online streams to handle notifications.
-            this.online[channel] = stream;
-
-            $.each(menus, function(index, menu) {
-                if (this[menu].length !== 0) {
-                    if (this.lookup[menu][channel] !== undefined) {
-                        this[menu][this.lookup[menu][channel]].followed = true;
-                    }
+                        return;
+                    default:
+                        return;
                 }
-            }.bind(this));
-        }.bind(this));
-
-    };
-
-    Guide.prototype.onFollowedGames = function(username, json) {
-
-        // Track the followed games.
-        $.each(json.follows, function(index, game) {
-            this.lookup.followedGames[game.name] = true;
-        }.bind(this));
-
-        if (this.games.length !== 0) {
-            // Check the followed games.
-            $.each(this.lookup.followedGames, function(game, value) {
-                // Ensure we have not added the game yet.
-                if (this.lookup.games[game] === undefined) {
-                    // Add the video to the lookup table and the menu array.
-                    this.lookup.games[game] = this.addMenuItem('games', {
-                        viewers: -1,
-                        channels: -1,
-                        game: {
-                            name: game,
-                            box: {
-                                large: 'http://static-cdn.jtvnw.net/ttv-boxart/{0}-272x380.jpg'.format(encodeURIComponent(game))
-                            }
-                        }
-                    }, true);
-                } else {
-                    // Set the game as followed.
-                    this.games[this.lookup.games[game]].followed = true;
-                }
-            }.bind(this));
-        }
-
-    };
-
-    Guide.prototype.onFeatured = function(json) {
-
-        // Add the featured channels to the menu.
-        for (var s in json.featured) {
-            // Get the channel name.
-            var channel = json.featured[s].stream.channel.name;
-
-            // Ensure we have not added the featured channel yet.
-            if (this.lookup.featured[channel] === undefined) {
-                // Add the channel to the lookup table and the menu array.
-                this.lookup.featured[channel] = this.addMenuItem('featured', json.featured[s].stream);
-            }
-        }
-
-    };
-
-    Guide.prototype.onChannels = function(json) {
-
-        // Add the top channels to the menu.
-        for (var s in json.streams) {
-            // Get the channel name.
-            var channel = json.streams[s].channel.name;
-
-            // Ensure we have not added the featured channel yet.
-            if (this.lookup.channels[channel] === undefined) {
-                // Add the channel to the lookup table and the menu array.
-                this.lookup.channels[channel] = this.addMenuItem('channels', json.streams[s]);
-            }
-        }
-
-    };
-
-    Guide.prototype.onGames = function(json) {
-
-        // Add the games to the menu.
-        $.each(json.top, function(index, value) {
-            // Get the game name.
-            var game = value.game.name;
-
-            // Ensure we have not added the game yet.
-            if (this.lookup.games[game] === undefined) {
-                // Add the game to the lookup table and the menu array.
-                this.lookup.games[game] = this.addMenuItem('games', value);
-            }
-        }.bind(this));
-
-        // Check the followed games.
-        $.each(this.lookup.followedGames, function(game, value) {
-            // Ensure we have not added the game yet.
-            if (this.lookup.games[game] === undefined) {
-                // Add the video to the lookup table and the menu array.
-                this.lookup.games[game] = this.addMenuItem('games', {
-                    viewers: -1,
-                    channels: -1,
-                    game: {
-                        name: game,
-                        box: {
-                            large: 'http://static-cdn.jtvnw.net/ttv-boxart/{0}-272x380.jpg'.format(encodeURIComponent(game))
-                        }
-                    }
-                }, true);
             } else {
-                // Set the game as followed.
-                this.games[this.lookup.games[game]].followed = true;
-            }
-        }.bind(this));
+                /* Get the setting type. */
+                var type = $('#guide .item.selected:visible').attr('type');
 
-    };
+                switch (type) {
+                    case 'login':
+                        /* Register only Global inputs. */
+                        Application.Input.RegisterInputs(InputType.Global);
 
-    Guide.prototype.onGame = function(game, json) {
-
-        // Reset the games array.
-        this.game = [];
-
-        // Reset the games lookup table.
-        this.lookup.game = {};
-
-        // Add the games to the menu.
-        for (var s in json.streams) {
-            // Get the stream name.
-            var name = json.streams[s].channel.name;
-
-            // Ensure we have not added the game yet.
-            if (this.lookup.game[name] === undefined) {
-                // Add the game to the lookup table and the menu array.
-                this.lookup.game[name] = this.addMenuItem('game', json.streams[s]);
-            }
-        }
-
-        // Set the game menu name.
-        $('.list.game .head').text(game);
-
-        if (this.firstUpdate !== true) {
-            // Update the menu items and display it.
-            this.updateMenuItems('game', true);
-        }
-
-    };
-
-    Guide.prototype.onVideo = function(channel, json) {
-
-        // Reset the video array.
-        this.video = [];
-
-        // Reset the video lookup table.
-        this.lookup.video = {};
-
-        // Add the video to the menu.
-        for (var v in json.videos) {
-            // Get the video id.
-            var id = json.videos[v]._id;
-
-            // Ensure we have not added the video yet.
-            if (this.lookup.video[id] === undefined) {
-                // Add the video to the lookup table and the menu array.
-                this.lookup.video[id] = this.addMenuItem('video', json.videos[v]);
-            }
-        }
-
-        // Set the video menu name.
-        $('.list.video .head').text(channel);
-
-        if (this.firstUpdate !== true) {
-            // Update the menu items and display it.
-            this.updateMenuItems('video', true);
-        }
-
-    };
-
-    Guide.prototype.addMenuItem = function(type, data, followed) {
-
-        if (type === 'video') {
-
-            return this[type].push({
-                title: data.title,
-                name: data.channel.name,
-                streamer: data.channel.display_name,
-                views: data.views,
-                length: data.length,
-                preview: (data.preview || '').replace(/320x240/, '640x360'),
-                video: data._id
-            }) - 1;
-
-        }
-
-        if (type === 'games') {
-
-            return this.games.push({
-                game: data.game.name,
-                channels: data.channels,
-                viewers: data.viewers,
-                boxArt: data.game.box.large,
-                followed: followed || false
-            }) - 1;
-
-        }
-
-        if (data.channel !== undefined) {
-
-            return this[type].push({
-                title: data.channel.status,
-                name: data.channel.name,
-                streamer: data.channel.display_name,
-                viewers: data.viewers,
-                game: data.game,
-                preview: data.preview.large,
-                followed: followed || this.lookup.followedChannels[data.channel.name] || false
-            }) - 1;
-
-        }
-
-    };
-
-
-    Guide.prototype.createObjectURL = function(blob) {
-
-        var objURL = URL.createObjectURL(blob);
-
-        this.objectURLs = this.objectURLs || [];
-        this.objectURLs.push(objURL);
-
-        return objURL;
-
-    };
-
-    Guide.prototype.loadImage = function(url, element) {
-
-        element = element[0];
-        var xhr = new XMLHttpRequest();
-
-        xhr.open('GET', url);
-
-        xhr.responseType = 'blob';
-        xhr.contentType = 'image/jpg';
-
-        xhr.onload = function() {
-            var img = document.createElement('img');
-            img.setAttribute('data-src', url);
-            var objURL = this.createObjectURL(xhr.response);
-            img.setAttribute('src', objURL);
-            $(element).empty();
-            element.appendChild(img);
-        }.bind(this);
-
-        xhr.send();
-
-    };
-
-    Guide.prototype.updateMenuItems = function(menu, goto) {
-
-        var sort = function(a, b) {
-            var aViewers = a.viewers;
-            var bViewers = b.viewers;
-
-            if (m === 'games') {
-                if (a.followed === true) {
-                    aViewers += 999999999;
-                }
-                if (b.followed === true) {
-                    bViewers += 999999999;
+                        $('#login webview').attr('src', 'http://twitch.tv/login');
+                        $('#login').fadeIn();
+                        break;
+                    case 'reset':
+                        Application.Storage.LoadDefaults();
+                        break;
                 }
             }
-
-            if (aViewers > bViewers)
-                return -1;
-            if (aViewers < bViewers)
-                return 1;
-            return 0;
-        };
-
-        var reIndex = function(menu) {
-            // Reset the lookup table.
-            this.lookup[menu] = {};
-
-            // Reindex lookup table.
-            for (var index in this[menu]) {
-                // Get the item.
-                var item = this[menu][index];
-
-                // Set the new lookup index.
-                if (menu === 'games') {
-                    this.lookup[menu][item.game] = index * 1;
-                } else if (menu === 'video') {
-                    this.lookup[menu][item.video] = index * 1;
-                } else {
-                    this.lookup[menu][item.name] = index * 1;
-                }
-            }
-        };
-
-        var menus = [
-            'followed',
-            'featured',
-            'channels',
-            'video',
-            'games',
-            'game'
-        ];
-
-        if (menu !== undefined) {
-            menus = [menu];
         }
 
+        private OpenPopupButton() {
+            var key = $('.item.selected:visible').attr('key');
+            var menu = parseInt($('.item.selected:visible').attr('menu'));
+            var type = $('.popup .button.selected:visible').attr('type');
 
-        for (var i = 0; i < menus.length; i++) {
-            // Get the menu item.
-            var m = menus[i];
+            switch (type) {
+                case 'view-pip':
+                    /* Play the channel in pip mode. */
+                    Application.Player.Play(key, true);
 
-            // Don't sort videos.
-            if (m !== 'video') {
-                // Sort the menu items by viewers.
-                this[m].sort(sort);
+                    /* Show the player */
+                    $('#players').fadeIn();
 
-                // Reindex the menu
-                reIndex.call(this, m);
+                    /* Hide the guide */
+                    $('#guide').fadeOut();
+                    break;
+                case 'search-games':
+                    /* Search for more games of this type. */
+                    Application.Twitch.GetGameChannels(key);
+                    break;
+                case 'search-videos':
+                    /* Hide the game menu. */
+                    $('.list').eq(MenuType.Videos).hide();
+
+                    /* Set the game title */
+                    $('.list').eq(MenuType.Videos).find('.head').text(
+                        Application.Twitch.menus[MenuType.Channels][key].streamer);
+
+                    /* Set the update type. */
+                    this.updateType = UpdateType.Videos;
+
+                    /* Search for videos from this streamer */
+                    Application.Twitch.GetChannelVideos(key);
+                    break;
+                case 'follow-channel':
+                    /* Follow the channel. */
+                    Application.Twitch.FollowChannel('all', key);
+                    break;
+                case 'unfollow-channel':
+                    /* Unfollow the channel. */
+                    Application.Twitch.FollowChannel('all', key, true);
+                    break;
+                case 'follow-game':
+                    /* Follow the game. */
+                    Application.Twitch.FollowGame('all', key);
+                    break;
+                case 'unfollow-game':
+                    /* Unfollow the game. */
+                    Application.Twitch.FollowGame('all', key, true);
+                    break;
+
+                default:
+                    break;
             }
 
-            // Save the selected menu item.
-            var selected = $('.list.' + m + ' .items .item.selected').toArray()[0];
+            /* Remove the popup menu. */
+            $('.popup').remove();
 
-            // Is the popup shown?
-            var popup = ($('.list.' + m + ' .popup:visible').length > 0);
+            this.UpdateMenuScroll();
+        }
 
-            if (popup === true) {
-                // Save the popup state by moving it to the body and hiding it.
-                $('.popup').appendTo($('body')).hide();
+        private OnAjaxCompleted(): void {
+            /* Update all the menu items. */
+            this.UpdateAllMenuItems();
+
+            this.firstUpdate = false;
+
+            var date = new Date();
+
+            /* Set the update time. */
+            $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
+        }
+
+        private CreateObjectURL(blob): string {
+            var objURL = URL.createObjectURL(blob);
+
+            this.objectURLs = this.objectURLs || [];
+            this.objectURLs.push(objURL);
+
+            return objURL;
+        }
+
+        private LoadImage(url: string, element: JQuery): void {
+            var ele: HTMLElement = element[0];
+            var xhr: XMLHttpRequest = new XMLHttpRequest();
+
+            xhr.open('GET', url);
+
+            xhr.responseType = 'blob';
+            xhr.contentType = 'image/jpg';
+
+            xhr.onload = () => {
+                var img = document.createElement('img');
+                img.setAttribute('data-src', url);
+                var objURL = this.CreateObjectURL(xhr.response);
+                img.setAttribute('src', objURL);
+                $(element).empty();
+                ele.appendChild(img);
+            };
+
+            xhr.send();
+        }
+
+        private UpdateAllMenuItems(): void {
+
+            if (this.updateType === UpdateType.All) {
+                this.UpdateMenuItems(MenuType.Channels, this.firstUpdate);
+                this.UpdateMenuItems(MenuType.Games);
             }
 
-            // Get the template item.
-            $('.list.' + m + ' .items').empty();
+            if (this.updateType === UpdateType.Game)
+                this.UpdateMenuItems(MenuType.Game, true);
 
-            if (this[m].length !== 0) {
-                for (var j = 0; j < this[m].length; j++) {
-                    var data = this[m][j];
+            if (this.updateType === UpdateType.Videos)
+                this.UpdateMenuItems(MenuType.Videos, true);
 
-                    var item;
+            this.UpdateMenu(Direction.None);
 
-                    if (m === 'video') {
-                        item = this.updateMenuVideoItem(data, selected, popup);
-                    } else if (m === 'games') {
-                        item = this.updateMenuGameItem(data, selected, popup);
-                    } else {
-                        item = this.updateMenuChannelItem(data, selected, popup);
+            this.updateType = UpdateType.All;
+        }
+
+        private UpdateMenuItems(menu: MenuType, goto = false) {
+            /* Sort the items based on followed and viewers. */
+            var sortByFollowedAndViewers = (a: HTMLElement, b: HTMLElement): number => {
+                var aIsFollowed = $(a).attr('followed') === 'true';
+                var bIsFollowed = $(b).attr('followed') === 'true';
+
+                var aNumber = parseInt($(a).attr('viewers'));
+                var bNumber = parseInt($(b).attr('viewers'));
+
+                aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
+                bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
+
+                if (aNumber > bNumber)
+                    return -1;
+                if (aNumber < bNumber)
+                    return 1;
+
+                /* Viewers are equal, sort by channels instead. */
+                if (aNumber === bNumber) {
+                    aNumber = parseInt($(a).attr('channels'));
+                    bNumber = parseInt($(b).attr('channels'));
+
+                    aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
+                    bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
+
+                    if (aNumber > bNumber)
+                        return -1;
+                    if (aNumber < bNumber)
+                        return 1;
+
+                    /* Channels are equal, sort by key instead. */
+                    if (aNumber === bNumber) {
+                        var aKey = $(a).attr('key').toLowerCase();
+                        var bKey = $(b).attr('key').toLowerCase();
+
+                        aKey += (aIsFollowed === true) ? 'aaaaaaaaa' : aKey;
+                        bKey += (bIsFollowed === true) ? 'aaaaaaaaa' : bKey;
+
+                        if (aKey < bKey)
+                            return -1;
+                        if (aKey > bKey)
+                            return 1;
                     }
-
-                    $('.list.' + m + ' .items').append(item);
                 }
 
-                // Show the list.
-                $('.list.' + m).css('display', 'flex');
-            } else {
-                // Hide the list.
-                $('.list.' + m).hide();
+                return 0;
+            };
+
+            /* JQuery menu selector. */
+            var jMenu = $('#guide .list').eq(menu);
+
+            /* Save the selected menu item. */
+            var selected = jMenu.find('.items .item.selected').toArray()[0];
+
+            /* Is the popup shown? */
+            var popup = jMenu.find('.popup:visible').length !== 0;
+
+            /* Save the popup state by moving it to the body and hiding it. */
+            if (popup === true) $('#guide .popup').appendTo($('#guide')).hide();
+
+            /* Empty the menu items. */
+            jMenu.find('.items').empty();
+
+            var showMenu = false;
+
+            for (var key in Application.Twitch.menus[menu]) {
+                showMenu = true;
+
+                var html: JQuery;
+
+                /* Create the menu item based on item type. */
+                if (menu === MenuType.Channels ||
+                    menu === MenuType.Game)
+                    html = this.CreateChannelItem(key, menu);
+                else if (menu === MenuType.Games)
+                    html = this.CreateGameItem(key);
+                else if (menu === MenuType.Videos)
+                    html = this.CreateVideoItem(key);
+
+                /* This item was prevoiusly selected. */
+                if (html.attr('key') === $(selected).attr('key')) {
+                    /* Set it back as selected. */
+                    html.addClass('selected');
+
+                    /* Reload the popup's previous state */
+                    if (popup === true)
+                        $('#guide .popup').appendTo(html).show();
+                }
+
+                /* Append the item to the menu. */
+                jMenu.find('.items').append(html);
             }
+
+            /* Sort the items. */
+            if (menu !== MenuType.Videos)
+                jMenu.find('.items .item')
+                    .sort(sortByFollowedAndViewers)
+                    .appendTo(jMenu.find('.items'));
+
+            if (showMenu === true)
+                /* Show the list. */
+                jMenu.css('display', 'flex');
+            else
+                /* Hide the list. */
+                jMenu.hide();
 
             if (goto === true) {
-                // Remove the currently selected list
-                $('.list.selected').removeClass('selected');
+                /* Remove the currently selected list */
+                $('#guide .list.selected').removeClass('selected');
 
-                // Set the new selected list
-                $('.list.' + m).addClass('selected');
-
-                this.updateMenu(true);
-            } else {
-                // Set a short delay to update so that we do not update multiple times in a row.
-                this.updateMenu(null, 500);
+                /* Set the new selected list */
+                jMenu.addClass('selected');
             }
         }
 
-    };
-
-    Guide.prototype.updateMenuChannelItem = function(data, selected, popup) {
-
-        // Load the channel item template
-        var item = $($('#channel-item-template').html());
-
-        // This item was prevoiusly selected.
-        if ($(selected).attr('name') == data.name) {
-            // Set it back as selected.
-            $(item).addClass('selected');
-
-            if (popup) {
-                // Reload the popup's previous state
-                $('.popup').appendTo($(item)).show();
-            }
-        }
-
-        // Set the followed class
-        if (data.followed === true) {
-            $(item).addClass('followed');
-        }
-
-        // Set the item streamer.
-        $(item).find('.streamer').text(data.streamer);
-
-        // Set the item game.
-        $(item).find('.game').text(data.game);
-
-        // Set the item attributes
-        $(item).attr({
-            name: data.name,
-            game: data.game
-        });
-
-        return $(item);
-
-    };
-
-    Guide.prototype.updateMenuGameItem = function(data, selected, popup) {
-
-        // Load the game item template
-        var item = $($('#game-item-template').html());
-
-        // This item was prevoiusly selected.
-        if ($(selected).attr('game') == data.game) {
-            // Set it back as selected.
-            $(item).addClass('selected');
-
-            if (popup) {
-                // Reload the popup's previous state
-                $('.popup').appendTo($(item)).show();
-            }
-        }
-
-        // Set the followed class
-        if (data.followed === true) {
-            $(item).addClass('followed');
-        }
-
-        // Set the item text.
-        $(item).find('.game').text(data.game);
-
-        // Set the item attributes.
-        $(item).attr({
-            game: data.game
-        });
-
-        return $(item);
-
-    };
-
-    Guide.prototype.updateMenuVideoItem = function(data, selected, popup) {
-
-        // Load the video item template
-        var item = $($('#video-item-template').html());
-
-        if ($(selected).attr('video') === data.video) {
-            // Set it back as selected.
-            $(item).addClass('selected');
-
-            if (popup === true) {
-                // Reload the popup's previous state
-                $('.popup').appendTo($(item)).show();
-            }
-        }
-
-        // Set the video streamer.
-        $(item).find('.streamer').text(data.streamer);
-
-        // Set the video game.
-        $(item).find('.game').text(data.game);
-
-        // Set the video title.
-        $(item).find('.title').text(data.title);
-
-        // Set the item attributes
-        $(item).attr({
-            name: data.name,
-            video: data.video
-        });
-
-        return $(item);
-
-    };
-
-    Guide.prototype.updateAll = function() {
-
-        // Reset the menu arrays.
-        this.followed = [];
-        this.featured = [];
-        this.channels = [];
-        this.games = [];
-
-        // Reset the lookup tables.
-        this.lookup.followedChannels = {};
-        this.lookup.followedGames = {};
-        this.lookup.featured = {};
-        this.lookup.channels = {};
-        this.lookup.games = {};
-
-        // Reset the online streamers table.
-        this.online = {};
-
-        // Update twitch data.
-        potato.twitch.games();
-        potato.twitch.featured();
-        potato.twitch.channels();
-
-        // Update the twitch user data.
-        $.each(potato.users, function(index, username) {
-            potato.twitch.followedChannels(username);
-            potato.twitch.followedGames(username);
-        });
-
-        // Set the time out here just in case the scrollTo fails.
-        // It will be cleared and reset properly on a successful update.
-        clearTimeout(this.timers.refresh);
-
-        this.timers.refresh = setTimeout(function() {
-            this.updateAll();
-        }.bind(this), 1000 * 60 * 1);
-
-        var date = new Date();
-
-        // Set the update time.
-        $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
-
-    };
-
-    Guide.prototype.updateTime = function() {
-        $('#time .current').text(new Date().toLocaleTimeString());
-
-        clearTimeout(this.timers.time);
-
-        this.timers.time = setTimeout(this.updateTime.bind(this), 1000);
-    };
-
-    Guide.prototype.updateMenu = function(direction, delay) {
-        if ($('#guide').is(':visible')) {
-            // Update the selected menu head
-            this.updateMenuList(direction);
-
-            // Update the selected menu item
-            this.updateMenuItem(direction);
-
-            // Update the menu size
-            this.updateMenuSize();
-
-            // Update the mneu scroll position
-            this.updateMenuScroll();
-
-            if (delay !== undefined) {
-                // Clear timeout
-                clearTimeout(this.timers.info);
-
-                // Set a timer
-                this.timers.info = setTimeout(function() {
-                    this.updateInfo();
-                }.bind(this), delay);
-                return;
-            } else {
-                // Update info panel
-                this.updateInfo();
-            }
-        }
-    };
-
-    Guide.prototype.updateMenuList = function(direction) {
-        // Get the index of the selected menu list.
-        var index = $('.lists .list:visible').index($('.lists .list.selected'));
-
-        // Set default head item.
-        if (index === -1)
-            index = 0;
-
-        // Remove selected list item.
-        $('.lists .list.selected').removeClass('selected');
-
-        // Hide the current visible items list.
-        $('.lists .items:visible').hide();
-
-        // Update the selected list index.
-        if (direction === 'right' && index < $('.lists .head:visible').length - 1) {
-            index++;
-        } else if (direction === 'left' && index > 0) {
-            index--;
-        }
-
-        // Select the new list item.
-        $('.lists .list:visible').eq(index).addClass('selected');
-
-        // Show the selected list items.
-        $('.lists .list.selected .items').show();
-    };
-
-    Guide.prototype.updateMenuItem = function(direction) {
-        // Get the index of the selected menu item.
-        var index = $('.item:visible').index($('.item.selected:visible'));
-
-        // Set default menu item.
-        if (index === -1)
-            index = 0;
-
-        // Remove selected menu item.
-        $('.item.selected:visible').removeClass('selected');
-
-        // Update the selected item index.
-        if (direction === 'down' && index < $('.items .item:visible').length - 1) {
-            index++;
-        } else if (direction === 'up' && index > 0) {
-            index--;
-        }
-
-        // Select the new menu item.
-        $('.item:visible').eq(index).addClass('selected');
-    };
-
-    Guide.prototype.updateMenuSize = function() {
-        var height = $('.lists').outerHeight(true);
-
-        $('.lists .head:visible').each(function() {
-            height -= $(this).outerHeight(true);
-        });
-
-        $('.lists .items:visible').height(height);
-    };
-
-    Guide.prototype.updateMenuScroll = function() {
-        if ($('.items:visible').length !== 0) {
-            // Get the list mid point
-            var mid = $('.items:visible').innerHeight() / 2;
-
-            // Get half the item height
-            var half = $('.items:visible .item.selected').outerHeight(true) / 2;
-
-            // Get the top offset
-            var offset = $('.items:visible').offset().top + mid - half;
-
-            // Update scroll
-            if ($('.items:visible .item.selected').length > 0) {
-                $('.items:visible').scrollTo('.items:visible .item.selected', {
-                    offsetTop: offset,
-                    duration: 0
-                });
-            }
-        }
-    };
-
-    Guide.prototype.updateInfo = function() {
-
-        var type = $('.item.selected:visible').attr('type');
-        var menu = $('.list.selected:visible').attr('menu');
-        var name = $('.item.selected:visible').attr('name');
-        var setting = $('.item.selected:visible').hasClass('setting');
-
-        if (setting) {
-            this.showSetting(type);
-        } else {
-            var data = {};
-
-            if (menu === 'video') {
-                var video = $('.item.selected:visible').attr('video');
-                this.showVideo(this[menu][this.lookup[menu][video]]);
-            } else if (menu === 'games') {
-                var game = $('.item.selected:visible').attr('game');
-                this.showGame(this[menu][this.lookup.games[game]]);
-            } else {
-                var channel = $('.item.selected:visible').attr('name');
-                this.showChannel(this[menu][this.lookup[menu][channel]]);
-            }
-        }
-
-        $('#info')
-            .removeAttr('menu type name')
-            .attr({
-                menu: menu,
-                type: type,
-                name: name
+        private CreateChannelItem(key: string, menu: MenuType): JQuery {
+            /* Get the item data. */
+            var channel = Application.Twitch.menus[menu][key];
+
+            /* Load the channel item template */
+            var html = $($('#channel-item-template').html());
+
+            /* Set the attributes. */
+            html.attr({
+                'key': key,
+                'game': channel.game,
+                'menu': menu,
+                'viewers': channel.viewers,
+                'followed': Application.Twitch.followed[FollowType.Channel][channel.name],
+                'followed-game': Application.Twitch.followed[FollowType.Game][channel.game]
             });
 
-    };
+            /* Set the item streamer. */
+            html.find('.streamer').text(channel.streamer);
 
-    Guide.prototype.showChannel = function(data) {
+            /* Set the item game. */
+            html.find('.game').text(channel.game);
 
-        if (data === undefined) {
-            return;
+            return html;
         }
 
-        var html = $($('#channel-template').html());
+        private CreateGameItem(key: string): JQuery {
+            /* Get the game data. */
+            var game = Application.Twitch.menus[MenuType.Games][key];
 
-        $(html).find('.title').text(data.title || '');
-        $(html).find('.game').text(data.game || '');
-        $(html).find('.streamer').text(data.streamer);
-        $(html).find('.viewers').text(data.viewers.deliminate(',') + ' viewers');
-        this.loadImage(data.preview, $(html).find('.preview'));
+            /* Load the game item template */
+            var html = $($('#game-item-template').html());
 
-        $('#info').empty();
-        $('#info').append(html);
-    };
+            /* Set the attributes. */
+            html.attr({
+                key: key,
+                menu: MenuType.Games,
+                viewers: game.viewers,
+                channels: game.channels,
+                followed: Application.Twitch.followed[FollowType.Game][game.name]
+            });
 
-    Guide.prototype.showGame = function(game) {
+            /* Set the item text. */
+            html.find('.game').text(game.name);
 
-        if (game === undefined) {
-            return;
+            return html;
         }
 
-        var html = $($('#game-template').html());
+        private CreateVideoItem(key: string): JQuery {
+            /* Get the video data. */
+            var video = Application.Twitch.menus[MenuType.Videos][key];
 
-        $(html).find('.game').text(game.game);
+            /* Load the video item template */
+            var html = $($('#video-item-template').html());
 
-        if (game.channels === -1) {
-            $(html).find('.channels').remove();
-        } else {
-            $(html).find('.channels').text(game.channels.deliminate(',') + ' channels');
+            /* Set the attributes. */
+            html.attr({
+                key: key,
+                menu: MenuType.Videos,
+            });
+
+            /* Set the video streamer. */
+            html.find('.streamer').text(video.streamer);
+
+            /* Set the video title. */
+            html.find('.title').text(video.title);
+
+            return html;
         }
 
-        if (game.viewers === -1) {
-            $(html).find('.viewers').remove();
-        } else {
-            $(html).find('.viewers').text(game.viewers.deliminate(',') + ' viewers');
+        private UpdateTime() {
+            $('#time .current').text(new Date().toLocaleTimeString());
+
+            clearTimeout(this.timeTimeout);
+
+            this.timeTimeout = setTimeout(this.UpdateTime);
         }
 
-        this.loadImage(game.boxArt, $(html).find('.boxart'));
+        public UpdateMenu(direction: Direction, delay = 0) {
+            if ($('#guide').is(':visible')) {
+                /* Update the selected menu head */
+                this.UpdateMenuList(direction);
 
-        $('#info').empty();
-        $('#info').append(html);
+                /* Update the selected menu item */
+                this.UpdateMenuItem(direction);
 
-        if (game.viewers === -1 && game.channels === -1) {
-            $('#info .sub-head').remove();
-            $('#info .head').css('border-bottom', 'none');
-        }
-    };
+                /* Update the menu size */
+                this.UpdateMenuSize();
 
-    Guide.prototype.showVideo = function(data) {
+                /* Update the mneu scroll position */
+                this.UpdateMenuScroll();
 
-        if (data === undefined) {
-            return;
-        }
+                /* Clear timeout */
+                clearTimeout(this.infoTimeout);
 
-        // Get the video template
-        var html = $($('#video-template').html());
-
-        $(html).find('.video').text(data.title || '');
-        $(html).find('.streamer').text(data.streamer);
-        $(html).find('.length').text(data.length.toString().secondsToTime());
-        $(html).find('.views').text(data.views.deliminate(',') + ' views');
-        this.loadImage(data.preview, $(html).find('.preview'));
-
-        $('#info').empty();
-        $('#info').append(html);
-    };
-
-    Guide.prototype.showSetting = function(setting) {
-        // Only update settings if the menu has actually changed.
-        if ($('#info').attr('menu') === 'settings' &&
-            $('#info').attr('type') === setting)
-            return;
-
-        var html = $($('#' + setting + '-setting-template').html());
-
-        $('#info').empty();
-        $('#info').append(html);
-    };
-
-    Guide.prototype.showPopup = function() {
-
-        if ($('.popup:visible').length !== 0) {
-            $('.popup').remove();
-            this.updateMenuScroll();
-            return;
+                this.infoTimeout = setTimeout(() => this.UpdateInfo(), delay);
+            }
         }
 
-        $('.popup').remove();
+        private UpdateMenuList(direction: Direction) {
+            /* Get the index of the selected menu list. */
+            var index = $('#guide .lists .list:visible').index($('#guide .lists .list.selected'));
 
-        var popup = $($('#popup-template').html());
+            /* Set default head item. */
+            if (index === -1)
+                index = 0;
 
-        popup.appendTo($('.lists .item.selected:visible'));
+            /* Remove selected list item. */
+            $('#guide .lists .list.selected').removeClass('selected');
 
-        var name = $('.lists .item.selected:visible').attr('name');
-        var game = $('.lists .item.selected:visible').attr('game');
-        var type = $('.lists .item.selected:visible').attr('type');
+            /* Hide the current visible items list. */
+            $('#guide .lists .items:visible').hide();
 
-        if (type === 'video') {
-            return false;
-        } else if (type === 'game') {
-            popup.find('.search-games').remove();
-            popup.find('.search-videos').remove();
-            popup.find('.view-pip').remove();
-            popup.find('.follow-channel').remove();
-            popup.find('.unfollow-channel').remove();
+            /* Update the selected list index. */
+            if (direction === Direction.Right && index < $('#guide .lists .head:visible').length - 1)
+                index++;
+            else if (direction === Direction.Left && index > 0)
+                index--;
+
+            /* Select the new list item. */
+            $('#guide .lists .list:visible').eq(index).addClass('selected');
+
+            /* Show the selected list items. */
+            $('#guide .lists .list.selected .items').show();
         }
 
-        // Update follow-channel button.
-        if (this.lookup.followedChannels[name] !== undefined) {
-            popup.find('.follow-channel').remove();
-            popup.find('.unfollow-channel').show();
-        } else {
-            popup.find('.follow-channel').show();
-            popup.find('.unfollow-channel').remove();
+        private UpdateMenuItem(direction) {
+            /* Get the index of the selected menu item. */
+            var index = $('#guide .item:visible').index($('.item.selected:visible'));
+
+            /* Set default menu item. */
+            if (index === -1)
+                index = 0;
+
+            /* Remove selected menu item. */
+            $('#guide .item.selected:visible').removeClass('selected');
+
+            /* Update the selected item index. */
+            if (direction === Direction.Down)
+                index++;
+            else if (direction === Direction.Up)
+                index--;
+            else if (direction === Direction.JumpDown)
+                index += 10;
+            else if (direction === Direction.JumpUp)
+                index -= 10;
+
+            /* Constrain the index bounds. */
+            if (index < 0)
+                index = 0;
+            else if (index > $('#guide .items .item:visible').length - 1)
+                index = $('#guide .items .item:visible').length - 1;
+
+            /* Select the new menu item. */
+            $('#guide .item:visible').eq(index).addClass('selected');
         }
 
-        // Update follow-game button.
-        if (this.games[this.lookup.games[game]].followed === true) {
-            popup.find('.follow-game').remove();
-            popup.find('.unfollow-game').show();
-        } else {
-            popup.find('.follow-game').show();
-            popup.find('.unfollow-game').remove();
+        private UpdateMenuSize() {
+            var height = $('#guide .lists').outerHeight(true);
+
+            $('#guide .lists .head:visible').each(function() {
+                height -= $(this).outerHeight(true);
+            });
+
+            $('#guide .lists .items:visible').height(height);
         }
 
-        if ($('.popup .button.selected:visible').length === 0) {
-            $('.popup .button:eq(0)').addClass('selected');
+        private UpdateMenuScroll() {
+            if ($('#guide .items:visible').length !== 0) {
+                /* Get the list mid point */
+                var mid = $('#guide .items:visible').innerHeight() / 2;
+
+                /* Get half the item height */
+                var half = $('#guide .items:visible .item.selected').outerHeight(true) / 2;
+
+                /* Get the top offset */
+                var offset = $('#guide .items:visible').offset().top + mid - half;
+
+                /* Update scroll */
+                if ($('#guide .items:visible .item.selected').length > 0) {
+                    $('#guide .items:visible').scrollTo('#guide .items:visible .item.selected', {
+                        offsetTop: offset,
+                        duration: 0
+                    });
+                }
+            }
         }
 
-        popup.show();
+        private UpdateInfo() {
+            var key = $('#guide .item.selected:visible').attr('key');
+            var menu = parseInt($('#guide .item.selected:visible').attr('menu'));
 
-        this.updateMenuScroll();
-    };
+            var isSetting = $('#guide .item.selected:visible').hasClass('setting');
 
-    Guide.prototype.updatePopupButton = function(direction) {
-        // Get the index of the selected menu item.
-        var index = $('.popup .button:visible').index($('.popup .button.selected:visible'));
+            if (isSetting) {
+                var type = $('#guide .item.selected:visible').attr('type');
+                this.ShowSetting(type);
+            } else {
+                if (menu === MenuType.Channels ||
+                    menu === MenuType.Game)
+                    this.ShowChannel(key, menu);
+                else if (menu === MenuType.Videos)
+                    this.ShowVideo(key);
+                else if (menu === MenuType.Games)
+                    this.ShowGame(key);
+            }
 
-        // Set default menu item.
-        if (index === -1)
-            index = 0;
-
-        // Remove selected menu item.
-        $('.popup .button.selected:visible').removeClass('selected');
-
-        // Update the selected item index.
-        if (direction === 'down' && index < $('.popup .button:visible').length - 1) {
-            index++;
-        } else if (direction === 'up' && index > 0) {
-            index--;
+            $('#info')
+                .removeAttr('key menu')
+                .attr({
+                    'key': key,
+                    'menu': menu
+                });
         }
 
-        // Select the new menu item.
-        $('.popup .button:visible').eq(index).addClass('selected');
-    };
+        private ShowChannel(key: string, menu: MenuType) {
+            /* Get the channel data. */
+            var channel = <Channel>Application.Twitch.menus[menu][key];
 
-    Guide.prototype.openPopupButton = function() {
-        var type = $('.popup .button.selected:visible').attr('type');
+            /* Get the item template. */
+            var html = $($('#channel-template').html());
 
-        var item = $('.popup').parent('.item');
-        var game = item.attr('game');
-        var name = item.attr('name');
-        var iType = item.attr('type');
+            $(html).find('.title').text(channel.title);
+            $(html).find('.game').text(channel.game);
+            $(html).find('.streamer').text(channel.streamer);
+            $(html).find('.viewers').text(Utils.Format('{0} viewers', Utils.Deliminate(channel.viewers, ',')));
 
-        switch (type) {
-            case 'view-pip':
-                // Play the channel in pip mode.
-                potato.player.play(name, true);
+            this.LoadImage(channel.preview, $(html).find('.preview'));
 
-                // Show the player
-                $('#players').fadeIn();
-
-                // Hide the guide
-                $('#guide').fadeOut();
-                break;
-            case 'search-games':
-                // Search for more games of this type.
-                potato.twitch.getGame(game);
-                break;
-            case 'search-videos':
-                // Search for videos from this streamer
-                potato.twitch.video(name);
-                break;
-            case 'follow-channel':
-                // Follow the channel.
-                potato.twitch.followChannel('all', name);
-                break;
-            case 'unfollow-channel':
-                // Unfollow the channel.
-                potato.twitch.followChannel('all', name, true);
-                break;
-            case 'follow-game':
-                // Follow the game.
-                potato.twitch.followGame('all', game);
-                break;
-            case 'unfollow-game':
-                // Unfollow the game.
-                potato.twitch.followGame('all', game, true);
-                break;
-
-            default:
-                break;
+            $('#info').empty();
+            $('#info').append(html);
         }
 
-        // Remove the popup menu.
-        $('.popup').remove();
+        private ShowGame(key: string) {
+            /* Get the game data. */
+            var game = <Game>Application.Twitch.menus[MenuType.Games][key];
 
-        this.updateMenuScroll();
-    };
+            /* Get the item template. */
+            var html = $($('#game-template').html());
 
-    potato.guide = new Guide(potato);
+            html.find('.game').text(game.name);
+            html.find('.channels').text(Utils.Format('{0} channels', Utils.Deliminate(game.channels, ',')));
+            html.find('.viewers').text(Utils.Format('{0} viewers', Utils.Deliminate(game.viewers, ',')));
 
-    $(function() {
-        potato.guide.updateTime();
-        potato.guide.updateMenuItems('followed');
-        potato.guide.updateMenuItems('featured');
-        potato.guide.updateMenuItems('channels');
-        potato.guide.updateMenuItems('games');
-    });
+            this.LoadImage(game.boxArt, $(html).find('.boxart'));
+
+            $('#info').empty();
+            $('#info').append(html);
+
+            if (game.viewers === -1) html.find('.viewers').remove();
+            if (game.channels === -1) html.find('.channels').remove();
+
+            if (game.viewers === -1 && game.channels === -1) {
+                $('#info .sub-head').remove();
+                $('#info .head').css('border-bottom', 'none');
+            }
+        }
+
+        private ShowVideo(data) {
+            if (data === undefined)
+                return;
+
+            /* Get the video template */
+            var html = $($('#video-template').html());
+
+            $(html).find('.video').text(data.title || '');
+            $(html).find('.streamer').text(data.streamer);
+            $(html).find('.length').text(data.length.toString().secondsToTime());
+            $(html).find('.views').text(data.views.deliminate(',') + ' views');
+            this.LoadImage(data.preview, $(html).find('.preview'));
+
+            $('#info').empty();
+            $('#info').append(html);
+        }
+
+        private ShowSetting(setting) {
+            /* Only update settings if the menu has actually changed. */
+            if ($('#info').attr('menu') === 'settings' &&
+                $('#info').attr('type') === setting)
+                return;
+
+            var html = $($('#' + setting + '-setting-template').html());
+
+            $('#info').empty();
+            $('#info').append(html);
+        }
+
+        private ShowPopup() {
+            /* Close the popup if shown. */
+            if ($('#guide .popup:visible').length !== 0) {
+                $('#guide .popup').remove();
+                this.UpdateMenuScroll();
+                return;
+            }
+
+            $('#guide .popup').remove();
+
+            var item = $('#guide .lists .item.selected:visible');
+
+            var popup = $($('#popup-template').html());
+
+            popup.appendTo(item);
+
+            var menu = parseInt(item.attr('menu'));
+
+            var followedChannel = false;
+            var followedGame = false;
+
+            /* Popup menu is disabled for videos. */
+            if (menu === MenuType.Videos) return false;
+
+            /* Update follow-channel button. */
+            if (menu === MenuType.Channels) {
+                followedChannel = (item.attr('followed') === 'true') ? true : false;
+                followedGame = (item.attr('followed-game') === 'true') ? true : false;
+            }
+
+            if (menu === MenuType.Games) {
+                followedGame = (item.attr('followed') === 'true') ? true : false;
+
+                /* Remove unused buttons. */
+                popup.find('.search-games').remove();
+                popup.find('.search-videos').remove();
+                popup.find('.view-pip').remove();
+                popup.find('.follow-channel').remove();
+                popup.find('.unfollow-channel').remove();
+            }
+
+            /* Update follow-channel button. */
+            if (followedChannel) {
+                popup.find('.follow-channel').remove();
+                popup.find('.unfollow-channel').show();
+            } else {
+                popup.find('.follow-channel').show();
+                popup.find('.unfollow-channel').remove();
+            }
+
+            /* Update follow-game button. */
+            if (followedGame) {
+                popup.find('.follow-game').remove();
+                popup.find('.unfollow-game').show();
+            } else {
+                popup.find('.follow-game').show();
+                popup.find('.unfollow-game').remove();
+            }
+
+            if ($('#guide .popup .button.selected:visible').length === 0) {
+                $('#guide .popup .button:eq(0)').addClass('selected');
+            }
+
+            popup.show();
+
+            this.UpdateMenuScroll();
+        }
+
+        private UpdatePopupButton(direction) {
+            /* Get the index of the selected menu item. */
+            var index = $('.popup .button:visible').index($('.popup .button.selected:visible'));
+
+            /* Set default menu item. */
+            if (index === -1)
+                index = 0;
+
+            /* Remove selected menu item. */
+            $('.popup .button.selected:visible').removeClass('selected');
+
+            /* Update the selected item index. */
+            if (direction === Direction.Down && index < $('.popup .button:visible').length - 1) {
+                index++;
+            } else if (direction === Direction.Up && index > 0) {
+                index--;
+            }
+
+            /* Select the new menu item. */
+            $('.popup .button:visible').eq(index).addClass('selected');
+        }
+    }
+}
+/*
+potato.guide = new Guide(potato);
+
+$(() => {
+    potato.guide.updateTime();
+    potato.guide.updateMenuItems('followed');
+    potato.guide.updateMenuItems('featured');
+    potato.guide.updateMenuItems('channels');
+    potato.guide.updateMenuItems('games');
+});
 
 } (window.Potato, window.jQuery, window.chrome));
+
+
+
+
+
+
+
+
+((potato, $, chrome, undefined) => {
+
+var Guide = () => {
+    this.input = 'Guide';
+
+    this.lookup = {
+        followedChannels: {},
+        followedGames: {},
+        featured: {},
+        channels: {},
+        video: {},
+        games: {},
+        game: {}
+    };
+
+    this.online = {};
+
+    this.followed = [];
+    this.featured = [];
+    this.channels = [];
+    this.video = [];
+    this.games = [];
+    this.game = [];
+    this.settings = [];
+
+    this.timers = {
+        info: null,
+        time: null,
+        refresh: null
+    };
+
+    this.firstUpdate = true;
+};
+
 */

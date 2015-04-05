@@ -1,62 +1,51 @@
 module TwitchPotato {
     "use strict";
 
-    export interface StorageData {
-        users: Array<string>
-        zoom: number
-    }
-
     export class Storage {
-
-        /** An array list of our settings. */
+        /* An array list of our settings. */
         public settings: StorageData;
 
-        constructor() {
-            this.Load();
-        }
-
-        /** Loads the settings. */
-        public Load() {
+        /* Loads the settings. */
+        public Load(callback?: Callback): void {
             chrome.storage.local.get(null, (store) => {
-                // Set the default value.
+                /* Set the default value. */
                 if ($.isEmptyObject(store) === true)
-                    store.settings = this.LoadDefaults(true);
+                    this.LoadDefaults(callback);
+                else
+                    /* Set the settings. */
+                    this.settings = store.settings;
 
-                // Set the settings.
-                this.settings = store.settings;
-
-                // Call the callback.
-                Application.OnStorageLoaded(store.settings);
+                /* Call the callback. */
+                Application.OnStorageLoaded();
+                if (typeof (callback) === 'function')
+                    callback();
             });
         }
 
-        /** Loads the default settings. */
-        private LoadDefaults(clearStorage = false): StorageData {
+        /* Loads the default settings. */
+        public LoadDefaults(callback?: Callback): void {
             this.settings = {
                 zoom: 100,
                 users: ['creditx']
             };
 
-            if (clearStorage)
-                this.ClearStorage(() => { this.Save() })
-
-            return this.settings;
+            this.ClearStorage(callback);
         }
 
-        /** Clears the storage. */
-        private ClearStorage(callback = () => { }): void {
-            chrome.storage.local.clear(function() {
-                chrome.storage.sync.clear(function() {
-                    callback();
+        /* Clears the storage. */
+        private ClearStorage(callback?: Callback): void {
+            chrome.storage.local.clear(() => {
+                chrome.storage.sync.clear(() => {
+                    this.Save(callback);
                 });
             });
         }
 
-        /** Savaes the settings. */
-        public Save(callback = () => { }): void {
+        /* Savaes the settings. */
+        public Save(callback?: Callback): void {
             chrome.storage.local.set({
                 settings: this.settings
-            }, () => callback());
+            }, callback);
         }
     }
 }

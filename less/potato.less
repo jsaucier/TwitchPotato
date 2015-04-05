@@ -1,4 +1,4 @@
-// out: ../css/potato.css
+// out: ../css/potato.css, sourceMap: true, sourceMapDir: ../less/, compress: true
 @purple: #6441a5;
 * {
     padding: 0;
@@ -21,7 +21,7 @@ body {
 .window {
     display: none;
     position: fixed;
-    background-color: #6441a5;
+    background-color: @purple;
     padding: 2px;
     &#notification {
         right: 10px;
@@ -34,7 +34,7 @@ body {
         //width: 350px;
     }
     .head {
-        background-color: #6441a5;
+        background-color: @purple;
         padding: 5px;
         font-size: 1.2em;
     }
@@ -120,7 +120,7 @@ body {
         float: left;
         display: -webkit-flex;
         -webkit-flex-direction: column;
-        background-color: #6441a5;
+        background-color: @purple;
         margin-right: 20px;
         .content-lists {
             height: 100%;
@@ -141,7 +141,7 @@ body {
                     padding: 0 0 5px;
                     border-left: none;
                     border-right: none;
-                    background-color: #6441a5;
+                    background-color: @purple;
                     &.settings {
                         padding: 0;
                     }
@@ -179,11 +179,11 @@ body {
                         &:first-child {
                             margin-top: 0;
                         }
-                        &.followed {
+                        &[followed="true"] {
                             background-color: #444;
                         }
                         &.selected {
-                            background-color: #6441a5;
+                            background-color: @purple;
                         }
                         &[type="channel"] {
                             .game {
@@ -199,7 +199,7 @@ body {
                         }
                         .popup {
                             display: none;
-                            background-color: #6441a5;
+                            background-color: @purple;
                             padding-top: 5px;
                             .main {
                                 background-color: #333;
@@ -212,7 +212,7 @@ body {
                                     font-size: 0.9em;
                                     color: #fff;
                                     &.selected {
-                                        background-color: #6441a5;
+                                        background-color: @purple;
                                     }
                                     &:first-child {
                                         margin-top: 0;
@@ -221,6 +221,9 @@ body {
                             }
                         }
                     }
+                }
+                &:last-child {
+                    padding: 0;
                 }
             }
         }
@@ -232,10 +235,10 @@ body {
         width: 100%;
         display: -webkit-flex;
         -webkit-flex-direction: column;
-        border: 5px solid #6441a5;
+        border: 5px solid @purple;
         .head {
-            background-color: #6441a5;
-            border-bottom: 5px solid #6441a5;
+            background-color: @purple;
+            border-bottom: 5px solid @purple;
             > div {
                 font-size: 1.2em;
                 padding: 5px 10px;
@@ -285,10 +288,23 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
+    .quality {
+        display: none;
+        position: fixed;
+        bottom: 18px;
+        width: 250px;
+        left: 50%;
+        margin-left: -125px;
+        background-color: #333;
+        border: 2px solid @purple;
+        z-index: 999999;
+        text-align: center;
+        line-height: 2.0em;
+    }
     .selector {
         position: fixed;
         display: none;
-        background-color: #6441a5;
+        background-color: @purple;
         opacity: 0.3;
         &.default {
             &[number="0"] {
@@ -465,14 +481,14 @@ body {
         padding: 20px;
         .head {
             position: absolute;
-            background-color: #6441a5;
+            background-color: @purple;
             padding: 5px;
             font-size: 1.2em;
         }
         webview {
             width: 100%;
             height: 100%;
-            border: 5px solid #6441a5;
+            border: 5px solid @purple;
         }
     }
 }

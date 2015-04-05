@@ -17,24 +17,77 @@ module TwitchPotato {
         Reset
     }
 
+    export enum InputType {
+        Global,
+        Guide,
+        Player
+    }
+
+    export enum Inputs {
+        Global_Exit,
+        Global_ZoomIn,
+        Global_ZoomOut,
+        Global_ZoomReset,
+        Global_SaveSetting,
+        Global_ToggleGuide,
+        Guide_Up,
+        Guide_Down,
+        Guide_Left,
+        Guide_Right,
+        Guide_PageUp,
+        Guide_PageDown,
+        Guide_Select,
+        Guide_Refresh,
+        Guide_ContextMenu,
+        Player_Stop,
+        Player_PlayPause,
+        Player_Mute,
+        Player_Select,
+        Player_Layout,
+        Player_FullscreenEnter,
+        Player_FullscreenExit,
+        Player_FullscreenToggle,
+        Player_Flashback,
+        Player_SelectNext,
+        Player_SelectPrevious,
+        Player_QualityMobile,
+        Player_QualityLow,
+        Player_QualityMedium,
+        Player_QualityHigh,
+        Player_QualitySource
+    }
+
     export enum Direction {
+        None,
         Up,
         Down,
         Left,
-        Right
+        Right,
+        JumpUp,
+        JumpDown
+    }
+
+    export enum MenuType {
+        Channels,
+        Games,
+        Game,
+        Videos,
+        Settings
+    }
+
+    export enum FollowType {
+        Channel,
+        Game
     }
 
     export class Main {
+        private initialized = false;
+
         public Storage: Storage;
-        public Input: Input;
+        public Input: InputHandler;
         public Guide: Guide;
         public Player: Player;
         public Twitch: Twitch;
-
-        constructor() {
-            // Initialize the Application only after the page has loaded.
-            $(() => this.Initialize())
-        }
 
         public ShowError(error): void {
             $('#error .error').html(error);
@@ -42,42 +95,52 @@ module TwitchPotato {
         }
 
         public Initialize(): void {
+            if (this.initialized === true) return;
+
             this.Storage = new Storage();
-            this.Input = new Input();
+            this.Input = new InputHandler();
             this.Guide = new Guide();
             this.Player = new Player();
             this.Twitch = new Twitch();
 
-            this.Guide.LoadInputs();
+            this.Storage.Load();
+            this.Input.RegisterInputs(InputType.Guide);
+            this.Twitch.Refresh();
+
+            this.initialized = true;
         }
 
         /** Callback triggered after storage has been loaded. */
-        public OnStorageLoaded(storage: StorageData): void {
+        public OnStorageLoaded(): void {
             // Update the zoom level.
             this.UpdateZoom(ZoomType.Update);
+
+            // Load the saved users.
+            for (var user in this.Storage.settings.users)
+                /* Login the user. */
+                this.Twitch.Authorize(this.Storage.settings.users[0]);
         }
 
         /** Callback triggered after a keypress event. */
-        private OnInput(input: InputData): void {
-            console.log(input);
-            switch (input.id) {
-                case 'globalExit':
+        private OnInput(input: Input): void {
+            switch (input.input) {
+                case Inputs.Global_Exit:
                     this.GlobalExit();
                     break;
-                case 'globalGuideToggle':
+                case Inputs.Global_ToggleGuide:
                     this.ToggleGuide();
                     break;
-                case 'globalZoomIn':
+                case Inputs.Global_ZoomIn:
                     this.UpdateZoom(ZoomType.In);
                     break;
-                case 'globalZoomOut':
+                case Inputs.Global_ZoomOut:
                     this.UpdateZoom(ZoomType.Out);
                     break;
-                case 'globalZoomReset':
+                case Inputs.Global_ZoomReset:
                     this.UpdateZoom(ZoomType.Reset);
                     break;
-                case 'globalSaveSetting':
-                    //this.saveSetting();
+                case Inputs.Global_SaveSetting:
+                    this.SaveSetting();
                     break;
                 default:
                     break;
@@ -86,10 +149,11 @@ module TwitchPotato {
 
         /** Handles the GlobalExit keydown event. */
         private GlobalExit(): void {
+            console.log('globalexit');
             if ($('#webviews webview:visible').length === 0) {
                 window.close();
             } else {
-                if ($('#webviews #users webview').length !== 0) {
+                if ($('#webviews #users webview:visible').length !== 0) {
                     var webview = $('#webviews #users webview:eq(0)');
                     var username = webview.attr('username');
 
@@ -112,7 +176,7 @@ module TwitchPotato {
                         }
                     });*/
 
-                } else if ($('#webviews #login webview').length !== 0) {
+                } else if ($('#webviews #login webview:visible').length !== 0) {
                     // Load a blank window to stop the video playing.
                     $('#webviews #login webview').attr('src', 'about:blank');
 
@@ -121,7 +185,7 @@ module TwitchPotato {
                 }
 
                 // Register the guide inputs.
-                this.Guide.LoadInputs();
+                this.Input.RegisterInputs(InputType.Guide);
             }
         }
 
@@ -130,11 +194,11 @@ module TwitchPotato {
             if ($('#guide:visible').length !== 0) {
                 $('#players').fadeIn();
                 $('#guide').fadeOut();
-                this.Player.LoadInputs();
+                this.Input.RegisterInputs(InputType.Player);
             } else {
                 $('#players').fadeOut();
                 $('#guide').fadeIn();
-                this.Guide.LoadInputs();
+                this.Input.RegisterInputs(InputType.Guide);
             }
         }
 
@@ -156,12 +220,12 @@ module TwitchPotato {
             // Update the application font size.
             $('body').css('font-size', this.Storage.settings.zoom + '%');
 
-            console.log('Update guide size');
+            this.Guide.UpdateMenu(Direction.None);
             // Update the menu size
-            //this.Guide.updateMenuSize();
+            //this.Guide.UpdateMenuSize();
 
             // Update the mneu scroll position
-            //this.Guide.updateMenuScroll();
+            //this.Guide.UpdateMenuScroll();
 
             // Update the chat font size.
             if ($('#players .chat webview').length > 0) {
@@ -173,103 +237,73 @@ module TwitchPotato {
                 });
             }
         }
-    }
 
-    /* The current Main class instance */
-    export var Application: Main = new Main();
-}
-
-
-
-
-
-/*
-        Potato.prototype.resetSettings = function() {
-            console.log('reset');
-            // Reset to the default values.
-            this.users = [];
-            this.zoom = 100;
-
-            // Reset the stored values.
-            chrome.storage.local.clear(function() {
-                chrome.storage.sync.clear(function() {
-                    // Reinitialize the app.
-                    potato.initialize();
-                });
-            });
-
-        };
-
-        Potato.prototype.saveSetting = function() {
-
-            // Ensure we are on an input setting.
-            if ($('.list.selected.settings .item.selected[input="true"]').length !== 0) {
-
-                // Get the focused input.
+        private SaveSetting(): void {
+            console.log('savesetting');
+            /* Ensure we are on an input setting. */
+            if ($('#guide .item.selected[input="true"]:visible').length !== 0) {
+                /* Get the focused input. */
                 var input = $('input:focus');
 
-                // Input does not have focus.
+                /* Input does not have focus. */
                 if (input.length === 0) {
-                    // Register the global inputs only.
-                    this.input.registerInputs(this);
+                    /* Register the global inputs only. */
+                    this.Input.RegisterInputs(InputType.Global);
 
-                    // Get the setting type.
-                    var type = $('.item.selected:visible').attr('type');
+                    /* Get the setting type. */
+                    var type = $('#guide .item.selected:visible').attr('type');
 
-                    // Focus the input.
+                    /* Focus the input. */
                     $('#' + type).focus();
                 } else {
+                    /* Trim the input value. */
+                    var value = $.trim(input.val());
 
-                    // Ensure we have input in the control.
-                    if (input.val() !== '') {
+                    /* Ensure we have input in the control. */
+                    if (value !== '') {
                         if (input.attr('id') === 'add-user') {
-                            this.addUser($.trim(input.val()));
+                            this.AddUser(value);
                         } else if (input.attr('id') === 'follow-channel') {
-                            this.twitch.followChannel('all', input.val());
+                            this.Twitch.FollowChannel('all', value);
                         } else if (input.attr('id') === 'follow-game') {
-                            this.twitch.followGame('all', input.val());
+                            this.Twitch.FollowGame('all', value);
                         }
                     }
 
                     input.val('');
                     input.blur();
 
-                    setTimeout(function() {
-                        // Register the guide inputs.
-                        this.input.registerInputs(this.guide);
-                    }.bind(this), 100);
+                    /* Register the guide inputs. */
+                    this.Input.RegisterInputs(InputType.Guide);
                 }
             }
+        }
 
-        };
+        private AddUser(username): void {
+            /* Ensure we haven't already added the user. */
+            if (this.Storage.settings.users.indexOf(username) === -1) {
+                /* Add the user to the settings. */
+                this.Storage.settings.users.push(username);
 
-        Potato.prototype.addUser = function(username) {
+                /* Update the guide. */
+                this.Twitch.Refresh();
 
-            // Ensure we haven't already added the user.
-            if (this.users.indexOf(username) === -1) {
-                // Add the user to the list.
-                this.users.push(username);
+                /* Save the settings. */
+                this.Storage.Save();
 
-                // Update the guide.
-                potato.guide.updateAll();
+                /* Login to the twitch user. */
+                this.Twitch.Authorize(username);
+            } else
+                /* Display an error. */
+                this.ShowError(Utils.Format('{0} has already been added.', username));
+        }
+    }
 
-                // Sync the users.
-                chrome.storage.sync.set({
-                    users: this.users
-                }, function() {
-                        // Login to the twitch user.
-                        this.twitch.authorize(username, true);
-                    }.bind(this));
-            } else {
-                // Display an error.
-                this.showError('{0} has already been added.'.format(username));
-            }
+    /* The current Main class instance */
+    export var Application: Main = new Main();
 
-        };
-
-            Potato.prototype.ajaxStopped = function() {
-            this.handleNotifications();
-
-            this.guide.onAjaxCompleted();
-        };
-*/
+    // Initialize the Application only after the page has loaded.
+    $(() => {
+        TwitchPotato.Application.Initialize();
+    });
+}

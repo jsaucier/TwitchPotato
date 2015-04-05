@@ -1,5 +1,6 @@
 {
     "version": "1.4.1",
+    "compileOnSave": false,
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
@@ -7,17 +8,17 @@
         "noImplicitAny": false,
         "removeComments": true,
         "noLib": false,
-        "out": "./js/potato.js",
+        "outDir": "../js/",
         "sourceMap": true
     },
     "filesGlob": [
         "./*.ts",
-        "!./node_modules/**/*.ts",
-        "!./inject.ts"
+        "!./node_modules/**/*.ts"
     ],
     "files": [
         "./chrome.d.ts",
         "./guide.ts",
+        "./inject.ts",
         "./input.ts",
         "./jquery.d.ts",
         "./notification.ts",

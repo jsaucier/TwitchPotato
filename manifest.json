@@ -3,7 +3,7 @@
     "name": "Twitch Potato",
     "short_name": "TwitchPotato",
     "description": "Chrome app to view Twitch livestreams on your tv with only a keyboard.",
-    "version": "1.2.2",
+    "version": "1.3.0",
     "icons": {
         "16": "images/16.png",
         "48": "images/48.png",
@@ -25,7 +25,6 @@
         "http://www.twitch.tv/*",
         "https://api.twitch.tv/*",
         "http://static-cdn.jtvnw.net/*.jpg"
-        /*"<all_urls>",*/
     ],
     "webview": {
         "partitions": [{

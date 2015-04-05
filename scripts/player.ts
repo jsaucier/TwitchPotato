@@ -1,3 +1,17 @@
+// Some of these are documented, some aren't.
+//
+// Twitch player methods:
+// playVideo, pauseVideo, mute, unmute, fullscreen, loadStream, loadVideo,
+// setQuality, videoSeek, setOauthToken, onlineStatus, isPaused, setVideoTime,
+// adFeedbackDone, setTrackingData, showChromecast, setChromecastConnected,
+// togglePlayPause
+//
+// Twitch player events:
+// chromecastMediaSet, chromecastSessionRequested, chromecastVolumeUpdated,
+// pauseChromecastSession, offline, online, adCompanionRendered, loginRequest,
+// mouseScroll, playerInit, popout, tosViolation, viewerCount, streamLoaded,
+// videoLoaded, seekFailed, videoLoading, videoPlaying, adFeedbackShow
+
 module TwitchPotato {
     "use strict";
 
@@ -6,73 +20,105 @@ module TwitchPotato {
         Equal
     }
 
-    enum Fullscreen {
+    enum FullscreenAction {
+        Toggle,
         Enter,
         Exit,
-        Toggle
+        Refresh
+    }
+
+    enum Quality {
+        Mobile,
+        Low,
+        Medium,
+        High,
+        Source
     }
 
     export class Player {
-        private players: Dictionary<PlayerData>;
+        private players: Dictionary<PlayerData> = {};
         private layout: PlayerLayout = PlayerLayout.Default;
         private selectionTimer: number;
+        private qualityTimer: number;
 
-        constructor() { }
-
-        /** Loads the Player inputs. */
-        public LoadInputs(): void {
-            Application.Input.RegisterInputs(TwitchPotato.InputType.Player);
+        constructor() {
+            /* Create a blank player. */
+            this.Create('Twitch-Potato-Init', true);
         }
 
-        public OnInput(input: InputData): void {
-            switch (input.id) {
-                case 'playerUp':
-                    this.UpdateSelected(-1);
+        /*
+         * Callback for player input events.
+         */
+        public OnInput(input: Input): void {
+            switch (input.input) {
+
+                case Inputs.Player_SelectPrevious:
+                    this.UpdateSelected(Direction.Up);
                     break;
-                case 'playerDown':
-                    this.UpdateSelected(1);
+
+                case Inputs.Player_SelectNext:
+                    this.UpdateSelected(Direction.Down);
                     break;
-                case 'playerStop':
+
+                case Inputs.Player_Stop:
                     this.Stop();
                     break;
-                case 'playerPause':
-                    this.Pause();
+
+                case Inputs.Player_PlayPause:
+                    this.PlayPause();
                     break;
-                case 'playerMute':
-                    this.Mute(undefined);
+
+                case Inputs.Player_Mute:
+                    this.Mute();
                     break;
-                case 'playerFlashback':
+
+                case Inputs.Player_Flashback:
                     this.Flashback();
                     break;
-                case 'playerSelect':
+
+                case Inputs.Player_Select:
                     this.Select();
                     break;
-                case 'playerLayout':
+
+                case Inputs.Player_Layout:
                     this.UpdateLayout();
                     break;
-                case 'playerFullscreenToggle':
-                    this.Fullscreen(Fullscreen.Toggle);
+
+                case Inputs.Player_FullscreenToggle:
+                    this.Fullscreen(FullscreenAction.Toggle);
                     break;
-                case 'playerFullscreenEnter':
-                    this.Fullscreen(Fullscreen.Enter);
+
+                case Inputs.Player_FullscreenEnter:
+                    this.Fullscreen(FullscreenAction.Enter);
                     break;
-                case 'playerFullscreenExit':
-                    this.Fullscreen(Fullscreen.Exit);
+
+                case Inputs.Player_FullscreenExit:
+                    this.Fullscreen(FullscreenAction.Exit);
                     break;
+
+                case Inputs.Player_QualityMobile:
+                    this.SetQuality(Quality.Mobile);
+                    break;
+
+                case Inputs.Player_QualityLow:
+                    this.SetQuality(Quality.Low);
+                    break;
+
+                case Inputs.Player_QualityMedium:
+                    this.SetQuality(Quality.Medium);
+                    break;
+
+                case Inputs.Player_QualityHigh:
+                    this.SetQuality(Quality.High);
+                    break;
+
+                case Inputs.Player_QualitySource:
+                    this.SetQuality(Quality.Source);
+                    break;
+
                 default:
                     break;
             }
-        }
-
-        private GetPlayerById(id: string): PlayerData {
-            for (var i in this.players) {
-                var player = this.players[i];
-
-                if (player.id === id) {
-                    return player;
-                }
-            }
-            return undefined;
         }
 
         private GetPlayerByNumber(number: number): PlayerData {
@@ -91,9 +137,9 @@ module TwitchPotato {
             return this.GetPlayerByNumber(number);
         }
 
-        private Create(id: string, isVideo = false): PlayerData {
+        private Create(channel: string, isVideo = false, isFake = false): PlayerData {
             /* Check to see if a player for this id exists. */
-            var player = this.GetPlayerById(id);
+            var player = this.players[channel];
 
             if (player === undefined) {
 
@@ -101,14 +147,12 @@ module TwitchPotato {
                 var numPlayers = Utils.DictionarySize(this.players);
 
                 /* Append the new player. */
-                $('#players').append($(Utils.Format($('#player-template').html(), id, numPlayers)));
+                $('#players').append($(Utils.Format($('#player-template').html(), channel, numPlayers)));
 
                 /* Initialize our player object. */
                 player = {
-                    id: id,
+                    channel: channel,
                     isLoaded: false,
-                    isPlaying: false,
-                    isMuted: false,
                     number: numPlayers,
                     flashback: undefined,
                     webview: <Webview>$('#players webview[number="' + numPlayers + '"]')[0]
@@ -116,40 +160,30 @@ module TwitchPotato {
 
                 /* Catch load events. */
                 player.webview.addEventListener('loadcommit', () => {
-
-                    /* Inject jquery. */
+                    /* Inject the script files. */
                     player.webview.executeScript({ file: 'js/jquery-2.1.1.min.js' });
+                    player.webview.executeScript({ file: 'js/inject.js' });
 
-                    /* Inject the script file. */
-                    player.webview.executeScript({
-                        file: 'js/inject.js'
-                    });
+                    /* Hook the console message event. */
+                    player.webview.addEventListener('consolemessage', (e) => Utils.ConsoleMessage(e));
 
-                    setTimeout(() => {
-                        /* Load the player. */
-                        this.Load(player, id, isVideo);
+                    /* Load the player. */
+                    if (isFake === false) this.Load(player, channel, isVideo);
 
-                        /* Set the player as loaded. */
-                        player.isLoaded = true;
-                    });
-                });
-
-                /* Hook the console message event. */
-                player.webview.addEventListener('consolemessage', (e) => {
-                    console.log(e);
+                    /* Set to fullscreen mode. */
+                    this.Fullscreen(FullscreenAction.Enter);
                 });
 
                 /* Add the player to our list. */
-                this.players[player.id] = player;
-            }
+                this.players[channel] = player;
 
-            return player;
+                return player;
+            }
         }
 
-        private Play(id: string, create = false, isVideo = false): void {
-
+        public Play(channel: string, create = false, isVideo = false): void {
             /* Register the player inputs. */
-            this.LoadInputs();
+            Application.Input.RegisterInputs(InputType.Player);
 
             /* Get the number of current players */
             var numPlayers = Utils.DictionarySize(this.players);
@@ -157,40 +191,25 @@ module TwitchPotato {
             /* Make sure we dont have more than 4 videos playing at once. */
             if (numPlayers === 4) return;
 
-            /* Attempt to get the player by id. */
-            var player = this.GetPlayerById(id);
-
-            /* Check to see if this player already exists. */
-            if (player !== undefined) {
-                /* Select this player. */
-                this.Select();
-
-                /* Make sure the video is playing. */
-                this.ExecuteEmbedMethod(player, 'playVideo');
-
-                //Set the player as playing.
-                player.isPlaying = true;
-
-                return;
-            }
+            /* Attempt to get the player by channel. */
+            var player = this.players[channel];
 
             if (create === true) {
                 /* Create a new player. */
-                player = this.GetPlayerById(id) || this.Create(id);
+                player = this.players[channel] || this.Create(channel, isVideo);
             } else {
                 /* Get the main player or create a new one if one doesn't exist. */
-                player = this.GetPlayerByNumber(0) || this.Create(id);
+                player = this.GetPlayerByNumber(0) || this.Create(channel, isVideo);
             }
 
-            if (player.isLoaded === true) {
-                /* Load the player. */
-                this.Load(player, id, isVideo);
-            }
+            /* Load the channel if the player is already loaded,
+             * otherwise wait for the create function to callback. */
+            if (player.isLoaded === true) this.Load(player, channel, isVideo);
 
             /* Show the player. */
             $('#players').fadeIn();
 
-            this.UpdateLayout();
+            this.UpdateLayout(true);
         }
 
         private Select(): void {
@@ -218,7 +237,6 @@ module TwitchPotato {
             var player = this.GetSelectedPlayer();
 
             if (player !== undefined) {
-
                 /* We only want to make sure we have one player open at all times */
                 /* so that we dont have to waste time reloading the .swf when */
                 /* starting a new one. */
@@ -228,10 +246,7 @@ module TwitchPotato {
                     this.Remove(player);
                 } else {
                     /* Stop the player. */
-                    this.ExecuteEmbedMethod(player, 'pauseVideo');
-
-                    /* Player is no longer playing. */
-                    player.isPlaying = false;
+                    this.PostMessage(player, 'PauseVideo');
 
                     /* Show the guide. */
                     Application.ToggleGuide();
@@ -239,31 +254,22 @@ module TwitchPotato {
             }
         }
 
-        private Pause(): void {
+        private PlayPause(): void {
             /* Get the selected player. */
             var player = this.GetSelectedPlayer();
 
             if (player !== undefined) {
                 /* Check to see if the player is currently playing. */
-                if (player.isPlaying) {
-                    /* Pause the video. */
-                    this.ExecuteEmbedMethod(player, 'pauseVideo');
-                } else {
-                    /* Play the video. */
-                    this.ExecuteEmbedMethod(player, 'playVideo');
-                }
-
-                /* Update the playing value. */
-                player.isPlaying = !player.isPlaying;
+                this.PostMessage(player, 'PlayPause');
             }
         }
 
-        private Remove(player): void {
+        private Remove(player: PlayerData): void {
             /* Remove the player from the document. */
             $(player.webview).remove();
 
             /* Remove the player from the player list. */
-            delete this.players[player.id];
+            delete this.players[player.channel];
 
             /* Update the player numbers. */
             this.UpdateNumbers();
@@ -303,13 +309,13 @@ module TwitchPotato {
             $('#players .player')
                 .removeClass('default')
                 .removeClass('equal')
-                .addClass(PlayerLayout[this.layout]);
+                .addClass(PlayerLayout[this.layout].toLowerCase());
 
             /* Update the selector class. */
             $('#players .selector')
                 .removeClass('default')
                 .removeClass('equal')
-                .addClass(PlayerLayout[this.layout]);
+                .addClass(PlayerLayout[this.layout].toLowerCase());
         }
 
         private UpdateSelected(direction: Direction): void {
@@ -368,100 +374,88 @@ module TwitchPotato {
             }
         }
 
-        private Fullscreen(fullscreen: Fullscreen): void {
+        private Fullscreen(action = FullscreenAction.Refresh): void {
             /* Get the selected player or the default. */
             var player = this.GetSelectedPlayer();
 
             /* Execute the injected method. */
-            this.ExecuteMethod(player, 'updateFullscreen', [Fullscreen[fullscreen]]);
+            this.PostMessage(player, 'Fullscreen', { action: action });
         }
 
-        private Load(player: PlayerData, id: string, video = false): void {
-            /* Set the flashback value. */
-            player.flashback = (player.id !== id) ? player.id : player.flashback;
-
-            /* Set the player id value. */
-            player.id = id;
-
-            if (video !== true) {
-                /* Load the player. */
-                this.ExecuteEmbedMethod(player, 'loadStream', [id]);
-            } else {
-                /* Load the video. */
-                this.ExecuteEmbedMethod(player, 'loadVideo', [id]);
-            }
-
-            /* Make sure the video is playing. */
-            this.ExecuteEmbedMethod(player, 'playVideo');
-
-            /*Set the player as playing. */
-            player.isPlaying = true;
-        }
-
-        private Mute(mute: boolean): void {
+        private SetQuality(quality: Quality): void {
+            /* Get the selected Player or the default. */
             var player = this.GetSelectedPlayer();
 
-            player.isMuted = mute || !player.isMuted;
+            /* Execute the injected method. */
+            this.PostMessage(player, 'Quality', { quality: Quality[quality] });
 
-            if (player.isMuted === true) {
-                this.ExecuteEmbedMethod(player, 'mute');
-            } else {
-                this.ExecuteEmbedMethod(player, 'unmute');
-            }
+            /* Show the quality notification. */
+            $('#players .quality').html(Quality[quality] + ' Quality').fadeIn(() => {
+                clearTimeout(this.qualityTimer);
+                this.qualityTimer = setTimeout(() => $('#players .quality').fadeOut(), 2000)
+            });
         }
 
-        private ExecuteMethod(player: PlayerData, method: string, args: any[]): void {
+        private Load(player: PlayerData, channel: string, isVideo = false): void {
+            /* Set the flashback value. */
+            player.flashback = (player.channel !== channel) ? player.channel : player.flashback;
+
+            /* Set the player id value. */
+            player.channel = channel;
+
+            this.PostMessage(player, 'LoadVideo', { channel: channel, isVideo: isVideo });
+
+            /* Set the playe ras loaded. */
+            player.isLoaded = true;
+        }
+
+        private Mute(mute?: boolean): void {
+            var player = this.GetSelectedPlayer();
+            this.PostMessage(player, 'Mute');
+        }
+
+        private PostMessage(player: PlayerData, method: string, params = {}): void {
+            /* Data to be posted. */
             var data = {
                 method: method,
-                args: args || []
-            }
+                params: params
+            };
 
-            var code = "window.potato.executeMethod.call(window.potato, '" + JSON.stringify(data) + "');";
-
-            player.webview.executeScript({ code: code });
-        }
-
-        private ExecuteEmbedMethod(player: PlayerData, method: string, arg = []) {
-            var code = Utils.Format('document.getElementsByTagName("embed")[0].{0}()', method);
-
-            if (arg !== undefined)
-                code = Utils.Format('document.getElementsByTagName("embed")[0].{0}("{1}")', method, arg);
-
-            player.webview.executeScript({ code: code });
+            /* Post the data to the client application. */
+            setTimeout(() => player.webview.contentWindow.postMessage(JSON.stringify(data), '*'), 100);
         }
     }
 }
 
-/*
-    private showChat() {
-        //* Get the now loaded webview.
-        webview = $('#players .player[channel="' + this.channel + '"] .chat webview');
 
-        //* Navigate to the chat url.
-        webview.attr('src', 'http://twitch.tv/{0}/chat?popout=true'.format(this.channel));
-
-        //* Insert our custom css when the webview loads.
-        webview.on('loadcommit', () => {
-
-        //* Insert our custom css for the chat.
-        webview[0].insertCSS({
-            file: 'css/twitch.css'
-        });
-
-        //* Set the zoom level
-        this.setZoom(zoom);
-
-            }.bind(this));
-
-        }
-
-        private setZoom(zoom) {
-
-        var webview = $('#players .player[channel="' + this.channel + '"] .chat webview')[0];
-
-        //* Set the zoom level
-        webview.insertCSS({
-            code: 'body { font-size: ' + zoom + '%!important; }'
-        });
-    }
-*/
+// private showChat() {
+//     /* Get the now loaded webview. */
+//     webview = $('#players .player[channel="' + this.channel + '"] .chat webview');
+//
+//     /* Navigate to the chat url. */
+//     webview.attr('src', 'http://twitch.tv/{0}/chat?popout=true'.format(this.channel));
+//
+//     /* Insert our custom css when the webview loads. */
+//     webview.on('loadcommit', () => {
+//
+//         /* Insert our custom css for the chat. */
+//         webview[0].insertCSS({
+//             file: 'css/twitch.css'
+//         });
+//
+//         /* Set the zoom level */
+//         this.setZoom(zoom);
+//
+//             }.bind(this));
+//
+//         }
+//
+//         private setZoom(zoom) {
+//
+//     var webview = $('#players .player[channel="' + this.channel + '"] .chat webview')[0];
+//
+//     /* Set the zoom level */
+//     webview.insertCSS({
+//         code: 'body { font-size: ' + zoom + '%!important; }'
+//     });
+// }
