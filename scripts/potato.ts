@@ -17,6 +17,14 @@ module TwitchPotato {
         Reset
     }
 
+    export enum UpdateType {
+        All,
+        Channels,
+        Games,
+        Game,
+        Videos
+    }
+
     export enum InputType {
         Global,
         Guide,
@@ -88,6 +96,7 @@ module TwitchPotato {
         public Guide: Guide;
         public Player: Player;
         public Twitch: Twitch;
+        public Notification: Notification;
 
         public ShowError(error): void {
             $('#error .error').html(error);
@@ -102,6 +111,7 @@ module TwitchPotato {
             this.Guide = new Guide();
             this.Player = new Player();
             this.Twitch = new Twitch();
+            this.Notification = new Notification();
 
             this.Storage.Load();
             this.Input.RegisterInputs(InputType.Guide);
