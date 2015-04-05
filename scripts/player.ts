@@ -204,7 +204,7 @@ module TwitchPotato {
             if (player.isLoaded === true) this.Load(player, channel, isVideo);
 
             /* Show the player. */
-            $('#players').fadeIn();
+            $('#players').removeClass('guide').addClass('full').fadeIn();
 
             this.UpdateLayout(true);
         }
@@ -307,15 +307,19 @@ module TwitchPotato {
 
             /* Update the player class. */
             $('#players .player')
+                .hide()
                 .removeClass('default')
                 .removeClass('equal')
-                .addClass(PlayerLayout[this.layout].toLowerCase());
+                .addClass(PlayerLayout[this.layout].toLowerCase())
+                .show();
 
             /* Update the selector class. */
             $('#players .selector')
+                .hide()
                 .removeClass('default')
                 .removeClass('equal')
-                .addClass(PlayerLayout[this.layout].toLowerCase());
+                .addClass(PlayerLayout[this.layout].toLowerCase())
+                .show();
         }
 
         private UpdateSelected(direction: Direction): void {
