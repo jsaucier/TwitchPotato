@@ -199,7 +199,7 @@ module TwitchPotato {
         }
 
         /** Toggles the Guide. */
-        public ToggleGuide(): void {
+        public ToggleGuide(hidePlayer = false): void {
             if ($('#guide:visible').length !== 0) {
                 /* Show the players fullscreen. */
                 $('#players').hide().removeClass('guide').addClass('full');
@@ -213,14 +213,18 @@ module TwitchPotato {
                 /* Register the player inputs. */
                 this.Input.RegisterInputs(InputType.Player);
             } else {
-                /* Show the players in the guide box. */
-                $('#players').hide().removeClass('full').addClass('guide');
+                if (hidePlayer !== true) {
+                    /* Show the players in the guide. */
+                    $('#players').hide().removeClass('full').addClass('guide');
+
+                    /* Fade the players in. */
+                    $('#players').fadeIn();
+                }
+                else
+                    $('#players').fadeOut();
 
                 /* Fade the guide in. */
                 $('#guide').fadeIn();
-
-                /* Fade the players in. */
-                $('#players').fadeIn();
 
                 /* Register the guide inputs. */
                 this.Input.RegisterInputs(InputType.Guide);

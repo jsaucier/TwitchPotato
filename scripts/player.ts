@@ -248,7 +248,7 @@ module TwitchPotato {
                     this.PostMessage(player, 'PauseVideo');
 
                     /* Show the guide. */
-                    Application.ToggleGuide();
+                    Application.ToggleGuide(true);
                 }
             }
         }
@@ -421,7 +421,6 @@ module TwitchPotato {
         private PostMessage(player: PlayerData, method: string, params = {}): void {
             /* Make sure the contentwindow is loaded. */
             if (player.webview.contentWindow === undefined) {
-                console.log('queue');
                 setTimeout(() => this.PostMessage(player, method, params), 100);
                 return;
             }
