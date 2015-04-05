@@ -105,7 +105,7 @@ module TwitchPotato {
 
             this.Storage.Load();
             this.Input.RegisterInputs(InputType.Guide);
-            this.Twitch.Refresh(true);
+            this.Guide.Refresh(true);
 
             this.initialized = true;
         }
@@ -299,11 +299,11 @@ module TwitchPotato {
                 /* Add the user to the settings. */
                 this.Storage.settings.users.push(username);
 
-                /* Update the guide. */
-                this.Twitch.Refresh();
-
                 /* Save the settings. */
                 this.Storage.Save();
+
+                /* Update the guide. */
+                this.Guide.Refresh(true);
 
                 /* Login to the twitch user. */
                 this.Twitch.Authorize(username);

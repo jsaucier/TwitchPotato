@@ -73,7 +73,7 @@ module TwitchPotato {
                     }
                     break;
                 case Inputs.Guide_Refresh:
-                    Application.Twitch.Refresh();
+                    this.Refresh();
                     break;
                 case Inputs.Guide_ContextMenu:
                     this.ShowPopup();
@@ -459,7 +459,7 @@ module TwitchPotato {
             return html;
         }
 
-        private UpdateTime() {
+        private UpdateTime(): void {
             $('#time .current').text(new Date().toLocaleTimeString());
 
             clearTimeout(this.timeTimeout);
@@ -467,7 +467,7 @@ module TwitchPotato {
             this.timeTimeout = setTimeout(() => this.UpdateTime(), 1000);
         }
 
-        public UpdateMenu(direction: Direction, delay = 0) {
+        public UpdateMenu(direction: Direction, delay = 0): void {
             if ($('#guide').is(':visible')) {
                 /* Update the selected menu head */
                 this.UpdateMenuList(direction);
@@ -488,7 +488,7 @@ module TwitchPotato {
             }
         }
 
-        private UpdateMenuList(direction: Direction) {
+        private UpdateMenuList(direction: Direction): void {
             /* Get the index of the selected menu list. */
             var index = $('#guide .lists .list:visible').index($('#guide .lists .list.selected'));
 
@@ -515,7 +515,7 @@ module TwitchPotato {
             $('#guide .lists .list.selected .items').show();
         }
 
-        private UpdateMenuItem(direction) {
+        private UpdateMenuItem(direction): void {
             /* Get the index of the selected menu item. */
             var index = $('#guide .item:visible').index($('.item.selected:visible'));
 
@@ -546,7 +546,7 @@ module TwitchPotato {
             $('#guide .item:visible').eq(index).addClass('selected');
         }
 
-        private UpdateMenuSize() {
+        private UpdateMenuSize(): void {
             var height = $('#guide .lists').outerHeight(true);
 
             $('#guide .lists .head:visible').each(function() {
@@ -556,7 +556,7 @@ module TwitchPotato {
             $('#guide .lists .items:visible').height(height);
         }
 
-        private UpdateMenuScroll() {
+        private UpdateMenuScroll(): void {
             if ($('#guide .items:visible').length !== 0) {
                 /* Get the list mid point */
                 var mid = $('#guide .items:visible').innerHeight() / 2;
@@ -577,7 +577,7 @@ module TwitchPotato {
             }
         }
 
-        private UpdateInfo() {
+        private UpdateInfo(): void {
             var key = $('#guide .item.selected:visible').attr('key');
             var menu = parseInt($('#guide .item.selected:visible').attr('menu'));
 
@@ -604,7 +604,7 @@ module TwitchPotato {
                 });
         }
 
-        private ShowChannel(key: string, menu: MenuType) {
+        private ShowChannel(key: string, menu: MenuType): void {
             /* Get the channel data. */
             var channel = <Channel>Application.Twitch.menus[menu][key];
 
@@ -622,7 +622,7 @@ module TwitchPotato {
             $('#info').append(html);
         }
 
-        private ShowGame(key: string) {
+        private ShowGame(key: string): void {
             /* Get the game data. */
             var game = <Game>Application.Twitch.menus[MenuType.Games][key];
 
@@ -647,7 +647,7 @@ module TwitchPotato {
             }
         }
 
-        private ShowVideo(data) {
+        private ShowVideo(data): void {
             if (data === undefined)
                 return;
 
@@ -664,7 +664,7 @@ module TwitchPotato {
             $('#info').append(html);
         }
 
-        private ShowSetting(setting) {
+        private ShowSetting(setting): void {
             /* Only update settings if the menu has actually changed. */
             if ($('#info').attr('menu') === 'settings' &&
                 $('#info').attr('type') === setting)
@@ -676,7 +676,7 @@ module TwitchPotato {
             $('#info').append(html);
         }
 
-        private ShowPopup() {
+        private ShowPopup(): void {
             /* Close the popup if shown. */
             if ($('#guide .popup:visible').length !== 0) {
                 $('#guide .popup').remove();
@@ -698,7 +698,7 @@ module TwitchPotato {
             var followedGame = false;
 
             /* Popup menu is disabled for videos. */
-            if (menu === MenuType.Videos) return false;
+            if (menu === MenuType.Videos) return
 
             /* Update follow-channel button. */
             if (menu === MenuType.Channels) {
@@ -744,7 +744,7 @@ module TwitchPotato {
             this.UpdateMenuScroll();
         }
 
-        private UpdatePopupButton(direction) {
+        private UpdatePopupButton(direction): void {
             /* Get the index of the selected menu item. */
             var index = $('.popup .button:visible').index($('.popup .button.selected:visible'));
 
@@ -765,60 +765,13 @@ module TwitchPotato {
             /* Select the new menu item. */
             $('.popup .button:visible').eq(index).addClass('selected');
         }
+
+        public Refresh(skipFollowed = false): void {
+            clearTimeout(this.refreshTimeout);
+
+            Application.Twitch.Refresh(skipFollowed);
+
+            this.refreshTimeout = setTimeout(() => this.Refresh(), 1000 * 60);
+        }
     }
 }
-/*
-potato.guide = new Guide(potato);
-
-$(() => {
-    potato.guide.updateTime();
-    potato.guide.updateMenuItems('followed');
-    potato.guide.updateMenuItems('featured');
-    potato.guide.updateMenuItems('channels');
-    potato.guide.updateMenuItems('games');
-});
-
-} (window.Potato, window.jQuery, window.chrome));
-
-
-
-
-
-
-
-
-((potato, $, chrome, undefined) => {
-
-var Guide = () => {
-    this.input = 'Guide';
-
-    this.lookup = {
-        followedChannels: {},
-        followedGames: {},
-        featured: {},
-        channels: {},
-        video: {},
-        games: {},
-        game: {}
-    };
-
-    this.online = {};
-
-    this.followed = [];
-    this.featured = [];
-    this.channels = [];
-    this.video = [];
-    this.games = [];
-    this.game = [];
-    this.settings = [];
-
-    this.timers = {
-        info: null,
-        time: null,
-        refresh: null
-    };
-
-    this.firstUpdate = true;
-};
-
-*/
