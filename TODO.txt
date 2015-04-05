@@ -1,1 +1,2 @@
 Add chat back to the app.
+Add account selectors to specify follows.
