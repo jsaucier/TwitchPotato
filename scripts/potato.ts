@@ -105,7 +105,7 @@ module TwitchPotato {
 
             this.Storage.Load();
             this.Input.RegisterInputs(InputType.Guide);
-            this.Twitch.Refresh();
+            this.Twitch.Refresh(true);
 
             this.initialized = true;
         }
@@ -118,7 +118,7 @@ module TwitchPotato {
             // Load the saved users.
             for (var user in this.Storage.settings.users)
                 /* Login the user. */
-                this.Twitch.Authorize(this.Storage.settings.users[0]);
+                this.Twitch.Authorize(this.Storage.settings.users[user]);
         }
 
         /** Callback triggered after a keypress event. */

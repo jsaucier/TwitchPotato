@@ -234,13 +234,15 @@ module TwitchPotato {
         /*
          * Upates all the twitch data.
          */
-        public Refresh(): void {
+        public Refresh(skipFollowed = false): void {
             this.GetChannels();
             this.GetGames();
 
-            for (var user in this.users) {
-                this.GetFollowedChannels(user);
-                this.GetFollowedGames(user);
+            if (skipFollowed === false) {
+                for (var user in this.users) {
+                    this.GetFollowedChannels(user);
+                    this.GetFollowedGames(user);
+                }
             }
         }
 
