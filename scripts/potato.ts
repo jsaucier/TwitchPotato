@@ -288,9 +288,9 @@ module TwitchPotato {
                         if (input.attr('id') === 'add-user') {
                             this.AddUser(value);
                         } else if (input.attr('id') === 'follow-channel') {
-                            this.Twitch.FollowChannel('all', value);
+                            this.Twitch.FollowChannel(undefined, value);
                         } else if (input.attr('id') === 'follow-game') {
-                            this.Twitch.FollowGame('all', value);
+                            this.Twitch.FollowGame(undefined, value);
                         }
                     }
 
