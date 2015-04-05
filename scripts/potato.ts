@@ -149,7 +149,6 @@ module TwitchPotato {
 
         /** Handles the GlobalExit keydown event. */
         private GlobalExit(): void {
-            console.log('globalexit');
             if ($('#webviews webview:visible').length === 0) {
                 window.close();
             } else {
@@ -239,7 +238,6 @@ module TwitchPotato {
         }
 
         private SaveSetting(): void {
-            console.log('savesetting');
             /* Ensure we are on an input setting. */
             if ($('#guide .item.selected[input="true"]:visible').length !== 0) {
                 /* Get the focused input. */

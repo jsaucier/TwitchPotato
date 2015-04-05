@@ -147,7 +147,7 @@ module TwitchPotato {
                 var numPlayers = Utils.DictionarySize(this.players);
 
                 /* Append the new player. */
-                $('#players').append($(Utils.Format($('#player-template').html(), channel, numPlayers)));
+                $('#players').append($(Utils.Format($('#player-template').html(), numPlayers)));
 
                 /* Initialize our player object. */
                 player = {
@@ -168,14 +168,11 @@ module TwitchPotato {
                     player.webview.addEventListener('consolemessage', (e) => Utils.ConsoleMessage(e));
 
                     /* Load the player. */
-                    if (isFake === false) this.Load(player, channel, isVideo);
-
-                    /* Set to fullscreen mode. */
-                    this.Fullscreen(FullscreenAction.Enter);
+                    if (isFake === false) setTimeout(() => this.Load(player, channel, isVideo), 100);
                 });
 
                 /* Add the player to our list. */
-                this.players[channel] = player;
+                this.players[numPlayers] = player;
 
                 return player;
             }
@@ -223,10 +220,12 @@ module TwitchPotato {
                 /* Update number of the currently selected player. */
                 current.number = player.number;
                 $(current.webview).attr('number', player.number);
+                this.players[player.number] = current;
 
                 /* Update the number of the selected player. */
                 player.number = 0;
                 $(player.webview).attr('number', 0);
+                this.players[0] = player;
             }
 
             this.ClearSelected();
@@ -265,35 +264,36 @@ module TwitchPotato {
         }
 
         private Remove(player: PlayerData): void {
+            /* Get the number of the removed player. */
+            var num = player.number;
+
             /* Remove the player from the document. */
             $(player.webview).remove();
 
             /* Remove the player from the player list. */
-            delete this.players[player.channel];
+            delete this.players[num];
 
             /* Update the player numbers. */
-            this.UpdateNumbers();
+            this.UpdateNumbers(num);
 
             /* Clear the selector */
             this.ClearSelected();
         }
 
-        private UpdateNumbers(): void {
-            /* Sort the players by their number value. */
-            /*this.players.sort((a, b) => {
-                return a.number - b.number;
-            });*/
-            console.log('UpdateNumbers sort?');
-
-            /* Reset their number values based on their new index. */
+        private UpdateNumbers(removed: number): void {
+            /* Update the number of any player after the removed. */
             for (var i in this.players) {
                 var player = this.players[i];
 
-                /* Update the number. */
-                player.number = parseInt(i);
+                if (player.number > removed) {
+                    /* Update the number. */
+                    player.number -= 1;
 
-                /* Update the webview */
-                $(player.webview).attr('number', i);
+                    /* Update the webview */
+                    $(player.webview).attr('number', player.number);
+                }
+                this.players[player.number] = player;
+                delete this.players[player.number + 1];
             }
         }
 
@@ -343,11 +343,6 @@ module TwitchPotato {
 
             /* Set the selector */
             $('#players .selector').attr('number', index);
-
-            $('#players .selector').attr('number', index);
-
-            /* Update the player numbers. */
-            this.UpdateNumbers();
 
             /* Clear the selected timer. */
             clearTimeout(this.selectionTimer);
@@ -415,6 +410,13 @@ module TwitchPotato {
         }
 
         private PostMessage(player: PlayerData, method: string, params = {}): void {
+            /* Make sure the contentwindow is loaded. */
+            if (player.webview.contentWindow === undefined) {
+                console.log('queue');
+                setTimeout(() => this.PostMessage(player, method, params), 100);
+                return;
+            }
+
             /* Data to be posted. */
             var data = {
                 method: method,
