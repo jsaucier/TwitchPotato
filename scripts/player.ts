@@ -43,7 +43,7 @@ module TwitchPotato {
 
         constructor() {
             /* Create a blank player. */
-            this.Create('Twitch-Potato-Init', true);
+            this.Create('Twitch-Potato-Init', false, true);
         }
 
         /*
@@ -168,7 +168,7 @@ module TwitchPotato {
                     player.webview.addEventListener('consolemessage', (e) => Utils.ConsoleMessage(e));
 
                     /* Load the player. */
-                    if (isFake === false) setTimeout(() => this.Load(player, channel, isVideo), 100);
+                    setTimeout(() => this.Load(player, channel, isVideo, isFake), 100);
                 });
 
                 /* Add the player to our list. */
@@ -291,9 +291,13 @@ module TwitchPotato {
 
                     /* Update the webview */
                     $(player.webview).attr('number', player.number);
+
+                    /* Copy the player to the previous index. */
+                    this.players[player.number] = player;
+
+                    /* Delete the copied player. */
+                    delete this.players[player.number + 1];
                 }
-                this.players[player.number] = player;
-                delete this.players[player.number + 1];
             }
         }
 
@@ -395,14 +399,15 @@ module TwitchPotato {
             });
         }
 
-        private Load(player: PlayerData, channel: string, isVideo = false): void {
+        private Load(player: PlayerData, channel: string, isVideo = false, isFake = false): void {
             /* Set the flashback value. */
             player.flashback = (player.channel !== channel) ? player.channel : player.flashback;
 
             /* Set the player id value. */
             player.channel = channel;
 
-            this.PostMessage(player, 'LoadVideo', { channel: channel, isVideo: isVideo });
+            if (isFake !== true)
+                this.PostMessage(player, 'LoadVideo', { channel: channel, isVideo: isVideo });
 
             /* Set the playe ras loaded. */
             player.isLoaded = true;
