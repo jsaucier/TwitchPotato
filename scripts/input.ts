@@ -25,6 +25,9 @@ module TwitchPotato {
 
             this.AddInput(InputType.Player, Inputs.Player_SelectPrevious, 38, 'Previous Player');
             this.AddInput(InputType.Player, Inputs.Player_SelectNext, 40, 'Next Player');
+            this.AddInput(InputType.Player, Inputs.Player_ToggleChat, 67, 'Toggle Chat');
+            this.AddInput(InputType.Player, Inputs.Player_ChatLayoutPrevious, 37, 'Previous Chat Layout');
+            this.AddInput(InputType.Player, Inputs.Player_ChatLayoutNext, 39, 'Next Chat Layout');
             this.AddInput(InputType.Player, Inputs.Player_Stop, 83, 'Stop Player');
             this.AddInput(InputType.Player, Inputs.Player_PlayPause, 32, 'Pause Player');
             this.AddInput(InputType.Player, Inputs.Player_Mute, 77, 'Mute Volume');

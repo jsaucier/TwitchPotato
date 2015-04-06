@@ -1,0 +1,212 @@
+// out: ../css/player.css, sourceMap: true, sourceMapDir: ../less/, compress: true
+@purple: #6441a5;
+* {
+    padding: 0;
+    margin: 0;
+    -webkit-box-sizing: border-box;
+    &:focus {
+        outline: 0;
+    }
+}
+#players {
+    position: fixed;
+    display: none;
+    /* PlayersLayout.Full */
+    &[layout="0"] {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+    /* PlayersLayout.Guide */
+    &[layout="1"] {
+        width: 30%;
+        height: 30%;
+        bottom: 30px;
+        right: 30px;
+    }
+    /* PlayersLayout.ChatLeft */
+    &[layout="2"] {
+        left: 25%;
+        top: 0;
+        right: 0;
+        bottom: 0;
+    }
+    /* PlayersLayout.ChatRight */
+    &[layout="3"] {
+        left: 0;
+        top: 0;
+        right: 25%;
+        bottom: 0;
+    }
+    .quality {
+        display: none;
+        position: fixed;
+        bottom: 18px;
+        width: 250px;
+        left: 50%;
+        margin-left: -125px;
+        background-color: #333;
+        border: 2px solid @purple;
+        z-index: 999999;
+        text-align: center;
+        line-height: 2.0em;
+    }
+    .selector {
+        position: fixed;
+        display: none;
+        background-color: @purple;
+        opacity: 0.3;
+        /* Default */
+        &[layout="0"] {
+            &[number="0"] {
+                display: block;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 100%;
+                width: 100%;
+                z-index: 1001;
+            }
+            &[number="1"] {
+                display: block;
+                bottom: 2%;
+                left: 2%;
+                height: 30%;
+                width: 30%;
+                z-index: 2001;
+            }
+            &[number="2"] {
+                display: block;
+                bottom: 2%;
+                left: 50%;
+                height: 30%;
+                width: 30%;
+                margin-left: -15%;
+                z-index: 2001;
+            }
+            &[number="3"] {
+                display: block;
+                bottom: 2%;
+                right: 2%;
+                height: 30%;
+                width: 30%;
+                z-index: 2001;
+            }
+        }
+        /* Equal */
+        &[layout="1"] {
+            &[number="0"] {
+                display: block;
+                top: 0;
+                left: 0;
+                height: 50%;
+                width: 50%;
+                z-index: 1001;
+            }
+            &[number="1"] {
+                display: block;
+                top: 0;
+                left: 50%;
+                height: 50%;
+                width: 50%;
+                z-index: 1001;
+            }
+            &[number="2"] {
+                display: block;
+                left: 0;
+                top: 50%;
+                height: 50%;
+                width: 50%;
+                z-index: 1001;
+            }
+            &[number="3"] {
+                display: block;
+                left: 50%;
+                top: 50%;
+                height: 50%;
+                width: 50%;
+                z-index: 1001;
+            }
+        }
+    }
+    .player {
+        position: absolute;
+        /* Default */
+        &[layout="0"] {
+            &[number="0"] {
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                left: 0;
+                height: 100%;
+                width: 100%;
+                z-index: 1000;
+            }
+            &[number="1"] {
+                bottom: 2%;
+                left: 2%;
+                height: 30%;
+                width: 30%;
+                z-index: 2000;
+            }
+            &[number="2"] {
+                bottom: 2%;
+                left: 50%;
+                height: 30%;
+                width: 30%;
+                margin-left: -15%;
+                z-index: 2000;
+            }
+            &[number="3"] {
+                bottom: 2%;
+                right: 2%;
+                height: 30%;
+                width: 30%;
+                z-index: 2000;
+            }
+        }
+        /* Equal */
+        &[layout="1"] {
+            &[number="0"] {
+                display: block;
+                top: 0;
+                left: 0;
+                height: 50%;
+                width: 50%;
+                z-index: 1000;
+            }
+            &[number="1"] {
+                display: block;
+                top: 0;
+                left: 50%;
+                height: 50%;
+                width: 50%;
+                z-index: 1000;
+            }
+            &[number="2"] {
+                display: block;
+                left: 0;
+                top: 50%;
+                height: 50%;
+                width: 50%;
+                z-index: 1000;
+            }
+            &[number="3"] {
+                display: block;
+                left: 50%;
+                top: 50%;
+                height: 50%;
+                width: 50%;
+                z-index: 1000;
+            }
+        }
+        webview.video {
+            height: 100%;
+            width: 100%;
+            background-color: #222;
+        }
+    }
+}

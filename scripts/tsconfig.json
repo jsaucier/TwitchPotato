@@ -16,6 +16,7 @@
         "!./node_modules/**/*.ts"
     ],
     "files": [
+        "./chat.ts",
         "./chrome.d.ts",
         "./guide.ts",
         "./inject.ts",

@@ -5,6 +5,8 @@
         <title>Twitch Potato</title>
 
         <link type="text/css" rel="stylesheet" href="css/potato.css" />
+        <link type="text/css" rel="stylesheet" href="css/player.css" />
+        <link type="text/css" rel="stylesheet" href="css/chat.css" />
 
         <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 
@@ -16,6 +18,7 @@
         <script type="text/javascript" src="js/player.js"></script>
         <script type="text/javascript" src="js/twitch.js"></script>
         <script type="text/javascript" src="js/notification.js"></script>
+        <script type="text/javascript" src="js/chat.js"></script>
     </head>
 
     <body>
@@ -72,8 +75,11 @@
         </div>
 
         <div id="players">
-            <div class="selector default"></div>
             <div class="quality">Quality</div>
+            <div class="selector" layout="0"></div>
+        </div>
+        <div id="chat">
+            <webview type="chat" autosize="on" partition="persist:twitchpotato"></webview>
         </div>
 
         <div id="webviews">
@@ -325,7 +331,7 @@
         </script>
 
         <script id="player-template" type="text/template">
-            <webview type="player" class="player default" number="{0}" autosize="on" partition="persist:twitchpotato" src="http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true"></webview>
+            <webview type="player" class="player" layout="0" number="{0}" autosize="on" partition="persist:twitchpotato" src="http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true"></webview>
         </script>
 
         <script id="twitch-template" type="text/template">

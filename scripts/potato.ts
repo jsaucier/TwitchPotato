@@ -1,12 +1,3 @@
-/// <reference path="./potato.d.ts" />
-/// <reference path="./jquery.d.ts" />
-/// <reference path="./utils.ts" />
-/// <reference path="./storage"/>
-/// <reference path="./input.ts" />
-/// <reference path="./guide.ts" />
-/// <reference path="./player.ts" />
-/// <reference path="./twitch.ts" />
-
 module TwitchPotato {
     "use strict";
 
@@ -15,6 +6,24 @@ module TwitchPotato {
         In,
         Out,
         Reset
+    }
+
+    export enum ChatLayout {
+        FloatLeft,
+        FloatRight,
+        DockLeft,
+        DockRight,
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight,
+    }
+
+    export enum PlayersLayout {
+        Full,
+        Guide,
+        ChatLeft,
+        ChatRight
     }
 
     export enum UpdateType {
@@ -62,7 +71,10 @@ module TwitchPotato {
         Player_QualityLow,
         Player_QualityMedium,
         Player_QualityHigh,
-        Player_QualitySource
+        Player_QualitySource,
+        Player_ToggleChat,
+        Player_ChatLayoutNext,
+        Player_ChatLayoutPrevious
     }
 
     export enum Direction {
@@ -91,12 +103,13 @@ module TwitchPotato {
     export class Main {
         private initialized = false;
 
-        public Storage: Storage;
+        public Storage: StorageHandler;
         public Input: InputHandler;
-        public Guide: Guide;
-        public Player: Player;
-        public Twitch: Twitch;
-        public Notification: Notification;
+        public Guide: GuideHandler;
+        public Player: PlayerHandler;
+        public Twitch: TwitchHandler;
+        public Notification: NotificationHandler;
+        public Chat: ChatHandler;
 
         public ShowError(error): void {
             $('#error .error').html(error);
@@ -106,12 +119,13 @@ module TwitchPotato {
         public Initialize(): void {
             if (this.initialized === true) return;
 
-            this.Storage = new Storage();
+            this.Storage = new StorageHandler();
             this.Input = new InputHandler();
-            this.Guide = new Guide();
-            this.Player = new Player();
-            this.Twitch = new Twitch();
-            this.Notification = new Notification();
+            this.Guide = new GuideHandler();
+            this.Player = new PlayerHandler();
+            this.Twitch = new TwitchHandler();
+            this.Notification = new NotificationHandler();
+            this.Chat = new ChatHandler();
 
             this.Storage.Load();
             this.Input.RegisterInputs(InputType.Guide);
@@ -202,26 +216,26 @@ module TwitchPotato {
         public ToggleGuide(hidePlayer = false): void {
             if ($('#guide:visible').length !== 0) {
                 /* Show the players fullscreen. */
-                $('#players').hide().removeClass('guide').addClass('full');
-
-                /* Fade the players in. */
-                $('#players').fadeIn();
+                this.Player.UpdateLayout(true);
 
                 /* Fade the guide out. */
                 $('#guide').fadeOut();
+
+                /* Show the chat window. */
+                Application.Chat.ToggleChat(true, true);
 
                 /* Register the player inputs. */
                 this.Input.RegisterInputs(InputType.Player);
             } else {
                 if (hidePlayer !== true) {
                     /* Show the players in the guide. */
-                    $('#players').hide().removeClass('full').addClass('guide');
-
-                    /* Fade the players in. */
-                    $('#players').fadeIn();
+                    this.Player.UpdateLayout(true, PlayersLayout.Guide);
                 }
                 else
                     $('#players').fadeOut();
+
+                /* Show the chat window. */
+                Application.Chat.ToggleChat(false, true);
 
                 /* Fade the guide in. */
                 $('#guide').fadeIn();
@@ -250,21 +264,15 @@ module TwitchPotato {
             $('body').css('font-size', this.Storage.settings.zoom + '%');
 
             this.Guide.UpdateMenu(Direction.None);
+
             // Update the menu size
-            //this.Guide.UpdateMenuSize();
+            this.Guide.UpdateMenuSize();
 
             // Update the mneu scroll position
-            //this.Guide.UpdateMenuScroll();
+            this.Guide.UpdateMenuScroll();
 
             // Update the chat font size.
-            if ($('#players .chat webview').length > 0) {
-                var webview = <Webview>$('#players .chat webview')[0];
-
-                // Update the chat font size.
-                webview.insertCSS({
-                    code: Utils.Format('body { font-size: {0}%!important; }', this.Storage.settings.zoom)
-                });
-            }
+            this.Chat.UpdateZoom();
         }
 
         private SaveSetting(): void {

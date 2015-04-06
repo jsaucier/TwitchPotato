@@ -8,6 +8,15 @@
         outline: 0;
     }
 }
+@ChatLayout_DockLeft: 0;
+@ChatLayout_DockRight: 1;
+@ChatLayout_FloatLeft: 2;
+@ChatLayout_TopLeft: 3;
+@ChatLayout_TopRight: 4;
+@ChatLayout_BottomLeft: 5;
+@ChatLayout_BottomRight: 6;
+@PlayerLayout_Default: 0;
+@PlayerLayout_Equal: 1;
 body {
     background-color: #191919;
     color: #fff;
@@ -277,202 +286,6 @@ body {
                 font-size: 1.1em;
                 margin-top: 10px;
                 border-radius: 5px;
-            }
-        }
-    }
-}
-#players {
-    position: fixed;
-    display: none;
-    &.full {
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: block;
-    }
-    &.guide {
-        width: 30%;
-        height: 30%;
-        bottom: 30px;
-        right: 30px;
-        display: block;
-    }
-    .quality {
-        display: none;
-        position: fixed;
-        bottom: 18px;
-        width: 250px;
-        left: 50%;
-        margin-left: -125px;
-        background-color: #333;
-        border: 2px solid @purple;
-        z-index: 999999;
-        text-align: center;
-        line-height: 2.0em;
-    }
-    .selector {
-        position: fixed;
-        display: none;
-        background-color: @purple;
-        opacity: 0.3;
-        &.default {
-            &[number="0"] {
-                display: block;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: 100%;
-                width: 100%;
-                z-index: 1001;
-            }
-            &[number="1"] {
-                display: block;
-                bottom: 2%;
-                left: 2%;
-                height: 30%;
-                width: 30%;
-                z-index: 2001;
-            }
-            &[number="2"] {
-                display: block;
-                bottom: 2%;
-                left: 50%;
-                height: 30%;
-                width: 30%;
-                margin-left: -15%;
-                z-index: 2001;
-            }
-            &[number="3"] {
-                display: block;
-                bottom: 2%;
-                right: 2%;
-                height: 30%;
-                width: 30%;
-                z-index: 2001;
-            }
-        }
-        &.equal {
-            &[number="0"] {
-                display: block;
-                top: 0;
-                left: 0;
-                height: 50%;
-                width: 50%;
-                z-index: 1001;
-            }
-            &[number="1"] {
-                display: block;
-                top: 0;
-                left: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1001;
-            }
-            &[number="2"] {
-                display: block;
-                left: 0;
-                top: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1001;
-            }
-            &[number="3"] {
-                display: block;
-                left: 50%;
-                top: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1001;
-            }
-        }
-    }
-    .player {
-        position: absolute;
-        &.default {
-            &[number="0"] {
-                top: 0;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                left: 0;
-                height: 100%;
-                width: 100%;
-                z-index: 1000;
-            }
-            &[number="1"] {
-                bottom: 2%;
-                left: 2%;
-                height: 30%;
-                width: 30%;
-                z-index: 2000;
-            }
-            &[number="2"] {
-                bottom: 2%;
-                left: 50%;
-                height: 30%;
-                width: 30%;
-                margin-left: -15%;
-                z-index: 2000;
-            }
-            &[number="3"] {
-                bottom: 2%;
-                right: 2%;
-                height: 30%;
-                width: 30%;
-                z-index: 2000;
-            }
-        }
-        &.equal {
-            &[number="0"] {
-                display: block;
-                top: 0;
-                left: 0;
-                height: 50%;
-                width: 50%;
-                z-index: 1000;
-            }
-            &[number="1"] {
-                display: block;
-                top: 0;
-                left: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1000;
-            }
-            &[number="2"] {
-                display: block;
-                left: 0;
-                top: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1000;
-            }
-            &[number="3"] {
-                display: block;
-                left: 50%;
-                top: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1000;
-            }
-        }
-        webview.video {
-            height: 100%;
-            width: 100%;
-            background-color: #222;
-        }
-        .chat {
-            display: none;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            width: 25em;
-            webview {
-                height: 100%;
-                width: 100%;
-                background-color: #222;
             }
         }
     }

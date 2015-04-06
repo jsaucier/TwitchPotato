@@ -35,11 +35,14 @@ module TwitchPotato {
         Source
     }
 
-    export class Player {
+    export class PlayerHandler {
         private players: Dictionary<PlayerData> = {};
         private layout: PlayerLayout = PlayerLayout.Default;
         private selectionTimer: number;
         private qualityTimer: number;
+
+        private playersLayout: PlayersLayout;
+        private previousLayout: PlayersLayout;
 
         constructor() {
             /* Create a blank player. */
@@ -81,7 +84,7 @@ module TwitchPotato {
                     break;
 
                 case Inputs.Player_Layout:
-                    this.UpdateLayout();
+                    this.ArrangePlayers();
                     break;
 
                 case Inputs.Player_FullscreenToggle:
@@ -116,12 +119,24 @@ module TwitchPotato {
                     this.SetQuality(Quality.Source);
                     break;
 
+                case Inputs.Player_ToggleChat:
+                    Application.Chat.Show(this.GetPlayerByNumber(0).channel);
+                    break;
+
+                case Inputs.Player_ChatLayoutNext:
+                    Application.Chat.UpdateLayout(Direction.Right);
+                    break;
+
+                case Inputs.Player_ChatLayoutPrevious:
+                    Application.Chat.UpdateLayout(Direction.Left);
+                    break;
+
                 default:
                     break;
             }
         }
 
-        private GetPlayerByNumber(number: number): PlayerData {
+        public GetPlayerByNumber(number: number): PlayerData {
             for (var i in this.players) {
                 var player = this.players[i];
 
@@ -132,7 +147,7 @@ module TwitchPotato {
             return undefined;
         }
 
-        private GetSelectedPlayer(): PlayerData {
+        public GetSelectedPlayer(): PlayerData {
             var number = parseInt($('#players .player.selected').attr('number')) || 0;
             return this.GetPlayerByNumber(number);
         }
@@ -155,7 +170,7 @@ module TwitchPotato {
                     isLoaded: false,
                     number: numPlayers,
                     flashback: undefined,
-                    webview: <Webview>$('#players webview[number="' + numPlayers + '"]')[0]
+                    webview: <Webview>$('#players webview[number="' + numPlayers + '"].player')[0]
                 }
 
                 /* Catch load events. */
@@ -204,9 +219,9 @@ module TwitchPotato {
             if (player.isLoaded === true) this.Load(player, channel, isVideo);
 
             /* Show the player. */
-            $('#players').removeClass('guide').addClass('full').fadeIn();
+            this.UpdateLayout(true, PlayersLayout.Full);
 
-            this.UpdateLayout(true);
+            this.ArrangePlayers(true);
         }
 
         private Select(): void {
@@ -301,29 +316,44 @@ module TwitchPotato {
             }
         }
 
-        private UpdateLayout(update = false): void {
+        private ArrangePlayers(update = false): void {
             if (update !== true) {
-                if (this.layout === PlayerLayout.Default)
-                    this.layout = PlayerLayout.Equal;
-                else
-                    this.layout = PlayerLayout.Default;
+                /* Increase the layout. */
+                this.layout++;
             }
 
-            /* Update the player class. */
-            $('#players .player')
-                .hide()
-                .removeClass('default')
-                .removeClass('equal')
-                .addClass(PlayerLayout[this.layout].toLowerCase())
-                .show();
+            /** The size of the layouts enum. */
+            var size = Object.keys(PlayerLayout).length / 2;
 
-            /* Update the selector class. */
-            $('#players .selector')
+            /* Bounds for the enum. */
+            if (this.layout < 0) this.layout = size - 1;
+            else if (this.layout > size - 1) this.layout = 0;
+
+            /* Update the players and selector layouts. */
+            $('#players .player, #players .selector')
                 .hide()
-                .removeClass('default')
-                .removeClass('equal')
-                .addClass(PlayerLayout[this.layout].toLowerCase())
+                .attr('layout', this.layout)
                 .show();
+        }
+
+        public UpdateLayout(fadeIn: boolean, layout?: PlayersLayout): void {
+            if (this.playersLayout === layout) {
+                if (fadeIn === true) $('#players').fadeIn();
+                else $('#players').show();
+                return;
+            }
+            if (layout === PlayersLayout.Guide)
+                this.previousLayout = this.playersLayout;
+
+            if (layout === undefined)
+                layout = this.previousLayout;
+
+            if (fadeIn === true)
+                $('#players').hide().attr('layout', layout).fadeIn();
+            else
+                $('#players').hide().attr('layout', layout).show();
+
+            this.playersLayout = layout;
         }
 
         private UpdateSelected(direction: Direction): void {
@@ -436,36 +466,3 @@ module TwitchPotato {
         }
     }
 }
-
-
-// private showChat() {
-//     /* Get the now loaded webview. */
-//     webview = $('#players .player[channel="' + this.channel + '"] .chat webview');
-//
-//     /* Navigate to the chat url. */
-//     webview.attr('src', 'http://twitch.tv/{0}/chat?popout=true'.format(this.channel));
-//
-//     /* Insert our custom css when the webview loads. */
-//     webview.on('loadcommit', () => {
-//
-//         /* Insert our custom css for the chat. */
-//         webview[0].insertCSS({
-//             file: 'css/twitch.css'
-//         });
-//
-//         /* Set the zoom level */
-//         this.setZoom(zoom);
-//
-//             }.bind(this));
-//
-//         }
-//
-//         private setZoom(zoom) {
-//
-//     var webview = $('#players .player[channel="' + this.channel + '"] .chat webview')[0];
-//
-//     /* Set the zoom level */
-//     webview.insertCSS({
-//         code: 'body { font-size: ' + zoom + '%!important; }'
-//     });
-// }
