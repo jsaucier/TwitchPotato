@@ -215,6 +215,9 @@ module TwitchPotato {
         /** Toggles the Guide. */
         public ToggleGuide(hidePlayer = false): void {
             if ($('#guide:visible').length !== 0) {
+                /* Ensure there is a stream playing. */
+                if (this.Player.isPlaying !== true) return;
+
                 /* Show the players fullscreen. */
                 this.Player.UpdateLayout(true);
 

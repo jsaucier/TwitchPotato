@@ -44,6 +44,10 @@ module TwitchPotato {
         private playersLayout: PlayersLayout;
         private previousLayout: PlayersLayout;
 
+        /** Gets or sets if there is any channels playing. */
+        public isPlaying = false;
+
+
         constructor() {
             /* Create a blank player. */
             this.Create('Twitch-Potato-Init', false, true);
@@ -221,7 +225,11 @@ module TwitchPotato {
             /* Show the player. */
             this.UpdateLayout(true, PlayersLayout.Full);
 
+            /* Arrange the players. */
             this.ArrangePlayers(true);
+
+            /* Set as currently playing a channel. */
+            this.isPlaying = true;
         }
 
         private Select(): void {
@@ -259,6 +267,9 @@ module TwitchPotato {
                     /* go ahead and delete the current one. */
                     this.Remove(player);
                 } else {
+                    /* Sets no channels as playing. */
+                    this.isPlaying = false;
+
                     /* Stop the player. */
                     this.PostMessage(player, 'PauseVideo');
 
