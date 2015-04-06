@@ -1,7 +1,7 @@
 module TwitchPotato {
     "use strict";
 
-    export class Twitch {
+    export class TwitchHandler {
         static clientId = '60wzh4fjbowe6jwtofuc1jakjfgekry';
         static scope = 'user_read+user_follows_edit';
         static limit = 100;
@@ -88,7 +88,7 @@ module TwitchPotato {
                 /* Data to post. */
                 var data = {
                     method: 'Init',
-                    args: [username, Twitch.clientId, Twitch.scope]
+                    args: [username, TwitchHandler.clientId, TwitchHandler.scope]
                 };
 
                 /* Post the data to the remote webview. */
@@ -197,8 +197,8 @@ module TwitchPotato {
             }
 
             for (var user in users) {
-                var url = Utils.Format(Twitch.urls.followChannel,
-                    user, channel, this.users[user], Twitch.scope);
+                var url = Utils.Format(TwitchHandler.urls.followChannel,
+                    user, channel, this.users[user], TwitchHandler.scope);
 
                 $.ajax({
                     url: url,
@@ -239,8 +239,8 @@ module TwitchPotato {
             }
 
             for (var user in users) {
-                var url = Utils.Format(Twitch.urls.followGame,
-                    user, game, this.users[user], Twitch.scope);
+                var url = Utils.Format(TwitchHandler.urls.followGame,
+                    user, game, this.users[user], TwitchHandler.scope);
 
                 $.ajax({
                     url: url,
@@ -280,7 +280,7 @@ module TwitchPotato {
             this.menus[MenuType.Channels] = {};
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(Twitch.urls.channels, Twitch.limit);
+            var url = Utils.Format(TwitchHandler.urls.channels, TwitchHandler.limit);
 
             /* Ajax call to get the top channels. */
             $.ajax({
@@ -291,8 +291,8 @@ module TwitchPotato {
                     this.ParseChannelsObject(json.streams, MenuType.Channels);
 
                     /* Load the next page of results. */
-                    if (getAll === true && json._total > Twitch.limit)
-                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                    if (getAll === true && json._total > TwitchHandler.limit)
+                        for (var offset = TwitchHandler.limit; offset < json._total; offset += TwitchHandler.limit)
                             this.GetNextChannels(url, offset, MenuType.Channels);
                 }
             });
@@ -306,7 +306,7 @@ module TwitchPotato {
             this.menus[MenuType.Games] = {};
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(Twitch.urls.games, Twitch.limit);
+            var url = Utils.Format(TwitchHandler.urls.games, TwitchHandler.limit);
 
             /* Ajax call to get the games. */
             $.ajax({
@@ -317,8 +317,8 @@ module TwitchPotato {
                     this.ParseGamesObject(json.top, MenuType.Games);
 
                     /* Load the next page of results. */
-                    if (getAll === true && json._total > Twitch.limit)
-                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                    if (getAll === true && json._total > TwitchHandler.limit)
+                        for (var offset = TwitchHandler.limit; offset < json._total; offset += TwitchHandler.limit)
                             this.GetNextGames(url, offset, MenuType.Games);
                 }
             });
@@ -332,7 +332,7 @@ module TwitchPotato {
             this.menus[MenuType.Game] = {};
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(Twitch.urls.game, game, Twitch.limit);
+            var url = Utils.Format(TwitchHandler.urls.game, game, TwitchHandler.limit);
 
             /* Ajax call to get the game channels. */
             $.ajax({
@@ -343,8 +343,8 @@ module TwitchPotato {
                     this.ParseChannelsObject(json.streams, MenuType.Game);
 
                     /* Load the next page of results. */
-                    if (getAll === true && json._total > Twitch.limit)
-                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                    if (getAll === true && json._total > TwitchHandler.limit)
+                        for (var offset = TwitchHandler.limit; offset < json._total; offset += TwitchHandler.limit)
                             this.GetNextChannels(url, offset, MenuType.Game);
                 }
             });
@@ -358,7 +358,7 @@ module TwitchPotato {
             this.menus[MenuType.Videos] = {};
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(Twitch.urls.videos, channel, Twitch.limit);
+            var url = Utils.Format(TwitchHandler.urls.videos, channel, TwitchHandler.limit);
 
             /* Ajax call to get the game channels. */
             $.ajax({
@@ -369,8 +369,8 @@ module TwitchPotato {
                     this.ParseVideosObject(json.videos, MenuType.Videos);
 
                     /* Load the next page of results. */
-                    if (getAll === true && json._total > Twitch.limit)
-                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                    if (getAll === true && json._total > TwitchHandler.limit)
+                        for (var offset = TwitchHandler.limit; offset < json._total; offset += TwitchHandler.limit)
                             this.GetNextVideos(url, offset, MenuType.Videos);
                 }
             });
@@ -387,7 +387,7 @@ module TwitchPotato {
             this.followed[FollowType.Channel] = {};
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(Twitch.urls.followedChannels, username, Twitch.limit);
+            var url = Utils.Format(TwitchHandler.urls.followedChannels, username, TwitchHandler.limit);
 
             /* Ajax call to get the game channels. */
             $.ajax({
@@ -417,7 +417,7 @@ module TwitchPotato {
             this.followed[FollowType.Game] = {}
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(Twitch.urls.followedGames, username, Twitch.limit);
+            var url = Utils.Format(TwitchHandler.urls.followedGames, username, TwitchHandler.limit);
 
             /* Ajax call to get the games. */
             $.ajax({
@@ -453,7 +453,7 @@ module TwitchPotato {
          */
         private GetChannelsByName(channels: string[], menu: MenuType, username: string): void {
             /* Format the url for the ajax call. */
-            var url = Utils.Format(Twitch.urls.searchChannels, channels.join(), Twitch.limit);
+            var url = Utils.Format(TwitchHandler.urls.searchChannels, channels.join(), TwitchHandler.limit);
 
             /* Ajax call to get the games. */
             $.ajax({
@@ -463,8 +463,8 @@ module TwitchPotato {
                     this.ParseChannelsObject(json.streams, menu, username);
 
                     /* Load the next page of results */
-                    if (json._total > Twitch.limit)
-                        for (var offset = Twitch.limit; offset < json._total; offset += Twitch.limit)
+                    if (json._total > TwitchHandler.limit)
+                        for (var offset = TwitchHandler.limit; offset < json._total; offset += TwitchHandler.limit)
                             this.GetNextChannels(url, offset, menu, username);
                 }
             });
