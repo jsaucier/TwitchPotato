@@ -1,6 +1,6 @@
 module TwitchPotato {
 
-    export class Notification {
+    export class NotificationHandler {
 
         /** Dictionary containing the online channels and the current game for the channel. */
         private online: Dictionary<string> = {};
