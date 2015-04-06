@@ -8,7 +8,7 @@ module TwitchPotato {
         Setting
     }
 
-    export class Guide {
+    export class GuideHandler {
 
         private objectURLs: string[] = [];
         private firstUpdate = true;
@@ -552,7 +552,7 @@ module TwitchPotato {
             $('#guide .item:visible').eq(index).addClass('selected');
         }
 
-        private UpdateMenuSize(): void {
+        public UpdateMenuSize(): void {
             var height = $('#guide .lists').outerHeight(true);
 
             $('#guide .lists .head:visible').each(function() {
@@ -562,7 +562,7 @@ module TwitchPotato {
             $('#guide .lists .items:visible').height(height);
         }
 
-        private UpdateMenuScroll(): void {
+        public UpdateMenuScroll(): void {
             if ($('#guide .items:visible').length !== 0) {
                 /* Get the list mid point */
                 var mid = $('#guide .items:visible').innerHeight() / 2;
