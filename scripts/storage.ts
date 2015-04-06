@@ -1,7 +1,7 @@
 module TwitchPotato {
     "use strict";
 
-    export class Storage {
+    export class StorageHandler {
         /* An array list of our settings. */
         public settings: StorageData;
 
