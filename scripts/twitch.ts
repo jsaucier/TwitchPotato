@@ -31,6 +31,10 @@ module TwitchPotato {
                 /* Call the method based on the message. */
                 this['On' + json.method].apply(this, json.args);
             });
+
+            /* Default the followed dictionaries. */
+            this.followed[FollowType.Channel] = {};
+            this.followed[FollowType.Game] = {};
         }
 
         /**
@@ -99,37 +103,61 @@ module TwitchPotato {
         /**
          * Removes and clears all of the partition data.
          */
-        public ClearPartition(username: string, callback = () => { }) {
-            /* Get the webview. */
-            var webview = <Webview>$('#users webview[username="' + username + '"]')[0];
+        public ClearPartitions(username = undefined, callback = Function.prototype) {
+            /** String array containing the users' partition to clear. */
+            var users: Dictionary<string> = {};
 
-            if (webview === undefined) {
-                /* Load the webview template */
-                var html = $(Utils.Format($('#twitch-template').html(), username));
+            if (username !== undefined) {
+                users[username] = username;
+            } else
+                users = this.users;
 
-                /* Add the webview to the document. */
-                $('#users').append(html);
-
-                /* Get the webview. */
-                webview = <Webview>$('#users webview[username="' + username + '"]')[0];
-            }
-
-            /* Clear the partition data. */
-            webview.clearData({}, {
+            /** The data types to clear. */
+            var clearTypes = {
                 appcache: true,
                 cookies: true,
                 fileSystems: true,
                 indexedDB: true,
                 localStorage: true,
                 webSQL: true
-            },
-                () => {
-                    /* Remove the webview. */
-                    $(webview).remove();
+            };
 
-                    /* Call the callback. */
-                    callback();
-                });
+            for (var user in users) {
+                console.log('clear:', user);
+                /* Get the webview. */
+                var webview = <Webview>$('#users webview[username="' + user + '"]')[0];
+
+                if (webview === undefined) {
+                    /* Load the webview template */
+                    var html = $(Utils.Format($('#twitch-template').html(), user));
+
+                    /* Add the webview to the document. */
+                    $('#users').append(html);
+
+                    /* Get the webview. */
+                    webview = <Webview>$('#users webview[username="' + user + '"]')[0];
+
+                    webview.addEventListener('loadcommit', () => {
+                        console.log(webview);
+
+                        /* Clear the partition data. */
+                        webview.clearData(
+                            { since: 0 },
+                            clearTypes, () => {
+                                console.log('removed:', user);
+                                /* Remove the webview. */
+                                $(webview).remove();
+
+                                /* Call the callback. */
+                                callback();
+                            });
+
+                        delete this.users[user];
+                    });
+
+                    $(webview).attr('src', 'about:black');
+                }
+            }
         }
 
         /**
@@ -167,7 +195,7 @@ module TwitchPotato {
             /* Clear the partition data and reauthorize the user. */
             if (xhr.status === 401 ||
                 xhr.status === 403)
-                this.ClearPartition(user, () => this.Authorize(user));
+                this.ClearPartitions(user, () => this.Authorize(user));
 
             /* Show the error. */
             this.ShowError(xhr, status, error);
@@ -261,6 +289,18 @@ module TwitchPotato {
          * Upates all the twitch data.
          */
         public Refresh(skipFollowed = false): void {
+            /* Resets the followed channels dictionary. */
+            this.followed[FollowType.Channel] = {};
+
+            /* Resets the followed games dictionary. */
+            this.followed[FollowType.Game] = {};
+
+            /* Reset the top channels dictionary. */
+            this.menus[MenuType.Channels] = {};
+
+            /* Reset the top games dictionary. */
+            this.menus[MenuType.Games] = {};
+
             this.GetChannels();
             this.GetGames();
 
@@ -276,9 +316,6 @@ module TwitchPotato {
          * Updates the top channels.
          */
         public GetChannels(getAll = false): void {
-            /* Reset the top channels dictionary. */
-            this.menus[MenuType.Channels] = {};
-
             /* Format the url for the ajax call. */
             var url = Utils.Format(TwitchHandler.urls.channels, TwitchHandler.limit);
 
@@ -302,9 +339,6 @@ module TwitchPotato {
          * Gets all of the games.
          */
         public GetGames(getAll = true): void {
-            /* Reset the top games dictionary. */
-            this.menus[MenuType.Games] = {};
-
             /* Format the url for the ajax call. */
             var url = Utils.Format(TwitchHandler.urls.games, TwitchHandler.limit);
 
@@ -382,9 +416,6 @@ module TwitchPotato {
         public GetFollowedChannels(username): void {
             /* Array of channels to search because they aren't known at this point. */
             var search: string[] = [];
-
-            /* Resets the followed channels dictionary. */
-            this.followed[FollowType.Channel] = {};
 
             /* Format the url for the ajax call. */
             var url = Utils.Format(TwitchHandler.urls.followedChannels, username, TwitchHandler.limit);

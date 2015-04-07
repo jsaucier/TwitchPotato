@@ -129,13 +129,16 @@ module TwitchPotato {
 
             this.Storage.Load();
             this.Input.RegisterInputs(InputType.Guide);
-            this.Guide.Refresh(true);
+
 
             this.initialized = true;
         }
 
         /** Callback triggered after storage has been loaded. */
         public OnStorageLoaded(): void {
+            /* Update the guide. */
+            this.Guide.Refresh(true);
+
             // Update the zoom level.
             this.UpdateZoom(ZoomType.Update);
 

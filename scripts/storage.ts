@@ -26,7 +26,7 @@ module TwitchPotato {
         public LoadDefaults(callback?: Callback): void {
             this.settings = {
                 zoom: 100,
-                users: ['creditx']
+                users: []
             };
 
             this.ClearStorage(callback);
@@ -36,6 +36,7 @@ module TwitchPotato {
         private ClearStorage(callback?: Callback): void {
             chrome.storage.local.clear(() => {
                 chrome.storage.sync.clear(() => {
+                    Application.ShowError('The settings have been reset to defaults.')
                     this.Save(callback);
                 });
             });

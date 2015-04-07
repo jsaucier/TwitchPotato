@@ -141,7 +141,15 @@ module TwitchPotato {
                         $('#login').fadeIn();
                         break;
                     case 'reset':
-                        Application.Storage.LoadDefaults();
+                        /* Clear the webview partition data.
+                         * Resest the storage values.
+                         * Refresh the guide. */
+                        Application.Twitch.ClearPartitions(undefined, () => {
+                            Application.Storage.LoadDefaults(() => {
+                                this.Refresh();
+                            });
+                        });
+
                         break;
                 }
             }
