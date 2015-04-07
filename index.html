@@ -94,7 +94,7 @@
         </div>
 
         <div id="notification" class="window">
-            <div class="head">Twitch Potato</div>
+            <!-- <div class="head">Twitch Potato</div> -->
             <div class="main">
                 <ul>
                     <div class="streamer"></div>
@@ -105,7 +105,7 @@
         </div>
 
         <div id="error" class="window">
-            <div class="head">Twitch Potato</div>
+            <!-- <div class="head">Twitch Potato</div> -->
             <div class="main">
                 <div class="error"></div>
             </div>
@@ -335,7 +335,7 @@
         </script>
 
         <script id="twitch-template" type="text/template">
-            <webview type="twitch" username="{0}" autosize="on " partition="persist:player" src="https://dl.dropboxusercontent.com/spa/tn9l4tkx2yhpiv3/twitch%20potato/public/redirect.html"></webview>
+            <webview type="twitch" username="{0}" autosize="on " partition="persist:twitch_{0}" src="https://dl.dropboxusercontent.com/spa/tn9l4tkx2yhpiv3/twitch%20potato/public/redirect.html"></webview>
         </script>
 
         <script id="chat-template" type="text/template">

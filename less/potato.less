@@ -8,15 +8,6 @@
         outline: 0;
     }
 }
-@ChatLayout_DockLeft: 0;
-@ChatLayout_DockRight: 1;
-@ChatLayout_FloatLeft: 2;
-@ChatLayout_TopLeft: 3;
-@ChatLayout_TopRight: 4;
-@ChatLayout_BottomLeft: 5;
-@ChatLayout_BottomRight: 6;
-@PlayerLayout_Default: 0;
-@PlayerLayout_Equal: 1;
 body {
     background-color: #191919;
     color: #fff;
@@ -31,22 +22,22 @@ body {
     display: none;
     position: fixed;
     background-color: @purple;
-    padding: 2px;
+    padding: 5px;
     &#notification {
-        right: 10px;
-        bottom: 10px;
+        right: 20px;
+        bottom: 20px;
         width: 350px;
     }
     &#error {
-        left: 10px;
-        bottom: 10px;
+        left: 20px;
+        bottom: 20px;
         //width: 350px;
     }
-    .head {
-        background-color: @purple;
-        padding: 5px;
-        font-size: 1.2em;
-    }
+    // .head {
+    //     background-color: @purple;
+    //     padding: 5px;
+    //     font-size: 1.2em;
+    // }
     .main {
         background-color: #191919;
         padding: 1px;
