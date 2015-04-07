@@ -1,2 +1,1 @@
-Authorize and reset settings.
 Add account selectors to specify follows.
