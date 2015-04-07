@@ -123,7 +123,6 @@ module TwitchPotato {
             };
 
             for (var user in users) {
-                console.log('clear:', user);
                 /* Get the webview. */
                 var webview = <Webview>$('#users webview[username="' + user + '"]')[0];
 
@@ -138,13 +137,10 @@ module TwitchPotato {
                     webview = <Webview>$('#users webview[username="' + user + '"]')[0];
 
                     webview.addEventListener('loadcommit', () => {
-                        console.log(webview);
-
                         /* Clear the partition data. */
                         webview.clearData(
                             { since: 0 },
                             clearTypes, () => {
-                                console.log('removed:', user);
                                 /* Remove the webview. */
                                 $(webview).remove();
 
@@ -190,8 +186,6 @@ module TwitchPotato {
         /**
          * Fired when an authentication error is encountered. */
         private AuthenticationError(xhr: XMLHttpRequest, status, error, user) {
-            console.log(xhr, status, error, user);
-
             /* Clear the partition data and reauthorize the user. */
             if (xhr.status === 401 ||
                 xhr.status === 403)
