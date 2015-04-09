@@ -50,42 +50,44 @@ module TwitchPotato {
 
             var followedChannel = false;
             var followedGame = false;
-
+            console.log(item);
             /* Update the menu buttons. */
             if (menu === MenuType.Channels) {
                 followedChannel = item.attr('followed') === 'true';
-                followedGame = item.attr('followed=game') === 'true';
+                followedGame = item.attr('followed-game') === 'true';
             } else if (menu === MenuType.Games) {
                 followedGame = item.attr('followed') === 'true';
 
                 /* Remove unused buttons. */
-                html.find('.search-games').remove();
-                html.find('.search-videos').remove();
-                html.find('.view-pip').remove();
-                html.find('.follow-channel').remove();
-                html.find('.unfollow-channel').remove();
+                html.find('[type="search-games"]').remove();
+                html.find('[type="search-videos"]').remove();
+                html.find('[type="view-pip"]').remove();
+                html.find('[type="follow-channel"]').remove();
+                html.find('[type="unfollow-channel"]').remove();
             }
 
+            console.log(followedGame, followedChannel)
+
             /* Update follow-channel button. */
-            if (followedChannel) {
-                html.find('.follow-channel').remove();
-                html.find('.unfollow-channel').show();
+            if (followedChannel === true) {
+                html.find('[type="follow-channel"]').remove();
+                html.find('[type="unfollow-channel"]').show();
             } else {
-                html.find('.follow-channel').show();
-                html.find('.unfollow-channel').remove();
+                html.find('[type="follow-channel"]').show();
+                html.find('[type="unfollow-channel"]').remove();
             }
 
             /* Update follow-game button. */
-            if (followedGame) {
-                html.find('.follow-game').remove();
-                html.find('.unfollow-game').show();
+            if (followedGame === true) {
+                html.find('[type="follow-game"]').remove();
+                html.find('[type="unfollow-game"]').show();
             } else {
-                html.find('.follow-game').show();
-                html.find('.unfollow-game').remove();
+                html.find('[type="follow-game"]').show();
+                html.find('[type="unfollow-game"]').remove();
             }
 
             /* Select the first button. */
-            html.find('button:eq(0)').addClass('selected');
+            html.find('.button:eq(0)').addClass('selected');
 
             /* Appened the context menu to the item. */
             html.appendTo(item);
