@@ -15,7 +15,7 @@ module TwitchPotato {
             $('#notification ul').empty();
 
             /** The online followed channels. */
-            var followed = Application.Twitch.followed[FollowType.Channel];
+            var followed = Application.Twitch.GetFollows(FollowType.Channel);
 
             /** Temporary dictionary containing the online channels and the current game for the channel. */
             var online: Dictionary<string> = {};
@@ -25,7 +25,7 @@ module TwitchPotato {
 
             for (var o in followed) {
                 /* Update the channel. */
-                channel = Application.Twitch.menus[MenuType.Channels][o];
+                channel = Application.Twitch.GetMenu(MenuType.Channels)[o];
 
                 /**
                  * Only notify new streamers that just come online or
@@ -39,7 +39,7 @@ module TwitchPotato {
             /* Add the online channels to the notification window. */
             for (var o in online) {
                 /* Update the channel. */
-                channel = Application.Twitch.menus[MenuType.Channels][o];
+                channel = Application.Twitch.GetMenu(MenuType.Channels)[o];
 
                 /** The notification item template. */
                 var item = $($('#notify-template').html());
