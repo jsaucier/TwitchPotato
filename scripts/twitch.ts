@@ -19,9 +19,9 @@ module TwitchPotato {
             searchGame: 'https://api.twitch.tv/kraken/search/games?q={0}&type=suggest&limit={1}'
         }
 
-        public users: Dictionary<string> = {};
-        public menus: Dictionary<any> = {};
-        public followed: Dictionary<Dictionary<string[]>> = {};
+        private users: Dictionary<string> = {};
+        private menus: Dictionary<any> = {};
+        private followed: Dictionary<Dictionary<string[]>> = {};
 
         constructor() {
             window.addEventListener('message', (event) => {
@@ -36,6 +36,47 @@ module TwitchPotato {
             this.followed[FollowType.Channel] = {};
             this.followed[FollowType.Game] = {};
         }
+
+        /**
+         * Gets whether the user is following a channel or game.
+         */
+        public IsFollowing(followType: FollowType, key: string, user = ''): boolean {
+            if (this.followed[followType][key] === undefined) return false;
+
+            if (user !== '')
+                return this.followed[followType][key] === undefined;
+            else
+                return this.followed[followType][key].indexOf(user) === -1;
+        }
+
+        /**
+         * Gets the followed information.
+         */
+        public GetFollows(followType: FollowType): any {
+            return this.followed[followType];
+        }
+
+        /**
+         * Gets the channel information.
+         */
+        public GetChannel(key: string): Channel {
+            return this.menus[MenuType.Channels][key];
+        }
+
+        /**
+         * Gets the game information.
+         */
+        public GetGame(key: string): Game {
+            return this.menus[MenuType.Games][key];
+        }
+
+        /**
+         * Gets the menu information.
+         */
+        public GetMenu(menu: MenuType): any {
+            return this.menus[menu];
+        }
+
 
         /**
          * Creates a new webview to authorize and retrieve the oauth code.
