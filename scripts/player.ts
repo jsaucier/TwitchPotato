@@ -230,6 +230,12 @@ module TwitchPotato {
 
             /* Set as currently playing a channel. */
             this.isPlaying = true;
+
+            /* Show the player */
+            $('#players').fadeIn();
+
+            /* Hide the guide */
+            $('#guide').fadeOut();
         }
 
         private Select(): void {
