@@ -18,6 +18,7 @@
     "files": [
         "./chat.ts",
         "./chrome.d.ts",
+        "./contextmenu.ts",
         "./guide.ts",
         "./inject.ts",
         "./input.ts",
