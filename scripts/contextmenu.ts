@@ -133,10 +133,14 @@ module TwitchPotato {
         private SelectButton(item: JQuery): void {
             /** The key of the selected item. */
             var key = item.attr('key');
+
             /** The menu type of the selected item. */
-            var menu = parseInt(item.attr('menu'));
+            //var menu = parseInt(item.attr('menu'));
+
             /** The button type that is selected. */
             var type = $(this.selectedButton).attr('type');
+
+            console.log(key, type);
 
             switch (type) {
                 case 'view-pip':
@@ -144,16 +148,21 @@ module TwitchPotato {
                     Application.Player.Play(key, true);
                     break;
                 case 'search-games':
+                    /** The game of the selected item. */
+                    var game = item.attr('game');
+
+                    /* Set the game title */
+                    $('.list').eq(MenuType.Game).find('.head').text(game);
+
+                    /* Set the update type. */
+                    Application.Guide.updateType = UpdateType.Game;
+
                     /* Search for more games of this type. */
-                    Application.Twitch.GetGameChannels(key);
+                    Application.Twitch.GetGameChannels(game);
                     break;
                 case 'search-videos':
                     /* Hide the game menu. */
                     $('.list').eq(MenuType.Videos).hide();
-
-                    /* Set the game title */
-                    $('.list').eq(MenuType.Videos).find('.head').text(
-                        Application.Twitch.menus[MenuType.Channels][key].streamer);
 
                     /* Set the update type. */
                     Application.Guide.updateType = UpdateType.Videos;
