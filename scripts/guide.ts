@@ -334,7 +334,7 @@ module TwitchPotato {
 
             var showMenu = false;
 
-            for (var key in Application.Twitch.menus[menu]) {
+            for (var key in Application.Twitch.GetMenu(menu)) {
                 showMenu = true;
 
                 var html: JQuery;
@@ -386,7 +386,7 @@ module TwitchPotato {
 
         private CreateChannelItem(key: string, menu: MenuType): JQuery {
             /* Get the item data. */
-            var channel = Application.Twitch.menus[menu][key];
+            var channel = <Channel>Application.Twitch.GetMenu(menu)[key];
 
             /* Load the channel item template */
             var html = $($('#channel-item-template').html());
@@ -397,8 +397,8 @@ module TwitchPotato {
                 'game': channel.game,
                 'menu': menu,
                 'viewers': channel.viewers,
-                'followed': Application.Twitch.followed[FollowType.Channel][channel.name] !== undefined,
-                'followed-game': Application.Twitch.followed[FollowType.Game][channel.game] !== undefined
+                'followed': Application.Twitch.IsFollowing(FollowType.Channel, channel.name),
+                'followed-game': Application.Twitch.IsFollowing(FollowType.Game, channel.game)
             });
 
             /* Set the item streamer. */
@@ -412,7 +412,7 @@ module TwitchPotato {
 
         private CreateGameItem(key: string): JQuery {
             /* Get the game data. */
-            var game = Application.Twitch.menus[MenuType.Games][key];
+            var game = <Game>Application.Twitch.GetMenu(MenuType.Games)[key];
 
             /* Load the game item template */
             var html = $($('#game-item-template').html());
@@ -423,7 +423,7 @@ module TwitchPotato {
                 menu: MenuType.Games,
                 viewers: game.viewers,
                 channels: game.channels,
-                followed: Application.Twitch.followed[FollowType.Game][game.name] !== undefined
+                followed: Application.Twitch.IsFollowing(FollowType.Game, game.name)
             });
 
             /* Set the item text. */
@@ -434,7 +434,7 @@ module TwitchPotato {
 
         private CreateVideoItem(key: string): JQuery {
             /* Get the video data. */
-            var video = Application.Twitch.menus[MenuType.Videos][key];
+            var video = Application.Twitch.GetMenu(MenuType.Videos)[key];
 
             /* Load the video item template */
             var html = $($('#video-item-template').html());
@@ -601,7 +601,7 @@ module TwitchPotato {
 
         private ShowChannel(key: string, menu: MenuType): void {
             /* Get the channel data. */
-            var channel = <Channel>Application.Twitch.menus[menu][key];
+            var channel = <Channel>Application.Twitch.GetMenu(menu)[key];
 
             /* Get the item template. */
             var html = $($('#channel-template').html());
@@ -619,7 +619,7 @@ module TwitchPotato {
 
         private ShowGame(key: string): void {
             /* Get the game data. */
-            var game = <Game>Application.Twitch.menus[MenuType.Games][key];
+            var game = <Game>Application.Twitch.GetMenu(MenuType.Games)[key];
 
             /* Get the item template. */
             var html = $($('#game-template').html());
