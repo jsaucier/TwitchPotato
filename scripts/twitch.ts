@@ -16,10 +16,11 @@ module TwitchPotato {
             game: 'https://api.twitch.tv/kraken/streams?game={0}&limit={1}',
             videos: 'https://api.twitch.tv/kraken/channels/{0}/videos?&limit={1}',
             searchChannels: 'https://api.twitch.tv/kraken/streams?channel={0}&limit={1}',
-            searchGame: 'https://api.twitch.tv/kraken/search/games?q={0}&type=suggest&limit={1}'
+            searchGame: 'https://api.twitch.tv/kraken/search/games?q={0}&type=suggest&limit={1}',
+            user: 'https://api.twitch.tv/kraken/users/{0}'
         }
 
-        private users: Dictionary<string> = {};
+        private users: Dictionary<TwitchUser> = {};
         private menus: Dictionary<any> = {};
         private followed: Dictionary<Dictionary<Dictionary<boolean>>> = {};
 
@@ -103,6 +104,15 @@ module TwitchPotato {
             return users;
         }
 
+        /**
+         * Gets the user's display name.
+         */
+        public GetDisplayName(user: string): string {
+            if (this.users[user] === undefined) return user;
+
+            return this.users[user].name;
+        }
+
 
         /**
          * Creates a new webview to authorize and retrieve the oauth code.
@@ -172,7 +182,7 @@ module TwitchPotato {
          */
         public ClearPartitions(username = undefined, callback = Function.prototype) {
             /** String array containing the users' partition to clear. */
-            var users: Dictionary<string> = {};
+            var users: Dictionary<TwitchUser> = {};
 
             if (username !== undefined) {
                 users[username] = username;
@@ -227,9 +237,6 @@ module TwitchPotato {
          * Callback function when the remote webview has authorized the user.
          */
         public OnAuthorized(username: string, token: string): void {
-            /* Store the token. */
-            this.users[username] = token;
-
             /* Remove the webview from the document. */
             $('#users webview[username="' + username + '"]').remove();
 
@@ -240,6 +247,20 @@ module TwitchPotato {
 
                 Application.Input.RegisterInputs(InputType.Guide);
             }
+
+            /* Get the user's display name. */
+            $.ajax({
+                url: Utils.Format(TwitchHandler.urls.user, username),
+                error: this.ShowError,
+                global: false,
+                success: (json) => {
+                    /* Create a new twitch user. */
+                    this.users[username] = {
+                        name: json.display_name,
+                        token: token
+                    };
+                }
+            })
         }
 
         /**
@@ -270,7 +291,7 @@ module TwitchPotato {
             Application.Guide.SetUpdateType(UpdateType.Refresh);
 
             /** Array of users to follow the game. */
-            var users: Dictionary<string> = {};
+            var users: Dictionary<TwitchUser> = {};
 
             /** The followed games. */
             var followed = this.followed[FollowType.Channel];
@@ -290,7 +311,7 @@ module TwitchPotato {
 
             for (var user in users) {
                 var url = Utils.Format(TwitchHandler.urls.followChannel,
-                    user, channel, this.users[user], TwitchHandler.scope);
+                    user, channel, this.users[user].token, TwitchHandler.scope);
 
                 $.ajax({
                     url: url,
@@ -312,7 +333,7 @@ module TwitchPotato {
             Application.Guide.SetUpdateType(UpdateType.Refresh);
 
             /** Array of users to follow the game. */
-            var users: Dictionary<string> = {};
+            var users: Dictionary<TwitchUser> = {};
 
             /** The followed games. */
             var followed = this.followed[FollowType.Game];
@@ -332,7 +353,7 @@ module TwitchPotato {
 
             for (var user in users) {
                 var url = Utils.Format(TwitchHandler.urls.followGame,
-                    user, game, this.users[user], TwitchHandler.scope);
+                    user, game, this.users[user].token, TwitchHandler.scope);
 
                 $.ajax({
                     url: url,

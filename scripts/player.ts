@@ -36,7 +36,7 @@ module TwitchPotato {
     }
 
     export class PlayerHandler {
-        private players: Dictionary<PlayerData> = {};
+        private players: Dictionary<Player> = {};
         private layout: PlayerLayout = PlayerLayout.Default;
         private selectionTimer: number;
         private qualityTimer: number;
@@ -140,7 +140,7 @@ module TwitchPotato {
             }
         }
 
-        public GetPlayerByNumber(number: number): PlayerData {
+        public GetPlayerByNumber(number: number): Player {
             for (var i in this.players) {
                 var player = this.players[i];
 
@@ -151,12 +151,12 @@ module TwitchPotato {
             return undefined;
         }
 
-        public GetSelectedPlayer(): PlayerData {
+        public GetSelectedPlayer(): Player {
             var number = parseInt($('#players .player.selected').attr('number')) || 0;
             return this.GetPlayerByNumber(number);
         }
 
-        private Create(channel: string, isVideo = false, isFake = false): PlayerData {
+        private Create(channel: string, isVideo = false, isFake = false): Player {
             /* Check to see if a player for this id exists. */
             var player = this.players[channel];
 
@@ -295,7 +295,7 @@ module TwitchPotato {
             }
         }
 
-        private Remove(player: PlayerData): void {
+        private Remove(player: Player): void {
             /* Get the number of the removed player. */
             var num = player.number;
 
@@ -446,7 +446,7 @@ module TwitchPotato {
             });
         }
 
-        private Load(player: PlayerData, channel: string, isVideo = false, isFake = false): void {
+        private Load(player: Player, channel: string, isVideo = false, isFake = false): void {
             /* Set the flashback value. */
             player.flashback = (player.channel !== channel) ? player.channel : player.flashback;
 
@@ -465,7 +465,7 @@ module TwitchPotato {
             this.PostMessage(player, 'Mute');
         }
 
-        private PostMessage(player: PlayerData, method: string, params = {}): void {
+        private PostMessage(player: Player, method: string, params = {}): void {
             /* Make sure the contentwindow is loaded. */
             if (player.webview.contentWindow === undefined) {
                 setTimeout(() => this.PostMessage(player, method, params), 100);

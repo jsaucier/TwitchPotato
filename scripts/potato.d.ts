@@ -13,12 +13,6 @@ interface JQuery {
     sort(func: (a: HTMLElement, b: HTMLElement) => any);
 }
 
-interface TwitchItems {
-    0: Dictionary<Channel>;
-    1: Dictionary<Channel>;
-    2: Dictionary<Game>;
-    3: Dictionary<Video>;
-}
 
 interface Dictionary<T> {
     [key: string]: T;
@@ -61,7 +55,7 @@ interface Input {
     code: number;
 }
 
-interface PlayerData {
+interface Player {
     channel: string;
     isLoaded: boolean;
     number: number;
@@ -72,4 +66,9 @@ interface PlayerData {
 interface StorageData {
     users: string[];
     zoom: number;
+}
+
+interface TwitchUser {
+    name: string,
+    token: string
 }

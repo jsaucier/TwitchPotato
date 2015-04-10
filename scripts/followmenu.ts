@@ -102,7 +102,7 @@ module TwitchPotato {
                 var div = $('<div>')
                     .addClass('button')
                     .attr('user', users[i])
-                    .text(users[i])
+                    .text(Application.Twitch.GetDisplayName(users[i]))
                     .insertBefore(html.find('.button[user="cancel"]'));
             }
 
