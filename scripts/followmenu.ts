@@ -15,7 +15,10 @@ module TwitchPotato {
         /** Gets or sets the key of the item to follow or unfollow. */
         private key: string;
 
-        public HandleInput(input: Input, item: JQuery): boolean {
+        /**
+         * Handles the input for the follow menu if it is active.
+         */
+        HandleInput(input: Input, item: JQuery): boolean {
             /* Follow menu is not visible. */
             if ($(this.followMenu).length === 0) return false;
 
@@ -43,7 +46,7 @@ module TwitchPotato {
         /**
          * Closes the follow menu.
          */
-        public Close(closeContextMenu = false) {
+        Close(closeContextMenu = false) {
             $(this.followMenu).remove();
 
             if (closeContextMenu === true)
@@ -55,7 +58,7 @@ module TwitchPotato {
         /**
          * Updates the follow menu after the guide refreshes.
          */
-        public Update(item, user: string) {
+        Update(item, user: string) {
             this.Show(item, this.followType, this.unfollow);
 
             /* Remove selected menu item. */
@@ -69,7 +72,7 @@ module TwitchPotato {
         /**
          * Shows the follow menu.
          */
-        public Show(item: JQuery, followType: FollowType, unfollow = false): void {
+        Show(item: JQuery, followType: FollowType, unfollow = false): void {
             /* Set the follow type, unfollow, and values. */
             this.followType = followType;
             this.unfollow = unfollow;
