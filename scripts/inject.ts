@@ -16,7 +16,7 @@ interface PlayerWindow extends Window {
     pc: PlayerController;
 }
 
-interface Player extends HTMLElement {
+interface PlayerEmbed extends HTMLElement {
     pauseVideo(): void;
     playVideo(): void;
     mute(): void;
@@ -38,7 +38,7 @@ enum FullscreenAction {
 }
 
 class PlayerController {
-    private player: Player;
+    private player: PlayerEmbed;
     private message: MessageEvent;
     private isFullscreen: boolean = false;
     private isMuted: boolean;
@@ -48,7 +48,7 @@ class PlayerController {
         window.addEventListener('message', (data) => this.OnMessage(data));
         window.addEventListener('resize', () => this.SetFullscreen(FullscreenAction.Refresh));
 
-        this.player = <Player>$('embed')[0];
+        this.player = <PlayerEmbed>$('embed')[0];
     }
 
     public OnMessage(event): void {
