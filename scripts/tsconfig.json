@@ -1,6 +1,6 @@
 {
     "version": "1.4.1",
-    "compileOnSave": false,
+    "compileOnSave": true,
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
@@ -19,6 +19,7 @@
         "./chat.ts",
         "./chrome.d.ts",
         "./contextmenu.ts",
+        "./followmenu.ts",
         "./guide.ts",
         "./inject.ts",
         "./input.ts",

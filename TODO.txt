@@ -1,2 +1,3 @@
-Add account selectors to specify follows.
+Get the proper caps for the users name for the follow menu.
 Low quality videos as previews.
+When adding a new account, need to do full refresh instead of just the new one, as the unfollowed stuff is reset.

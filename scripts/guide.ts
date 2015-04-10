@@ -17,11 +17,12 @@ module TwitchPotato {
         private timeTimeout: number;
         private infoTimeout: number;
 
-        private ContextMenu = new ContextMenuHandler();
+        public ContextMenu = new ContextMenuHandler();
+        public FollowMenu = new FollowMenuHandler();
 
         private selectedItem = '#guide .item.selected:visible';
 
-        public updateType: UpdateType = UpdateType.All;
+        private updateType: UpdateType = UpdateType.All;
 
         constructor() {
             /* Update the version */
@@ -37,39 +38,50 @@ module TwitchPotato {
 
         public OnInput(input: Input): void {
 
-            if (this.ContextMenu.HandleInput(input, $(this.selectedItem)) !== true) {
-                switch (input.input) {
-                    case Inputs.Guide_Up:
-                        this.UpdateMenu(Direction.Up, 200);
-                        break;
-                    case Inputs.Guide_Down:
-                        this.UpdateMenu(Direction.Down, 200);
-                        break;
-                    case Inputs.Guide_Left:
-                        this.UpdateMenu(Direction.Left, 200);
-                        break;
-                    case Inputs.Guide_Right:
-                        this.UpdateMenu(Direction.Right, 200);
-                        break;
-                    case Inputs.Guide_PageUp:
-                        this.UpdateMenu(Direction.JumpUp, 200);
-                        break;
-                    case Inputs.Guide_PageDown:
-                        this.UpdateMenu(Direction.JumpDown, 200);
-                        break;
-                    case Inputs.Guide_Select:
-                        this.OpenMenuItem();
-                        break;
-                    case Inputs.Guide_Refresh:
-                        this.Refresh();
-                        break;
-                    case Inputs.Guide_ContextMenu:
-                        this.ContextMenu.Show($(this.selectedItem));
-                        break;
-                    default:
-                        break;
+            /** The selected menu item. */
+            var item = $(this.selectedItem);
+
+            if (this.FollowMenu.HandleInput(input, item) !== true)
+                if (this.ContextMenu.HandleInput(input, item) !== true) {
+                    switch (input.input) {
+                        case Inputs.Guide_Up:
+                            this.UpdateMenu(Direction.Up, 200);
+                            break;
+                        case Inputs.Guide_Down:
+                            this.UpdateMenu(Direction.Down, 200);
+                            break;
+                        case Inputs.Guide_Left:
+                            this.UpdateMenu(Direction.Left, 200);
+                            break;
+                        case Inputs.Guide_Right:
+                            this.UpdateMenu(Direction.Right, 200);
+                            break;
+                        case Inputs.Guide_PageUp:
+                            this.UpdateMenu(Direction.JumpUp, 200);
+                            break;
+                        case Inputs.Guide_PageDown:
+                            this.UpdateMenu(Direction.JumpDown, 200);
+                            break;
+                        case Inputs.Guide_Select:
+                            this.OpenMenuItem();
+                            break;
+                        case Inputs.Guide_Refresh:
+                            this.Refresh();
+                            break;
+                        case Inputs.Guide_ContextMenu:
+                            this.ContextMenu.Show($(this.selectedItem));
+                            break;
+                        default:
+                            break;
+                    }
                 }
-            }
+        }
+
+        /**
+         * Sets the guide update type.
+         */
+        public SetUpdateType(updateType: UpdateType): void {
+            this.updateType = updateType;
         }
 
         private OpenMenuItem(): void {
@@ -136,80 +148,19 @@ module TwitchPotato {
             }
         }
 
-        // private OpenPopupButton() {
-        //     var key = $('.item.selected:visible').attr('key');
-        //     var menu = parseInt($('.item.selected:visible').attr('menu'));
-        //     var type = $('.popup .button.selected:visible').attr('type');
-        //
-        //     switch (type) {
-        //         case 'view-pip':
-        //             /* Play the channel in pip mode. */
-        //             Application.Player.Play(key, true);
-        //
-        //             /* Show the player */
-        //             $('#players').fadeIn();
-        //
-        //             /* Hide the guide */
-        //             $('#guide').fadeOut();
-        //             break;
-        //         case 'search-games':
-        //             /* Search for more games of this type. */
-        //             Application.Twitch.GetGameChannels(key);
-        //             break;
-        //         case 'search-videos':
-        //             /* Hide the game menu. */
-        //             $('.list').eq(MenuType.Videos).hide();
-        //
-        //             /* Set the game title */
-        //             $('.list').eq(MenuType.Videos).find('.head').text(
-        //                 Application.Twitch.menus[MenuType.Channels][key].streamer);
-        //
-        //             /* Set the update type. */
-        //             this.updateType = UpdateType.Videos;
-        //
-        //             /* Search for videos from this streamer */
-        //             Application.Twitch.GetChannelVideos(key);
-        //             break;
-        //         case 'follow-channel':
-        //             /* Follow the channel. */
-        //             Application.Twitch.FollowChannel(undefined, key);
-        //             break;
-        //         case 'unfollow-channel':
-        //             /* Unfollow the channel. */
-        //             Application.Twitch.FollowChannel(undefined, key, true);
-        //             break;
-        //         case 'follow-game':
-        //             /* Follow the game. */
-        //             Application.Twitch.FollowGame(undefined, key);
-        //             break;
-        //         case 'unfollow-game':
-        //             /* Unfollow the game. */
-        //             Application.Twitch.FollowGame(undefined, key, true);
-        //             break;
-        //
-        //         default:
-        //             break;
-        //     }
-        //
-        //     /* Remove the popup menu. */
-        //     $('.popup').remove();
-        //
-        //     this.UpdateMenuScroll();
-        // }
-
         private OnAjaxCompleted(): void {
+            if (this.updateType === UpdateType.Refresh) return this.Refresh();
+
+            /* Start the refresh timer. */
+            this.StartRefreshTimer();
+
             /* Update all the menu items. */
             this.UpdateAllMenuItems();
 
-            this.firstUpdate = false;
-
-            var date = new Date();
-
-            /* Set the update time. */
-            $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
-
             /* Display the notification window. */
             Application.Notification.Notify();
+
+            this.firstUpdate = false;
         }
 
         private CreateObjectURL(blob): string {
@@ -265,8 +216,6 @@ module TwitchPotato {
             }
 
             this.UpdateMenu(Direction.None);
-
-            this.updateType = UpdateType.All;
         }
 
         private UpdateMenuItems(menu: MenuType, goto = false) {
@@ -323,11 +272,8 @@ module TwitchPotato {
             /* Save the selected menu item. */
             var selected = jMenu.find('.items .item.selected').toArray()[0];
 
-            /* Is the popup shown? */
-            var popup = jMenu.find('#popup:visible').length !== 0;
-
-            /* Save the popup state by moving it to the body and hiding it. */
-            if (popup === true) $('#guide .popup').appendTo($('#guide')).hide();
+            var contextMenu = jMenu.find('#context-menu .button.selected').attr('type');
+            var followMenu = jMenu.find('#follow-menu .button.selected').attr('user');
 
             /* Empty the menu items. */
             jMenu.find('.items').empty();
@@ -349,18 +295,19 @@ module TwitchPotato {
                     html = this.CreateVideoItem(key);
 
                 /* This item was prevoiusly selected. */
-                if (html.attr('key') === $(selected).attr('key')) {
-                    /* Set it back as selected. */
-                    html.addClass('selected');
-
-                    /* Reload the popup's previous state */
-                    if (popup === true)
-                        $('#popup').appendTo(html).show();
-                }
+                if (key === $(selected).attr('key')) html.addClass('selected');
 
                 /* Append the item to the menu. */
                 jMenu.find('.items').append(html);
             }
+
+            /* Reload the context menu's previous state */
+            if (contextMenu !== undefined)
+                this.ContextMenu.Update($(this.selectedItem), contextMenu);
+
+            /* Reload the follow menu's previous state */
+            if (followMenu !== undefined)
+                this.FollowMenu.Update($(this.selectedItem), followMenu);
 
             /* Sort the items. */
             if (menu !== MenuType.Videos)
@@ -671,101 +618,17 @@ module TwitchPotato {
             $('#info').append(html);
         }
 
-        // private ShowPopup(): void {
-        //     /* Close the popup if shown. */
-        //     if ($('#guide .popup:visible').length !== 0) {
-        //         $('#guide .popup').remove();
-        //         this.UpdateMenuScroll();
-        //         return;
-        //     }
-        //
-        //     $('#guide .popup').remove();
-        //
-        //     var item = $('#guide .lists .item.selected:visible');
-        //
-        //     var popup = $($('#popup-template').html());
-        //
-        //     popup.appendTo(item);
-        //
-        //     var menu = parseInt(item.attr('menu'));
-        //
-        //     var followedChannel = false;
-        //     var followedGame = false;
-        //
-        //     /* Popup menu is disabled for videos. */
-        //     if (menu === MenuType.Videos) return
-        //
-        //     /* Update follow-channel button. */
-        //     if (menu === MenuType.Channels) {
-        //         followedChannel = (item.attr('followed') === 'true') ? true : false;
-        //         followedGame = (item.attr('followed-game') === 'true') ? true : false;
-        //     }
-        //
-        //     if (menu === MenuType.Games) {
-        //         followedGame = (item.attr('followed') === 'true') ? true : false;
-        //
-        //         /* Remove unused buttons. */
-        //         popup.find('.search-games').remove();
-        //         popup.find('.search-videos').remove();
-        //         popup.find('.view-pip').remove();
-        //         popup.find('.follow-channel').remove();
-        //         popup.find('.unfollow-channel').remove();
-        //     }
-        //
-        //     /* Update follow-channel button. */
-        //     if (followedChannel) {
-        //         popup.find('.follow-channel').remove();
-        //         popup.find('.unfollow-channel').show();
-        //     } else {
-        //         popup.find('.follow-channel').show();
-        //         popup.find('.unfollow-channel').remove();
-        //     }
-        //
-        //     /* Update follow-game button. */
-        //     if (followedGame) {
-        //         popup.find('.follow-game').remove();
-        //         popup.find('.unfollow-game').show();
-        //     } else {
-        //         popup.find('.follow-game').show();
-        //         popup.find('.unfollow-game').remove();
-        //     }
-        //
-        //     if ($('#guide .popup .button.selected:visible').length === 0) {
-        //         $('#guide .popup .button:eq(0)').addClass('selected');
-        //     }
-        //
-        //     popup.show();
-        //
-        //     this.UpdateMenuScroll();
-        // }
-
-        // private UpdatePopupButton(direction): void {
-        //     /* Get the index of the selected menu item. */
-        //     var index = $('.popup .button:visible').index($('.popup .button.selected:visible'));
-        //
-        //     /* Set default menu item. */
-        //     if (index === -1)
-        //         index = 0;
-        //
-        //     /* Remove selected menu item. */
-        //     $('.popup .button.selected:visible').removeClass('selected');
-        //
-        //     /* Update the selected item index. */
-        //     if (direction === Direction.Down && index < $('.popup .button:visible').length - 1) {
-        //         index++;
-        //     } else if (direction === Direction.Up && index > 0) {
-        //         index--;
-        //     }
-        //
-        //     /* Select the new menu item. */
-        //     $('.popup .button:visible').eq(index).addClass('selected');
-        // }
-
         public Refresh(skipFollowed = false): void {
-            clearTimeout(this.refreshTimeout);
-
             Application.Twitch.Refresh(skipFollowed);
+        }
 
+        private StartRefreshTimer(): void {
+            /* Set the update time. */
+            var date = new Date();
+            $('#time .updated').text(date.toLocaleDateString() + ' - ' + date.toLocaleTimeString());
+
+            /* Restart the refresh timer. */
+            clearTimeout(this.refreshTimeout);
             this.refreshTimeout = setTimeout(() => this.Refresh(), 1000 * 60);
         }
     }

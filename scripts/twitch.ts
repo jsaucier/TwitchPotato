@@ -21,7 +21,7 @@ module TwitchPotato {
 
         private users: Dictionary<string> = {};
         private menus: Dictionary<any> = {};
-        private followed: Dictionary<Dictionary<string[]>> = {};
+        private followed: Dictionary<Dictionary<Dictionary<boolean>>> = {};
 
         constructor() {
             window.addEventListener('message', (event) => {
@@ -46,7 +46,7 @@ module TwitchPotato {
             if (user !== '')
                 return this.followed[followType][key] === undefined;
             else
-                return this.followed[followType][key].indexOf(user) === -1;
+                return this.followed[followType][key][user] === undefined;
         }
 
         /**
@@ -75,6 +75,32 @@ module TwitchPotato {
          */
         public GetMenu(menu: MenuType): any {
             return this.menus[menu];
+        }
+
+        /**
+         * Gets the users information.
+         */
+        public GetUsers(): string[] {
+            var users: string[] = [];
+
+            for (var user in this.users)
+                users.push(user);
+
+            return users;
+        }
+
+        /**
+         * Gets the users following the item.
+         */
+        public GetFollowing(followType: FollowType, key: string): string[] {
+            if (this.followed[followType][key] === undefined) return [];
+
+            var users: string[] = [];
+
+            for (var user in this.followed[followType][key])
+                users.push(user);
+
+            return users;
         }
 
 
@@ -240,20 +266,23 @@ module TwitchPotato {
          * Follows the channel.
          */
         public FollowChannel(username: string, channel: string, unfollow = false) {
+            /* Set the update type. */
+            Application.Guide.SetUpdateType(UpdateType.Refresh);
+
             /** Array of users to follow the game. */
             var users: Dictionary<string> = {};
 
             /** The followed games. */
             var followed = this.followed[FollowType.Channel];
 
-            if (username !== undefined) {
+            if (username !== 'all') {
                 if (this.users[username] !== undefined)
                     users[username] = this.users[username];
             }
             else {
                 for (var user in this.users) {
                     /* Only unfollow the game if the user is following the game. */
-                    if ((unfollow === true && followed[channel].indexOf(user) !== -1) ||
+                    if ((unfollow === true && followed[channel][user] !== undefined) ||
                         unfollow !== true)
                         users[user] = this.users[user];
                 }
@@ -268,9 +297,6 @@ module TwitchPotato {
                     type: (unfollow === true) ? 'DELETE' : 'PUT',
                     error: (xhr, status, error) => this.AuthenticationError(xhr, status, error, user),
                     success: () => {
-                        /* Set the update type. */
-                        Application.Guide.updateType = UpdateType.Channels;
-
                         /* Update the followed channels after a delay. */
                         setTimeout(() => this.GetFollowedChannels(user), 500);
                     }
@@ -282,20 +308,23 @@ module TwitchPotato {
          * Follows or unfollows a game for the user.
          */
         public FollowGame(username: string, game: string, unfollow = false) {
+            /* Set the update type. */
+            Application.Guide.SetUpdateType(UpdateType.Refresh);
+
             /** Array of users to follow the game. */
             var users: Dictionary<string> = {};
 
             /** The followed games. */
             var followed = this.followed[FollowType.Game];
 
-            if (username !== undefined) {
+            if (username !== 'all') {
                 if (this.users[username] !== undefined)
                     users[username] = this.users[username];
             }
             else {
                 for (var user in this.users) {
                     /* Only unfollow the game if the user is following the game. */
-                    if ((unfollow === true && followed[game].indexOf(user) !== -1) ||
+                    if ((unfollow === true && followed[game][user] !== undefined) ||
                         unfollow !== true)
                         users[user] = this.users[user];
                 }
@@ -310,9 +339,6 @@ module TwitchPotato {
                     type: (unfollow === true) ? 'DELETE' : 'PUT',
                     error: (xhr, status, error) => this.AuthenticationError(xhr, status, error, user),
                     success: () => {
-                        /* Set the update type. */
-                        Application.Guide.updateType = UpdateType.Games;
-
                         /* Update the followed games after a delay. */
                         setTimeout(() => this.GetFollowedGames(user), 500);
                     }
@@ -324,6 +350,9 @@ module TwitchPotato {
          * Upates all the twitch data.
          */
         public Refresh(skipFollowed = false): void {
+            /* Set the guide update type. */
+            Application.Guide.SetUpdateType(UpdateType.All);
+
             /* Resets the followed channels dictionary. */
             this.followed[FollowType.Channel] = {};
 
@@ -480,7 +509,7 @@ module TwitchPotato {
             var search: string[] = [];
 
             /* Resets the followed channels dictionary. */
-            this.followed[FollowType.Game] = {}
+            //this.followed[FollowType.Game] = {}
 
             /* Format the url for the ajax call. */
             var url = Utils.Format(TwitchHandler.urls.followedGames, username, TwitchHandler.limit);
@@ -503,12 +532,12 @@ module TwitchPotato {
                             };
 
                         /* Handle followed games. */
-                        var followed = this.followed[FollowType.Game]
+                        var followed = this.followed[FollowType.Game];
 
-                                if (followed[game.name] === undefined)
-                            followed[game.name] = [username];
-                        else
-                            followed[game.name].push(username);
+                        if (followed[game.name] === undefined)
+                            followed[game.name] = {};
+
+                        followed[game.name][username] = true;
                     }
                 }
             });
@@ -594,9 +623,9 @@ module TwitchPotato {
                     var followed = this.followed[FollowType.Channel]
 
                     if (followed[data.channel.name] === undefined)
-                        followed[data.channel.name] = [username];
-                    else
-                        followed[data.channel.name].push(username);
+                        followed[data.channel.name] = {};
+
+                    followed[data.channel.name][username] = true;
                 }
 
                 /* Create the dictionary entry. */

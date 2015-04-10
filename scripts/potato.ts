@@ -31,7 +31,8 @@ module TwitchPotato {
         Channels,
         Games,
         Game,
-        Videos
+        Videos,
+        Refresh
     }
 
     export enum InputType {
@@ -110,6 +111,7 @@ module TwitchPotato {
         public Twitch: TwitchHandler;
         public Notification: NotificationHandler;
         public Chat: ChatHandler;
+
 
         public ShowError(error): void {
             $('#error .error').html(error);
@@ -341,7 +343,7 @@ module TwitchPotato {
         }
     }
 
-    /* The current Main class instance */
+    /** The current Main class instance */
     export var Application: Main = new Main();
 
     // Initialize the Application only after the page has loaded.
