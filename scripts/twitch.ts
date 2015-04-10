@@ -41,7 +41,7 @@ module TwitchPotato {
         /**
          * Gets whether the user is following a channel or game.
          */
-        public IsFollowing(followType: FollowType, key: string, user = ''): boolean {
+        IsFollowing(followType: FollowType, key: string, user = ''): boolean {
             if (this.followed[followType][key] === undefined) return false;
 
             if (user !== '')
@@ -53,47 +53,47 @@ module TwitchPotato {
         /**
          * Gets the followed information.
          */
-        public GetFollows(followType: FollowType): any {
+        GetFollows(followType: FollowType): any {
             return this.followed[followType];
         }
 
         /**
          * Gets the channel information.
          */
-        public GetChannel(key: string): Channel {
+        GetChannel(key: string): Channel {
             return this.menus[MenuType.Channels][key];
         }
 
         /**
          * Gets the game information.
          */
-        public GetGame(key: string): Game {
+        GetGame(key: string): Game {
             return this.menus[MenuType.Games][key];
         }
 
         /**
          * Gets the menu information.
          */
-        public GetMenu(menu: MenuType): any {
+        GetMenu(menu: MenuType): any {
             return this.menus[menu];
         }
 
         /**
          * Gets the users information.
          */
-        public GetUsers(): string[] {
+        GetUsers(): string[] {
             var users: string[] = [];
 
             for (var user in this.users)
                 users.push(user);
 
-            return users;
+            return users.sort();
         }
 
         /**
          * Gets the users following the item.
          */
-        public GetFollowing(followType: FollowType, key: string): string[] {
+        GetFollowing(followType: FollowType, key: string): string[] {
             if (this.followed[followType][key] === undefined) return [];
 
             var users: string[] = [];
@@ -101,13 +101,13 @@ module TwitchPotato {
             for (var user in this.followed[followType][key])
                 users.push(user);
 
-            return users;
+            return users.sort();
         }
 
         /**
          * Gets the user's display name.
          */
-        public GetDisplayName(user: string): string {
+        GetDisplayName(user: string): string {
             if (this.users[user] === undefined) return user;
 
             return this.users[user].name;
@@ -117,7 +117,7 @@ module TwitchPotato {
         /**
          * Creates a new webview to authorize and retrieve the oauth code.
          */
-        public Authorize(username: string): void {
+        Authorize(username: string): void {
             if ($('#users .webview[username="' + username + '"]').length !== 0) {
                 /* Webview has already been created. */
                 return;
@@ -180,7 +180,7 @@ module TwitchPotato {
         /**
          * Removes and clears all of the partition data.
          */
-        public ClearPartitions(username = undefined, callback = Function.prototype) {
+        ClearPartitions(username = undefined, callback = Function.prototype) {
             /** String array containing the users' partition to clear. */
             var users: Dictionary<TwitchUser> = {};
 
@@ -236,7 +236,7 @@ module TwitchPotato {
         /**
          * Callback function when the remote webview has authorized the user.
          */
-        public OnAuthorized(username: string, token: string): void {
+        private OnAuthorized(username: string, token: string): void {
             /* Remove the webview from the document. */
             $('#users webview[username="' + username + '"]').remove();
 
@@ -286,7 +286,7 @@ module TwitchPotato {
         /**
          * Follows the channel.
          */
-        public FollowChannel(username: string, channel: string, unfollow = false) {
+        FollowChannel(username: string, channel: string, unfollow = false) {
             /* Set the update type. */
             Application.Guide.SetUpdateType(UpdateType.Refresh);
 
@@ -328,7 +328,7 @@ module TwitchPotato {
         /**
          * Follows or unfollows a game for the user.
          */
-        public FollowGame(username: string, game: string, unfollow = false) {
+        FollowGame(username: string, game: string, unfollow = false) {
             /* Set the update type. */
             Application.Guide.SetUpdateType(UpdateType.Refresh);
 
@@ -370,7 +370,7 @@ module TwitchPotato {
         /**
          * Upates all the twitch data.
          */
-        public Refresh(skipFollowed = false): void {
+        Refresh(skipFollowed = false): void {
             /* Set the guide update type. */
             Application.Guide.SetUpdateType(UpdateType.All);
 
@@ -400,7 +400,7 @@ module TwitchPotato {
         /**
          * Updates the top channels.
          */
-        public GetChannels(getAll = false): void {
+        GetChannels(getAll = false): void {
             /* Format the url for the ajax call. */
             var url = Utils.Format(TwitchHandler.urls.channels, TwitchHandler.limit);
 
@@ -423,7 +423,7 @@ module TwitchPotato {
         /**
          * Gets all of the games.
          */
-        public GetGames(getAll = true): void {
+        GetGames(getAll = true): void {
             /* Format the url for the ajax call. */
             var url = Utils.Format(TwitchHandler.urls.games, TwitchHandler.limit);
 
@@ -446,7 +446,7 @@ module TwitchPotato {
         /**
          * Gets the channels for a game.
          */
-        public GetGameChannels(game: string, getAll = true) {
+        GetGameChannels(game: string, getAll = true) {
             /* Resets the game dictionary. */
             this.menus[MenuType.Game] = {};
 
@@ -472,7 +472,7 @@ module TwitchPotato {
         /**
          * Get the vidoes for a channe.
          */
-        public GetChannelVideos(channel, getAll = true) {
+        GetChannelVideos(channel, getAll = true) {
             /* Resets the videos dictionary. */
             this.menus[MenuType.Videos] = {};
 
@@ -498,7 +498,7 @@ module TwitchPotato {
         /**
          * Get the followed channels for the Twitch user.
          */
-        public GetFollowedChannels(username): void {
+        GetFollowedChannels(username): void {
             /* Array of channels to search because they aren't known at this point. */
             var search: string[] = [];
 
@@ -525,7 +525,7 @@ module TwitchPotato {
         /**
          * Get the followed games for the Twitch user.
          */
-        public GetFollowedGames(username) {
+        GetFollowedGames(username) {
             /* Array of channels to search because they aren't known at this point. */
             var search: string[] = [];
 
