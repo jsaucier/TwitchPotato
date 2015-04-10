@@ -55,7 +55,7 @@ module TwitchPotato {
             if (channel !== undefined &&
                 channel !== this.chat.attr('channel')) {
                 /* Set the webview source. */
-                $(this.webview).attr('src', Utils.Format(this.chatUrl, channel));
+                $(this.webview).attr('src', this.chatUrl.format(channel));
 
                 /* Catch the webview load events. */
                 this.webview.addEventListener('loadcommit', () => {
@@ -97,7 +97,7 @@ module TwitchPotato {
 
             /* Set the zoom. */
             this.webview.insertCSS({
-                code: Utils.Format('body { font-size: {0}%!important }', Application.Storage.settings.zoom)
+                code: 'body { font-size: {0}%!important }'.format(Application.Storage.settings.zoom)
             });
         }
 

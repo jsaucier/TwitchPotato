@@ -113,7 +113,6 @@ module TwitchPotato {
             return this.users[user].name;
         }
 
-
         /**
          * Creates a new webview to authorize and retrieve the oauth code.
          */
@@ -124,7 +123,7 @@ module TwitchPotato {
             }
 
             /* Load the webview template */
-            var html = $(Utils.Format($('#twitch-template').html(), username));
+            var html = $($('#twitch-template').html().format(username));
 
             /* Add the webview to the document. */
             $('#users').append(html);
@@ -136,7 +135,7 @@ module TwitchPotato {
             webview.addEventListener('contentload', () => this.InitializeWebView(username));
 
             /* Hook the console message event. */
-            webview.addEventListener('consolemessage', (e) => Utils.ConsoleMessage(e));
+            webview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
 
             /* Update the followed channels and games if requested. */
             this.GetFollowedChannels(username);
@@ -153,11 +152,11 @@ module TwitchPotato {
             /* Iterate the webviews
              * Show remote webviews that need interaction
              * Initialize remote webviews that do not. */
-            var webview: Webview = <Webview>$(Utils.Format('#users webview[username="{0}"]', username))[0];
+            var webview: Webview = <Webview>$('#users webview[username="{0}"]'.format(username))[0];
 
             if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/') === 0) {
                 /* Set the title head. */
-                $('#users .head').text(Utils.Format('Enter the login for {0} | Press ESC to Cancel', $(webview).attr('username')));
+                $('#users .head').text('Enter the login for {0} | Press ESC to Cancel'.format($(webview).attr('username')));
 
                 /* Show the webview. */
                 $(webview).show();
@@ -205,7 +204,7 @@ module TwitchPotato {
 
                 if (webview === undefined) {
                     /* Load the webview template */
-                    var html = $(Utils.Format($('#twitch-template').html(), user));
+                    var html = $($('#twitch-template').html().format(user));
 
                     /* Add the webview to the document. */
                     $('#users').append(html);
@@ -250,7 +249,7 @@ module TwitchPotato {
 
             /* Get the user's display name. */
             $.ajax({
-                url: Utils.Format(TwitchHandler.urls.user, username),
+                url: TwitchHandler.urls.user.format(username),
                 error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 global: false,
                 success: (json) => {
@@ -268,7 +267,7 @@ module TwitchPotato {
          */
         private ShowError(xhr, status, error) {
             var json = xhr.responseJSON;
-            Application.ShowError(Utils.Format('{0} - {1}: {2}', json.status, json.error, json.message));
+            Application.ShowError('{0} - {1}: {2}'.format(json.status, json.error, json.message));
         }
 
         /**
@@ -310,7 +309,7 @@ module TwitchPotato {
             }
 
             for (var user in users) {
-                var url = Utils.Format(TwitchHandler.urls.followChannel,
+                var url = TwitchHandler.urls.followChannel.format(
                     user, channel, this.users[user].token, TwitchHandler.scope);
 
                 $.ajax({
@@ -352,7 +351,7 @@ module TwitchPotato {
             }
 
             for (var user in users) {
-                var url = Utils.Format(TwitchHandler.urls.followGame,
+                var url = TwitchHandler.urls.followGame.format(
                     user, game, this.users[user].token, TwitchHandler.scope);
 
                 $.ajax({
@@ -402,7 +401,7 @@ module TwitchPotato {
          */
         GetChannels(getAll = false): void {
             /* Format the url for the ajax call. */
-            var url = Utils.Format(TwitchHandler.urls.channels, TwitchHandler.limit);
+            var url = TwitchHandler.urls.channels.format(TwitchHandler.limit);
 
             /* Ajax call to get the top channels. */
             $.ajax({
@@ -425,7 +424,7 @@ module TwitchPotato {
          */
         GetGames(getAll = true): void {
             /* Format the url for the ajax call. */
-            var url = Utils.Format(TwitchHandler.urls.games, TwitchHandler.limit);
+            var url = TwitchHandler.urls.games.format(TwitchHandler.limit);
 
             /* Ajax call to get the games. */
             $.ajax({
@@ -451,7 +450,7 @@ module TwitchPotato {
             this.menus[MenuType.Game] = {};
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(TwitchHandler.urls.game, game, TwitchHandler.limit);
+            var url = TwitchHandler.urls.game.format(game, TwitchHandler.limit);
 
             /* Ajax call to get the game channels. */
             $.ajax({
@@ -477,7 +476,7 @@ module TwitchPotato {
             this.menus[MenuType.Videos] = {};
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(TwitchHandler.urls.videos, channel, TwitchHandler.limit);
+            var url = TwitchHandler.urls.videos.format(channel, TwitchHandler.limit);
 
             /* Ajax call to get the game channels. */
             $.ajax({
@@ -503,7 +502,7 @@ module TwitchPotato {
             var search: string[] = [];
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(TwitchHandler.urls.followedChannels, username, TwitchHandler.limit);
+            var url = TwitchHandler.urls.followedChannels.format(username, TwitchHandler.limit);
 
             /* Ajax call to get the game channels. */
             $.ajax({
@@ -533,7 +532,7 @@ module TwitchPotato {
             //this.followed[FollowType.Game] = {}
 
             /* Format the url for the ajax call. */
-            var url = Utils.Format(TwitchHandler.urls.followedGames, username, TwitchHandler.limit);
+            var url = TwitchHandler.urls.followedGames.format(username, TwitchHandler.limit);
 
             /* Ajax call to get the games. */
             $.ajax({
@@ -569,7 +568,7 @@ module TwitchPotato {
          */
         private GetChannelsByName(channels: string[], menu: MenuType, username: string): void {
             /* Format the url for the ajax call. */
-            var url = Utils.Format(TwitchHandler.urls.searchChannels, channels.join(), TwitchHandler.limit);
+            var url = TwitchHandler.urls.searchChannels.format(channels.join(), TwitchHandler.limit);
 
             /* Ajax call to get the games. */
             $.ajax({
@@ -591,7 +590,7 @@ module TwitchPotato {
          */
         private GetNextChannels(url: string, offset: number, menu: MenuType, username?: string) {
             $.ajax({
-                url: Utils.Format(url + '&offset={0}', offset),
+                url: url + '&offset={0}'.format(offset),
                 error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => this.ParseChannelsObject(json.streams, menu, username),
             });
@@ -602,7 +601,7 @@ module TwitchPotato {
          */
         private GetNextGames(url: string, offset: number, menu: MenuType): void {
             $.ajax({
-                url: Utils.Format(url + '&offset={0}', offset),
+                url: url + '&offset={0}'.format(offset),
                 error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => this.ParseGamesObject(json.top, menu),
             });
@@ -613,7 +612,7 @@ module TwitchPotato {
          */
         private GetNextVideos(url: string, offset: number, menu: MenuType): void {
             $.ajax({
-                url: Utils.Format(url + '&offset={0}', offset),
+                url: url + '&offset={0}'.format(offset),
                 error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => this.ParseVideosObject(json.videos, menu),
             });

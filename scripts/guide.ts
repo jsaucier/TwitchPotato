@@ -23,10 +23,14 @@ module TwitchPotato {
         private selectedItem = '#guide .item.selected:visible';
 
         private updateType: UpdateType = UpdateType.All;
+        private preview: Webview;
 
         constructor() {
+            /** Initialize the preview player. */
+            this.InitializePreview();
+
             /* Update the version */
-            $('#time .version').text(Utils.Format('v{0}', chrome.runtime.getManifest().version));
+            $('#time .version').text('v{0}'.format(chrome.runtime.getManifest().version));
 
             /* Start the time timer. */
             this.UpdateTime();
@@ -84,6 +88,30 @@ module TwitchPotato {
             this.updateType = updateType;
         }
 
+        /**
+         * Initialize the guide preview player.
+         */
+        private InitializePreview() {
+            this.preview = <Webview>$('#preview webview')[0]
+
+            this.preview.addEventListener('loadcommit', () => {
+                /* Inject the script files. */
+                this.preview.executeScript({ file: 'js/jquery-2.1.1.min.js' });
+                this.preview.executeScript({ file: 'js/inject.js' });
+
+                /* Hook the console message event. */
+                this.preview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
+            });
+        }
+
+        public PausePreview(): void {
+            this.PostMessage('PauseVideo');
+        }
+
+        public PlayPreview(): void {
+            this.PostMessage('PlayVideo');
+        }
+
         private OpenMenuItem(): void {
             var key = $('#guide .item.selected:visible').attr('key');
             var menu = parseInt($('#guide .item.selected:visible').attr('menu'));
@@ -96,6 +124,9 @@ module TwitchPotato {
                     case MenuType.Game:
                         /* Play the channel. */
                         Application.Player.Play(key);
+
+                        /** Stop the preivew. */
+                        this.PostMessage('PauseVideo');
                         return;
                     case MenuType.Games:
                         /* Hide the game menu. */
@@ -117,6 +148,9 @@ module TwitchPotato {
                     case MenuType.Videos:
                         /* Play the channel. */
                         Application.Player.Play(key, false, true);
+
+                        /** Stop the preivew. */
+                        this.PostMessage('PauseVideo');
                         return;
                     default:
                         return;
@@ -556,12 +590,14 @@ module TwitchPotato {
             $(html).find('.title').text(channel.title);
             $(html).find('.game').text(channel.game);
             $(html).find('.streamer').text(channel.streamer);
-            $(html).find('.viewers').text(Utils.Format('{0} viewers', Utils.Deliminate(channel.viewers, ',')));
+            $(html).find('.viewers').text('{0} viewers'.format(channel.viewers.deliminate()));
 
             this.LoadImage(channel.preview, $(html).find('.preview'));
 
             $('#info').empty();
             $('#info').append(html);
+
+            this.PostMessage('LoadVideo', { channel: key });
         }
 
         private ShowGame(key: string): void {
@@ -572,8 +608,8 @@ module TwitchPotato {
             var html = $($('#game-template').html());
 
             html.find('.game').text(game.name);
-            html.find('.channels').text(Utils.Format('{0} channels', Utils.Deliminate(game.channels, ',')));
-            html.find('.viewers').text(Utils.Format('{0} viewers', Utils.Deliminate(game.viewers, ',')));
+            html.find('.channels').text('{0} channels'.format(game.channels.deliminate()));
+            html.find('.viewers').text('{0} viewers'.format(game.viewers.deliminate()));
 
             this.LoadImage(game.boxArt, $(html).find('.boxart'));
 
@@ -630,6 +666,25 @@ module TwitchPotato {
             /* Restart the refresh timer. */
             clearTimeout(this.refreshTimeout);
             this.refreshTimeout = setTimeout(() => this.Refresh(), 1000 * 60);
+        }
+
+        private PostMessage(method: string, params = {}): void {
+            /* Make sure the contentwindow is loaded. */
+            if (this.preview.contentWindow === undefined) {
+                setTimeout(() => this.PostMessage(method, params), 100);
+                return;
+            }
+
+            /* Data to be posted. */
+            var data = {
+                method: method,
+                params: params
+            };
+
+            console.log(data);
+
+            /* Post the data to the client application. */
+            setTimeout(() => this.preview.contentWindow.postMessage(JSON.stringify(data), '*'), 100);
         }
     }
 }

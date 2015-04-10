@@ -89,6 +89,10 @@ class PlayerController {
                 this.SetQuality(params.quality);
                 break;
 
+            case 'LoadPreview':
+                this.LoadPreview(params.channel);
+                break;
+
             default:
                 console.log('Unhandled method: ' + json.method);
                 break;
@@ -121,6 +125,24 @@ class PlayerController {
 
     private SetQuality(quality: string): void {
         this.player.setQuality(quality);
+    }
+
+    private LoadPreview(channel: string): void {
+        console.log(channel);
+        /** Load the channel. */
+        this.player.loadStream(channel);
+
+        /** Ensure the video is playing. */
+        this.player.playVideo();
+
+        /** Ensure the video is muted. */
+        this.SetMute(true);
+
+        /** Set the quality to low. */
+        this.SetQuality('Low');
+
+        /** Enter fullscreen mode. */
+        this.SetFullscreen(FullscreenAction.Enter);
     }
 
     private LoadVideo(channel: string, isVideo: boolean): void {

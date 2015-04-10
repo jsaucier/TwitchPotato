@@ -229,6 +229,9 @@ module TwitchPotato {
                 /* Fade the guide out. */
                 $('#guide').fadeOut();
 
+                /** Pause the guide channel preview. */
+                Application.Guide.PausePreview();
+
                 /* Show the chat window. */
                 Application.Chat.ToggleChat(true, true);
 
@@ -244,6 +247,9 @@ module TwitchPotato {
 
                 /* Show the chat window. */
                 Application.Chat.ToggleChat(false, true);
+
+                /** Play the guide channel preview. */
+                Application.Guide.PlayPreview();
 
                 /* Fade the guide in. */
                 $('#guide').fadeIn();
@@ -339,7 +345,7 @@ module TwitchPotato {
                 this.Twitch.Authorize(username);
             } else
                 /* Display an error. */
-                this.ShowError(Utils.Format('{0} has already been added.', username));
+                this.ShowError('{0} has already been added.'.format(username));
         }
     }
 

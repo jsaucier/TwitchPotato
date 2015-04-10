@@ -163,10 +163,10 @@ module TwitchPotato {
             if (player === undefined) {
 
                 /* Get the number of current players */
-                var numPlayers = Utils.DictionarySize(this.players);
+                var numPlayers = Object.keys(this.players).length;
 
                 /* Append the new player. */
-                $('#players').append($(Utils.Format($('#player-template').html(), numPlayers)));
+                $('#players').append($($('#player-template').html().format(numPlayers)));
 
                 /* Initialize our player object. */
                 player = {
@@ -184,7 +184,7 @@ module TwitchPotato {
                     player.webview.executeScript({ file: 'js/inject.js' });
 
                     /* Hook the console message event. */
-                    player.webview.addEventListener('consolemessage', (e) => Utils.ConsoleMessage(e));
+                    player.webview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
 
                     /* Load the player. */
                     setTimeout(() => this.Load(player, channel, isVideo, isFake), 100);
@@ -202,7 +202,7 @@ module TwitchPotato {
             Application.Input.RegisterInputs(InputType.Player);
 
             /* Get the number of current players */
-            var numPlayers = Utils.DictionarySize(this.players);
+            var numPlayers = Object.keys(this.players).length;
 
             /* Make sure we dont have more than 4 videos playing at once. */
             if (numPlayers === 4) return;
@@ -268,7 +268,7 @@ module TwitchPotato {
                 /* We only want to make sure we have one player open at all times */
                 /* so that we dont have to waste time reloading the .swf when */
                 /* starting a new one. */
-                if (Utils.DictionarySize(this.players) > 1) {
+                if (Object.keys(this.players).length > 1) {
                     /* We have more than one player, so since we are stopping this one */
                     /* go ahead and delete the current one. */
                     this.Remove(player);
