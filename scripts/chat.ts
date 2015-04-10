@@ -18,22 +18,39 @@ module TwitchPotato {
         private chat = $('#chat');
 
         /** Gets or sets if the chat is currently shown. */
-        public isShown = false;
+        private isShown = false;
 
         constructor() { }
 
         /**
+         * Gets whether the chat is shown.
+         */
+        IsShown(): boolean {
+            return this.isShown;
+        }
+
+        /**
+         * Closes the chat window.
+         */
+        Close() {
+            /** Fades the chat window out. */
+            this.chat.fadeOut();
+            /** Set the chat as no longer shown. */
+            this.isShown = false;
+        }
+
+        /**
          * Shows the chat window for the specified channel.
          */
-        public Show(channel: string): void {
+        Show(channel: string): void {
             /* Toggle visibility. */
             if (this.isShown === true) {
+                /** Update the player layout so that it is not in dock layout.  */
                 Application.Player.UpdateLayout(false, PlayersLayout.Full);
-                this.chat.fadeOut();
-                this.isShown = false;
-                return;
+                /** Close the chat window. */
+                return this.Close();
             }
-            console.log(channel);
+
             /* Ensure the channel is not already loaded. */
             if (channel !== undefined &&
                 channel !== this.chat.attr('channel')) {
@@ -63,7 +80,7 @@ module TwitchPotato {
         /**
          * Toggles the chat visibility on guide toggle.
          */
-        public ToggleChat(show, isGuideToggle): void {
+        ToggleChat(show, isGuideToggle): void {
             if (show === true &&
                 this.isShown === true)
                 this.UpdateLayout(undefined, isGuideToggle);
@@ -74,7 +91,7 @@ module TwitchPotato {
         /**
          * Updates the font-size of the chat based on the zoom level.
          */
-        public UpdateZoom(): void {
+        UpdateZoom(): void {
             /* Cannot update the font-size if the webview is not loaded. */
             if (this.isLoaded === false) return;
 
@@ -87,9 +104,9 @@ module TwitchPotato {
         /**
          * Updates the layout for the chat window.
          */
-        public UpdateLayout(direction = Direction.Down, isGuideToggle = false): void {
+        UpdateLayout(direction = Direction.Down, isGuideToggle = false): void {
             /* Ensure the chat is actually shown. */
-            //if (this.isShown !== true) return;
+            if (this.isShown !== true) return;
 
             /* Determine the new layout. */
             if (direction === Direction.Left) this.layout--;
