@@ -251,7 +251,7 @@ module TwitchPotato {
             /* Get the user's display name. */
             $.ajax({
                 url: Utils.Format(TwitchHandler.urls.user, username),
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 global: false,
                 success: (json) => {
                     /* Create a new twitch user. */
@@ -407,7 +407,7 @@ module TwitchPotato {
             /* Ajax call to get the top channels. */
             $.ajax({
                 url: url,
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => {
                     /* Process the ajax results. */
                     this.ParseChannelsObject(json.streams, MenuType.Channels);
@@ -430,7 +430,7 @@ module TwitchPotato {
             /* Ajax call to get the games. */
             $.ajax({
                 url: url,
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => {
                     /* Process the ajax results. */
                     this.ParseGamesObject(json.top, MenuType.Games);
@@ -456,7 +456,7 @@ module TwitchPotato {
             /* Ajax call to get the game channels. */
             $.ajax({
                 url: url,
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => {
                     /* Process the ajax results. */
                     this.ParseChannelsObject(json.streams, MenuType.Game);
@@ -482,7 +482,7 @@ module TwitchPotato {
             /* Ajax call to get the game channels. */
             $.ajax({
                 url: url,
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => {
                     /* Process the ajax results. */
                     this.ParseVideosObject(json.videos, MenuType.Videos);
@@ -508,7 +508,7 @@ module TwitchPotato {
             /* Ajax call to get the game channels. */
             $.ajax({
                 url: url,
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => {
                     for (var index in json.follows) {
                         var channel = json.follows[index];
@@ -538,7 +538,7 @@ module TwitchPotato {
             /* Ajax call to get the games. */
             $.ajax({
                 url: url,
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => {
                     for (var index in json.follows) {
                         var game = json.follows[index];
@@ -574,7 +574,7 @@ module TwitchPotato {
             /* Ajax call to get the games. */
             $.ajax({
                 url: url,
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => {
                     this.ParseChannelsObject(json.streams, menu, username);
 
@@ -592,7 +592,7 @@ module TwitchPotato {
         private GetNextChannels(url: string, offset: number, menu: MenuType, username?: string) {
             $.ajax({
                 url: Utils.Format(url + '&offset={0}', offset),
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => this.ParseChannelsObject(json.streams, menu, username),
             });
         }
@@ -603,7 +603,7 @@ module TwitchPotato {
         private GetNextGames(url: string, offset: number, menu: MenuType): void {
             $.ajax({
                 url: Utils.Format(url + '&offset={0}', offset),
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => this.ParseGamesObject(json.top, menu),
             });
         }
@@ -614,7 +614,7 @@ module TwitchPotato {
         private GetNextVideos(url: string, offset: number, menu: MenuType): void {
             $.ajax({
                 url: Utils.Format(url + '&offset={0}', offset),
-                error: this.ShowError,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
                 success: (json) => this.ParseVideosObject(json.videos, menu),
             });
         }
