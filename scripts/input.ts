@@ -46,6 +46,35 @@ module TwitchPotato {
             $(document).keydown((event) => { this.OnInputEvent(event); });
         }
 
+        /** Registers an input for action. */
+        RegisterInput(id: string) {
+            /** Get the input. */
+            var input = this.inputs[id];
+
+            /** Default the array if needed. */
+            if (this.registered[input.code] === undefined)
+                this.registered[input.code] = [];
+
+            /** Add the input to the registered list. */
+            this.registered[input.code].push(input);
+        }
+
+        /** Registers all inputs for action for the input type. */
+        RegisterInputs(type: InputType): void {
+            /** Unregister all inputs. */
+            this.registered = {};
+
+            /** Register all of the global inputs. */
+            for (var id in this.GetInputsByType(InputType.Global))
+                this.RegisterInput(id);
+
+            /** Register the inputs specified. */
+            if (type !== InputType.Global)
+                for (var id in this.GetInputsByType(type))
+                    this.RegisterInput(id);
+        }
+
+        /** Creates a new input. */
         private AddInput(type: InputType, input: Inputs, code: number, name: string, desc = ''): void {
             this.inputs[input] = {
                 input: input,
@@ -56,6 +85,7 @@ module TwitchPotato {
             };
         }
 
+        /** Gets the inputs based on input type. */
         private GetInputsByType(type: InputType): Dictionary<Input> {
             var inputs: Dictionary<Input> = {};
 
@@ -68,40 +98,15 @@ module TwitchPotato {
             return inputs;
         }
 
-        public RegisterInput(id: string) {
-            // Get the input.
-            var input = this.inputs[id];
-
-            // Default the array if needed.
-            if (this.registered[input.code] === undefined)
-                this.registered[input.code] = [];
-
-            // Add the input to the registered list.
-            this.registered[input.code].push(input);
-        }
-
-        public RegisterInputs(type: InputType): void {
-            // Unregister all inputs.
-            this.registered = {};
-
-            // Register all of the global inputs.
-            for (var id in this.GetInputsByType(InputType.Global))
-                this.RegisterInput(id);
-
-            // Register the inputs specified.
-            if (type !== InputType.Global)
-                for (var id in this.GetInputsByType(type))
-                    this.RegisterInput(id);
-        }
-
+        /** Handles the input events and routes the actions. */
         private OnInputEvent(event) {
             if (this.registered[event.keyCode] !== undefined) {
-                // Iterate all inputs registered to the keycode.
+                /** Iterate all inputs registered to the keycode. */
                 $.each(this.registered[event.keyCode], (index: number, input: Input) => {
-                    // Get the context based on InputType.
+                    /** Get the context based on InputType. */
                     var context = (input.type === InputType.Global) ? Application : Application[InputType[input.type]];
 
-                    // Call the registered callback.
+                    /** Call the registered callback. */
                     context['OnInput'].call(context, input);
                 });
             }
