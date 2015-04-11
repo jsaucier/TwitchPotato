@@ -15,11 +15,9 @@ module TwitchPotato {
         /** Gets or sets the key of the item to follow or unfollow. */
         private key: string;
 
-        /**
-         * Handles the input for the follow menu if it is active.
-         */
+        /** Handles input for the context menu. */
         HandleInput(input: Input, item: JQuery): boolean {
-            /* Follow menu is not visible. */
+            /** Follow menu is not visible. */
             if ($(this.followMenu).length === 0) return false;
 
             switch (input.input) {
@@ -43,9 +41,7 @@ module TwitchPotato {
             return true;
         }
 
-        /**
-         * Closes the follow menu.
-         */
+        /** Closes the follow menu. */
         Close(closeContextMenu = false) {
             $(this.followMenu).remove();
 
@@ -55,13 +51,11 @@ module TwitchPotato {
                 Application.Guide.UpdateMenuScroll();
         }
 
-        /**
-         * Updates the follow menu after the guide refreshes.
-         */
+        /** Updates the follow menu after the guide refreshes. */
         Update(item, user: string) {
             this.Show(item, this.followType, this.unfollow);
 
-            /* Remove selected menu item. */
+            /** Remove selected menu item. */
             $(this.selectedButton).removeClass('selected');
 
             $(this.followMenu)
@@ -69,11 +63,9 @@ module TwitchPotato {
                 .addClass('selected')
         }
 
-        /**
-         * Shows the follow menu.
-         */
+        /** Shows the follow menu. */
         Show(item: JQuery, followType: FollowType, unfollow = false): void {
-            /* Set the follow type, unfollow, and values. */
+            /** Set the follow type, unfollow, and values. */
             this.followType = followType;
             this.unfollow = unfollow;
             this.key = item.attr('key');
@@ -91,7 +83,7 @@ module TwitchPotato {
                 for (var i in following)
                     users.splice(users.indexOf(following[i]), 1);
 
-            /* Handle the following right away if possible. */
+            /** Handle the following right away if possible. */
             if (this.FollowingHandled(users) === true) return this.Close(true);
 
             /** The the item menu type. */
@@ -100,7 +92,7 @@ module TwitchPotato {
             /** The follow menu template. */
             var html = $($('#follow-menu-template').html());
 
-            /* Update the menu buttons. */
+            /** Update the menu buttons. */
             for (var i in users) {
                 var div = $('<div>')
                     .addClass('button')
@@ -111,16 +103,14 @@ module TwitchPotato {
 
             html.find('.button:eq(0)').addClass('selected');
 
-            /* Append the follow menu to the item. */
+            /** Append the follow menu to the item. */
             html.appendTo(item);
 
-            /* Scroll the guide menu. */
+            /** Scroll the guide menu. */
             Application.Guide.UpdateMenuScroll();
         }
 
-        /**
-         * Handle following and unfollowing if possible.
-         */
+        /** Handle following and unfollowing if possible. */
         private FollowingHandled(users: string[]): boolean {
             /* Ensure we have more than one user account, otherwise just follow
              * the item. */
@@ -138,43 +128,39 @@ module TwitchPotato {
             return false;
         }
 
-        /**
-         * Update the selected button.
-         */
+        /** Update the selected button. */
         private UpdateButton(direction: Direction): void {
             /** The index of the selected menu item. */
             var index = $(this.followMenu).find('.button')
                 .index($(this.selectedButton));
 
-            /* Set default menu item. */
+            /** Set default menu item. */
             if (index === -1)
                 index = 0;
 
-            /* Update the selected item index. */
+            /** Update the selected item index. */
             if (direction === Direction.Down)
                 index++;
             else if (direction === Direction.Up)
                 index--;
 
-            /* Set the bounds for the index. */
+            /** Set the bounds for the index. */
             if (index < 0)
                 index = 0;
             if (index > $(this.followMenu).find('.button').length - 1)
                 index = $(this.followMenu).find('.button').length - 1;
 
-            /* Remove selected menu item. */
+            /** Remove selected menu item. */
             $(this.selectedButton).removeClass('selected');
 
-            /* Select the new menu item. */
+            /** Select the new menu item. */
             $(this.followMenu)
                 .find('.button')
                 .eq(index)
                 .addClass('selected');
         }
 
-        /**
-         * Selects the button.
-         */
+        /** Selects the button. */
         private SelectButton(item: JQuery): void {
             /** The menu type of the selected item. */
             var menu = parseInt(item.attr('menu'));
@@ -188,13 +174,12 @@ module TwitchPotato {
                 else if (this.followType === FollowType.Game)
                     Application.Twitch.FollowGame(user, this.key, this.unfollow);
 
-                /* Close the menu. */
+                /** Close the menu. */
                 this.Close(true);
             }
             else
-                /* Close the menu. */
+                /** Close the menu. */
                 this.Close();
-
         }
     }
 }
