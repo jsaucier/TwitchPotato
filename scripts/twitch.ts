@@ -233,6 +233,9 @@ module TwitchPotato {
                     $(webview).show();
                     $('#users').fadeIn();
 
+                    /** Hide the loading window. */
+                    Application.Loading(false);
+
                     /** Register the global inputs. */
                     Application.Input.RegisterInputs(InputType.Global);
 
@@ -252,54 +255,9 @@ module TwitchPotato {
                     webview.contentWindow.postMessage(JSON.stringify(data), '*');
                 }
             });
-
-            // /**
-            //  * Iterate the webviews.
-            //  * Show remote webviews that need interaction.
-            //  * Initialize remote webviews that do not. */
-            // var webview: Webview = <Webview>$('#users webview[username="{0}"]'.format(user))[0];
-            //
-            // if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/') === 0) {
-            //     /** Set the title head. */
-            //     $('#users .head').text('Enter the login for {0} | Press ESC to Cancel'.format(this.users[user].name));
-            //
-            //     /** Show the webview. */
-            //     $(webview).show();
-            //     $('#users').fadeIn();
-            //
-            //     /** Register the global inputs. */
-            //     Application.Input.RegisterInputs(InputType.Global);
-            //
-            //     /** Insert the script and execute the code. */
-            //     webview.focus();
-            //     webview.executeScript({ file: 'js/jquery-2.1.1.min.js' });
-            //     webview.executeScript({ code: '$("#login").val("{0}")'.format(user) });
-            //     webview.executeScript({ code: '$("#password").focus();' });
-            // } else {
-            //     /** Data to post. */
-            //     var data = {
-            //         method: 'Init',
-            //         args: [user, TwitchHandler.clientId, TwitchHandler.scope]
-            //     };
-            //
-            //     /** Post the data to the remote webview. */
-            //     webview.contentWindow.postMessage(JSON.stringify(data), '*');
-            // }
         }
 
-
-
-
-
-
-
-
-
-
-
-        /**
-         * Callback function when the remote webview has authorized the user.
-         */
+        /** Callback function when the remote webview has authorized the user. */
         private OnAuthorized(user: string, token: string): void {
             /** Remove the webview. */
             this.RemoveWebview(user);
@@ -317,18 +275,16 @@ module TwitchPotato {
                 this.onAuthorizedCallback(this.users[user]);
         }
 
-
-
-        /**
-         * Shows the json error.
-         */
+        /** Fired when an error is encountered. */
         private ShowError(xhr, status, error) {
+            /** Response object. */
             var json = xhr.responseJSON;
+
+            /** Show the error. */
             Application.ShowError('{0} - {1}: {2}'.format(json.status, json.error, json.message));
         }
 
-        /**
-         * Fired when an authentication error is encountered. */
+        /** Fired when an authentication error is encountered. */
         private AuthenticationError(xhr: XMLHttpRequest, status, error, user) {
             /** Clear the partition data and reauthorize the user. */
             if (xhr.status === 401 ||
@@ -339,10 +295,121 @@ module TwitchPotato {
             this.ShowError(xhr, status, error);
         }
 
-        /**
-         * Follows the channel.
-         */
-        FollowChannel(username: string, channel: string, unfollow = false) {
+        /** Gets the channels by comma delimited names. */
+        private GetChannelsByName(channels: string[], menu: MenuType, username: string): void {
+            /** Format the url for the ajax call. */
+            var url = TwitchHandler.urls.searchChannels.format(channels.join(), TwitchHandler.limit);
+
+            /** Ajax call to get the games. */
+            $.ajax({
+                url: url,
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
+                success: (json) => {
+                    this.ParseChannelsObject(json.streams, menu, username);
+
+                    /** Load the next page of results */
+                    if (json._total > TwitchHandler.limit)
+                        for (var offset = TwitchHandler.limit; offset < json._total; offset += TwitchHandler.limit)
+                            this.GetNextChannels(url, offset, menu, username);
+                }
+            });
+        }
+
+        /** Loads the next page of channels. */
+        private GetNextChannels(url: string, offset: number, menu: MenuType, username?: string) {
+            $.ajax({
+                url: url + '&offset={0}'.format(offset),
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
+                success: (json) => this.ParseChannelsObject(json.streams, menu, username),
+            });
+        }
+
+        /** Loads the next page of games. */
+        private GetNextGames(url: string, offset: number, menu: MenuType): void {
+            $.ajax({
+                url: url + '&offset={0}'.format(offset),
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
+                success: (json) => this.ParseGamesObject(json.top, menu),
+            });
+        }
+
+        /** Loads the next page of videos. */
+        private GetNextVideos(url: string, offset: number, menu: MenuType): void {
+            $.ajax({
+                url: url + '&offset={0}'.format(offset),
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
+                success: (json) => this.ParseVideosObject(json.videos, menu),
+            });
+        }
+
+        /** Converts a json object to a channel. */
+        private ParseChannelsObject(object, menu: MenuType, username?: string): void {
+            for (var key in object) {
+                var data = object[key];
+                /** Get the featured channel data. */
+                if (data.stream !== undefined)
+                    data = data.stream;
+
+                /** Create the channel dictionary entry. */
+                var channel: Channel = {
+                    name: data.channel.name,
+                    streamer: data.channel.display_name,
+                    title: data.channel.status || '',
+                    viewers: data.viewers,
+                    game: data.game || '',
+                    preview: data.preview.large
+                }
+
+                        /** Handle followed channels. */
+                        if (username !== undefined) {
+                    var followed = this.followed[FollowType.Channel]
+
+                            if (followed[data.channel.name] === undefined)
+                        followed[data.channel.name] = {};
+
+                    followed[data.channel.name][username] = true;
+                }
+
+                /** Create the dictionary entry. */
+                this.menus[menu][data.channel.name] = channel;
+            }
+        }
+
+        /** Converts a json object to a game.*/
+        private ParseGamesObject(object, menu: MenuType, followed = false): void {
+            for (var key in object) {
+                var data = object[key];
+                if (data.game.name !== '') {
+                    /** Create the channel dictionary entry. */
+                    this.menus[MenuType.Games][data.game.name] = {
+                        name: data.game.name,
+                        channels: data.channels || -1,
+                        viewers: data.viewers || -1,
+                        boxArt: data.game.box.large
+                    };
+                }
+            }
+        }
+
+        /** Converts a json object to a video. */
+        private ParseVideosObject(object, menu: MenuType): void {
+            for (var key in object) {
+                var data = object[key];
+                /** Create the channel dictionary entry. */
+                this.menus[MenuType.Videos][data._id] = {
+                    id: data._id,
+                    name: data.channel.name,
+                    streamer: data.channel.display_name,
+                    title: data.title,
+                    views: data.views,
+                    length: data.length,
+                    preview: (data.preview || '').replace(/320x240/, '640x360')
+                };
+            }
+        }
+
+        /** Follows or unfollows the channel or game for the user. */
+        Follow(user: string, follow: string, type: FollowType, unfollow = false) {
             /** Set the update type. */
             Application.Guide.SetUpdateType(UpdateType.Refresh);
 
@@ -350,82 +417,44 @@ module TwitchPotato {
             var users: Dictionary<TwitchUser> = {};
 
             /** The followed games. */
-            var followed = this.followed[FollowType.Channel];
+            var followed = this.followed[type];
 
-            if (username !== 'all') {
-                if (this.users[username] !== undefined)
-                    users[username] = this.users[username];
+            if (user !== 'all') {
+                if (this.users[user] !== undefined)
+                    users[user] = this.users[user];
             }
             else {
-                for (var user in this.users) {
+                for (var u in this.users) {
                     /** Only unfollow the game if the user is following the game. */
-                    if ((unfollow === true && followed[channel][user] !== undefined) ||
+                    if ((unfollow === true && followed[follow][user] !== undefined) ||
                         unfollow !== true)
                         users[user] = this.users[user];
                 }
             }
 
-            for (var user in users) {
-                var url = TwitchHandler.urls.followChannel.format(
-                    user, channel, this.users[user].token, TwitchHandler.scope);
+            for (var u in users) {
+                var url = (type === FollowType.Channel) ?
+                    TwitchHandler.urls.followChannel : TwitchHandler.urls.followGame;
+
+                url = url.format(u, follow, this.users[u].token, TwitchHandler.scope);
 
                 $.ajax({
                     url: url,
                     type: (unfollow === true) ? 'DELETE' : 'PUT',
                     error: (xhr, status, error) => this.AuthenticationError(xhr, status, error, user),
                     success: () => {
-                        /** Update the followed channels after a delay. */
-                        setTimeout(() => this.GetFollowedChannels(user), 500);
+                        if (type === FollowType.Channel)
+                            /** Update the followed channels after a delay. */
+                            setTimeout(() => this.GetFollowedChannels(user), 500);
+                        else
+                            /** Update the followed channels after a delay. */
+                            setTimeout(() => this.GetFollowedGames(user), 500);
                     }
                 });
             }
         }
 
-        /**
-         * Follows or unfollows a game for the user.
-         */
-        FollowGame(username: string, game: string, unfollow = false) {
-            /** Set the update type. */
-            Application.Guide.SetUpdateType(UpdateType.Refresh);
-
-            /** Array of users to follow the game. */
-            var users: Dictionary<TwitchUser> = {};
-
-            /** The followed games. */
-            var followed = this.followed[FollowType.Game];
-
-            if (username !== 'all') {
-                if (this.users[username] !== undefined)
-                    users[username] = this.users[username];
-            }
-            else {
-                for (var user in this.users) {
-                    /** Only unfollow the game if the user is following the game. */
-                    if ((unfollow === true && followed[game][user] !== undefined) ||
-                        unfollow !== true)
-                        users[user] = this.users[user];
-                }
-            }
-
-            for (var user in users) {
-                var url = TwitchHandler.urls.followGame.format(
-                    user, game, this.users[user].token, TwitchHandler.scope);
-
-                $.ajax({
-                    url: url,
-                    type: (unfollow === true) ? 'DELETE' : 'PUT',
-                    error: (xhr, status, error) => this.AuthenticationError(xhr, status, error, user),
-                    success: () => {
-                        /** Update the followed games after a delay. */
-                        setTimeout(() => this.GetFollowedGames(user), 500);
-                    }
-                });
-            }
-        }
-
-        /**
-         * Upates all the twitch data.
-         */
+        /** Upates all the twitch data. */
         Refresh(skipFollowed = false): void {
             /** Set the guide update type. */
             Application.Guide.SetUpdateType(UpdateType.All);
@@ -453,9 +482,7 @@ module TwitchPotato {
             }
         }
 
-        /**
-         * Updates the top channels.
-         */
+        /** Updates the top channels. */
         GetChannels(getAll = false): void {
             /** Format the url for the ajax call. */
             var url = TwitchHandler.urls.channels.format(TwitchHandler.limit);
@@ -476,9 +503,7 @@ module TwitchPotato {
             });
         }
 
-        /**
-         * Gets all of the games.
-         */
+        /** Gets all of the games. */
         GetGames(getAll = true): void {
             /** Format the url for the ajax call. */
             var url = TwitchHandler.urls.games.format(TwitchHandler.limit);
@@ -499,9 +524,7 @@ module TwitchPotato {
             });
         }
 
-        /**
-         * Gets the channels for a game.
-         */
+        /** Gets the channels for a game. */
         GetGameChannels(game: string, getAll = true) {
             /** Resets the game dictionary. */
             this.menus[MenuType.Game] = {};
@@ -525,9 +548,7 @@ module TwitchPotato {
             });
         }
 
-        /**
-         * Get the vidoes for a channe.
-         */
+        /** Get the vidoes for a channe. */
         GetChannelVideos(channel, getAll = true) {
             /** Resets the videos dictionary. */
             this.menus[MenuType.Videos] = {};
@@ -551,15 +572,13 @@ module TwitchPotato {
             });
         }
 
-        /**
-         * Get the followed channels for the Twitch user.
-         */
-        GetFollowedChannels(username): void {
+        /** Get the followed channels for the Twitch user. */
+        GetFollowedChannels(user: string): void {
             /** Array of channels to search because they aren't known at this point. */
             var search: string[] = [];
 
             /** Format the url for the ajax call. */
-            var url = TwitchHandler.urls.followedChannels.format(username, TwitchHandler.limit);
+            var url = TwitchHandler.urls.followedChannels.format(user, TwitchHandler.limit);
 
             /** Ajax call to get the game channels. */
             $.ajax({
@@ -573,23 +592,18 @@ module TwitchPotato {
                     }
 
                     /** Get the online followed channels. */
-                    this.GetChannelsByName(search, MenuType.Channels, username);
+                    this.GetChannelsByName(search, MenuType.Channels, user);
                 }
             });
         }
 
-        /**
-         * Get the followed games for the Twitch user.
-         */
-        GetFollowedGames(username) {
+        /** Get the followed games for the Twitch user. */
+        GetFollowedGames(user: string) {
             /** Array of channels to search because they aren't known at this point. */
             var search: string[] = [];
 
-            /** Resets the followed channels dictionary. */
-            //this.followed[FollowType.Game] = {}
-
             /** Format the url for the ajax call. */
-            var url = TwitchHandler.urls.followedGames.format(username, TwitchHandler.limit);
+            var url = TwitchHandler.urls.followedGames.format(user, TwitchHandler.limit);
 
             /** Ajax call to get the games. */
             $.ajax({
@@ -614,137 +628,10 @@ module TwitchPotato {
                         if (followed[game.name] === undefined)
                             followed[game.name] = {};
 
-                        followed[game.name][username] = true;
+                        followed[game.name][user] = true;
                     }
                 }
             });
-        }
-
-        /**
-         * Gets the channels by comma delimited names.
-         */
-        private GetChannelsByName(channels: string[], menu: MenuType, username: string): void {
-            /** Format the url for the ajax call. */
-            var url = TwitchHandler.urls.searchChannels.format(channels.join(), TwitchHandler.limit);
-
-            /** Ajax call to get the games. */
-            $.ajax({
-                url: url,
-                error: (xhr, status, error) => this.ShowError(xhr, status, error),
-                success: (json) => {
-                    this.ParseChannelsObject(json.streams, menu, username);
-
-                    /** Load the next page of results */
-                    if (json._total > TwitchHandler.limit)
-                        for (var offset = TwitchHandler.limit; offset < json._total; offset += TwitchHandler.limit)
-                            this.GetNextChannels(url, offset, menu, username);
-                }
-            });
-        }
-
-        /**
-         * Loads the next page of channels.
-         */
-        private GetNextChannels(url: string, offset: number, menu: MenuType, username?: string) {
-            $.ajax({
-                url: url + '&offset={0}'.format(offset),
-                error: (xhr, status, error) => this.ShowError(xhr, status, error),
-                success: (json) => this.ParseChannelsObject(json.streams, menu, username),
-            });
-        }
-
-        /**
-         * Loads the next page of games.
-         */
-        private GetNextGames(url: string, offset: number, menu: MenuType): void {
-            $.ajax({
-                url: url + '&offset={0}'.format(offset),
-                error: (xhr, status, error) => this.ShowError(xhr, status, error),
-                success: (json) => this.ParseGamesObject(json.top, menu),
-            });
-        }
-
-        /**
-         * Loads the next page of videos.
-         */
-        private GetNextVideos(url: string, offset: number, menu: MenuType): void {
-            $.ajax({
-                url: url + '&offset={0}'.format(offset),
-                error: (xhr, status, error) => this.ShowError(xhr, status, error),
-                success: (json) => this.ParseVideosObject(json.videos, menu),
-            });
-        }
-
-        /**
-         * Converts a json object to a channel.
-         */
-        private ParseChannelsObject(object, menu: MenuType, username?: string): void {
-            for (var key in object) {
-                var data = object[key];
-                /** Get the featured channel data. */
-                if (data.stream !== undefined)
-                    data = data.stream;
-
-                /** Create the channel dictionary entry. */
-                var channel: Channel = {
-                    name: data.channel.name,
-                    streamer: data.channel.display_name,
-                    title: data.channel.status || '',
-                    viewers: data.viewers,
-                    game: data.game || '',
-                    preview: data.preview.large
-                }
-
-                /** Handle followed channels. */
-                if (username !== undefined) {
-                    var followed = this.followed[FollowType.Channel]
-
-                    if (followed[data.channel.name] === undefined)
-                        followed[data.channel.name] = {};
-
-                    followed[data.channel.name][username] = true;
-                }
-
-                /** Create the dictionary entry. */
-                this.menus[menu][data.channel.name] = channel;
-            }
-        }
-
-        /**
-         * Converts a json object to a game.
-         */
-        private ParseGamesObject(object, menu: MenuType, followed = false): void {
-            for (var key in object) {
-                var data = object[key];
-                if (data.game.name !== '') {
-                    /** Create the channel dictionary entry. */
-                    this.menus[MenuType.Games][data.game.name] = {
-                        name: data.game.name,
-                        channels: data.channels || -1,
-                        viewers: data.viewers || -1,
-                        boxArt: data.game.box.large
-                    };
-                }
-            }
-        }
-
-        /**
-         * Converts a json object to a video.
-         */
-        private ParseVideosObject(object, menu: MenuType): void {
-            for (var key in object) {
-                var data = object[key];
-                /** Create the channel dictionary entry. */
-                this.menus[MenuType.Videos][data._id] = {
-                    id: data._id,
-                    name: data.channel.name,
-                    streamer: data.channel.display_name,
-                    title: data.title,
-                    views: data.views,
-                    length: data.length,
-                    preview: (data.preview || '').replace(/320x240/, '640x360')
-                };
-            }
         }
 
         static clientId = '60wzh4fjbowe6jwtofuc1jakjfgekry';
