@@ -1,8 +1,6 @@
 interface ClearDataOptions { }
 interface ClearDataTypes { }
-interface Callback {
-    (): void;
-}
+
 interface ResultCallback {
     (results: any[]): void;
 }
@@ -20,20 +18,20 @@ interface Webview extends HTMLElement {
     back(): void;
     canGoBack(): boolean;
     canGoForward(): boolean;
-    clearData(options: ClearDataOptions, types: ClearDataTypes, func?: Callback): void;
+    clearData(options: ClearDataOptions, types: ClearDataTypes, func?: EmptyCallback): void;
     executeScript(details: InjectDetails, func?: ResultCallback): void;
-    find(searchText: string, options: FindOptions, func?: Callback): void;
+    find(searchText: string, options: FindOptions, func?: EmptyCallback): void;
     forward(): void;
     getProcessId(): number;
     getUserAgent(): string;
-    getZoom(func: Callback);
-    go(relativeIndex: number, func?: Callback): void;
-    insertCSS(details: InjectDetails, func?: Callback): void;
+    getZoom(func: EmptyCallback);
+    go(relativeIndex: number, func?: EmptyCallback): void;
+    insertCSS(details: InjectDetails, func?: EmptyCallback): void;
     isUserAgentOverridden(): void;
     print(): void;
     reload(): void;
     setUserAgentOverride(userAgent: string);
-    setZoom(zoomFactor: number, func?: Callback): void;
+    setZoom(zoomFactor: number, func?: EmptyCallback): void;
     stop(): void;
     stopFinding(action: StopFindAction): void;
     loadDataWithBaseUrl(dataUrl: string, baseUrl: string, virtualUrl: string);
