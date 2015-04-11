@@ -51,6 +51,57 @@ module TwitchPotato {
             });
         }
 
+        /** Determines if the application loading. */
+        IsLoading(): boolean {
+            return $('#loading').is('visible');
+        }
+
+        /** Shows or hides the loading window. */
+        ShowLoading(showOrHide: boolean): void {
+            $('#loading').toggle(showOrHide);
+        }
+
+        /** Toggles the Guide. */
+        ToggleGuide(hidePlayer = false): void {
+            if ($('#guide:visible').length !== 0) {
+                /** Ensure there is a stream playing. */
+                if (this.Player.isPlaying !== true) return;
+
+                /** Show the players fullscreen. */
+                this.Player.UpdateLayout(true);
+
+                /** Fade the guide out. */
+                $('#guide').fadeOut();
+
+                /** Pause the guide channel preview. */
+                Application.Guide.PausePreview();
+
+                /** Show the chat window. */
+                Application.Chat.ToggleChat(true, true);
+
+                /** Register the player inputs. */
+                this.Input.RegisterInputs(InputType.Player);
+            } else {
+                if (hidePlayer !== true)
+                    /** Show the players in the guide. */
+                    this.Player.UpdateLayout(true, PlayersLayout.Guide);
+                else
+                    $('#players').fadeOut();
+
+                /** Show the chat window. */
+                Application.Chat.ToggleChat(false, true);
+
+                /** Play the guide channel preview. */
+                Application.Guide.PlayPreview();
+
+                /** Fade the guide in. */
+                $('#guide').fadeIn();
+
+                /** Register the guide inputs. */
+                this.Input.RegisterInputs(InputType.Guide);
+            }
+        }
+
         /** Callback triggered after a keypress event. */
         private OnInput(input: Input): void {
             switch (input.input) {
@@ -103,47 +154,6 @@ module TwitchPotato {
                     /** Hide the webviews */
                     $('#webviews #login').fadeOut();
                 }
-
-                /** Register the guide inputs. */
-                this.Input.RegisterInputs(InputType.Guide);
-            }
-        }
-
-        /** Toggles the Guide. */
-        ToggleGuide(hidePlayer = false): void {
-            if ($('#guide:visible').length !== 0) {
-                /** Ensure there is a stream playing. */
-                if (this.Player.isPlaying !== true) return;
-
-                /** Show the players fullscreen. */
-                this.Player.UpdateLayout(true);
-
-                /** Fade the guide out. */
-                $('#guide').fadeOut();
-
-                /** Pause the guide channel preview. */
-                Application.Guide.PausePreview();
-
-                /** Show the chat window. */
-                Application.Chat.ToggleChat(true, true);
-
-                /** Register the player inputs. */
-                this.Input.RegisterInputs(InputType.Player);
-            } else {
-                if (hidePlayer !== true)
-                    /** Show the players in the guide. */
-                    this.Player.UpdateLayout(true, PlayersLayout.Guide);
-                else
-                    $('#players').fadeOut();
-
-                /** Show the chat window. */
-                Application.Chat.ToggleChat(false, true);
-
-                /** Play the guide channel preview. */
-                Application.Guide.PlayPreview();
-
-                /** Fade the guide in. */
-                $('#guide').fadeIn();
 
                 /** Register the guide inputs. */
                 this.Input.RegisterInputs(InputType.Guide);

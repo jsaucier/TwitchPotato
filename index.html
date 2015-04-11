@@ -53,29 +53,35 @@
                     <div class="list" style="display: flex;">
                         <div class="head">Settings</div>
                         <div class="items">
-                            <div class="item setting" type="login">
+                            <div class="item" type="login" setting="true">
                                 <div class="setting">Log into Twitch</div>
                             </div>
-                            <div class="item setting" type="add-user" input="true">
+                            <div class="item" type="add-user" setting="true" input="true">
                                 <div class="setting">Add Twitch User</div>
                             </div>
-                            <div class="item setting" type="follow-channel" input="true">
-                                <div class="setting">Follow Channel</div>
-                            </div>
-                            <div class="item setting" type="follow-game" input="true">
-                                <div class="setting">Follow Game</div>
-                            </div>
-                            <div class="item setting" type="reset">
+                            <div class="item" type="reset" setting="true">
                                 <div class="setting">Reset Settings</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="info"></div>
-            <div id="preview">
-                <webview autosize="on" partition="persist:twitchpotato" src="http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true"></webview>
+            <div id="info">
+                <div class="head"></div>
+                <div class="left"></div>
+                <div class="center">
+                    <div class="top"></div>
+                    <div class="middle">
+                        <div class="content"></div>
+                        <div id="preview">
+                            <webview autosize="on" partition="persist:twitchpotato" src="http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true"></webview>
+                        </div>
+                    </div>
+                    <div class="bottom"></div>
+                </div>
+                <div class="right"></div>
             </div>
+
             <div class="right"></div>
         </div>
 
@@ -83,6 +89,7 @@
             <div class="quality">Quality</div>
             <div class="selector" layout="0"></div>
         </div>
+
         <div id="chat">
             <webview type="chat" autosize="on" partition="persist:twitchpotato"></webview>
         </div>
@@ -99,7 +106,6 @@
         </div>
 
         <div id="notification" class="window">
-            <!-- <div class="head">Twitch Potato</div> -->
             <div class="main">
                 <ul>
                     <div class="streamer"></div>
@@ -109,17 +115,23 @@
             </div>
         </div>
 
+        <div id="loading">
+            <div class="background"></div>
+            <div class="image">
+                <img src="images/loading.gif" />
+            </div>
+        </div>
+
         <div id="error" class="window">
-            <!-- <div class="head">Twitch Potato</div> -->
             <div class="main">
                 <div class="error"></div>
             </div>
         </div>
 
-        <script id="notify-template" type="text/template">
+        <script id="notify-item-template" type="text/template">
             <li>
-                <div class="streamer"></div>
-                <div class="game"></div>
+                <div class="streamer">{0}</div>
+                <div class="game">{1}</div>
                 <div class="clear"></div>
             </li>
         </script>
@@ -171,93 +183,17 @@
         </script>
 
         <script id="add-user-setting-template" type="text/template">
-            <div class="head import">
-                <div>Add Twitch User</div>
-                <div class="sub-head">
-                    <div>Add a Twitch user to view and edit followed channels and games.</div>
-                </div>
+            <div>Add Twitch User</div>
+            <div class="sub-head">
+                <div>Add a Twitch user to view and edit followed channels and games.</div>
             </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content">
-                        <div class="input">
-                            Twitch Account
-                            <br/>
-                            <input id="add-user" />
-                        </div>
-                    </div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
-        </script>
-
-        <script id="follow-channel-setting-template" type="text/template">
-            <div class="head import">
-                <div>Follow Twitch Channel</div>
-                <div class="sub-head">
-                    <div>Enter a Twitch channel below to follow it.</div>
-                </div>
-            </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content">
-                        <div class="input">
-                            Twitch Channel
-                            <br/>
-                            <input id="follow-channel" />
-                        </div>
-                    </div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
-        </script>
-
-        <script id="follow-game-setting-template" type="text/template">
-            <div class="head import">
-                <div>Follow Twitch Game</div>
-                <div class="sub-head">
-                    <div>Enter a Twitch game below to follow it.</div>
-                </div>
-            </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content">
-                        <div class="input">
-                            Twitch Game
-                            <br/>
-                            <input id="follow-game" />
-                        </div>
-                    </div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
         </script>
 
         <script id="reset-setting-template" type="text/template">
-            <div class="head reset">
-                <div>Reset Settings</div>
-                <div class="sub-head">
-                    <div>Reset all of Twitch Potato's settings.</div>
-                </div>
+            <div>Reset Settings</div>
+            <div class="sub-head">
+                <div>Reset all of Twitch Potato's settings.</div>
             </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content reset"></div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
         </script>
 
         <script id="login-setting-template" type="text/template">
@@ -280,69 +216,30 @@
             <div class="right"></div>
         </script>
 
-        <script id="channel-template" type="text/template">
-            <div class="head">
-                <div class="streamer">{Streamer}</div>
-                <div class="sub-head">
-                    <div class="title">{Title}</div>
-                    <div class="game">{Game}</div>
-                    <div class="viewers">{999} viewers</div>
-                </div>
+        <script id="channel-info-head-template" type="text/template">
+            <div class="streamer">{0}</div>
+            <div class="sub-head">
+                <div class="title">{1}</div>
+                <div class="game">{2}</div>
+                <div class="viewers">{3} viewers</div>
             </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content">
-                        <div class="preview"></div>
-                    </div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
         </script>
 
-        <script id="game-template" type="text/template">
-            <div class="head">
-                <div class="game">{Game}</div>
-                <div class="sub-head">
-                    <div class="channels">{99} channels</div>
-                    <div class="viewers">{99,999} viewers</div>
-                </div>
+        <script id="game-info-head-template" type="text/template">
+            <div class="game">{0}</div>
+            <div class="sub-head">
+                <div class="channels">{1} channels</div>
+                <div class="viewers">{2} viewers</div>
             </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content">
-                        <div class="boxart"></div>
-                    </div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
         </script>
 
-        <script id="video-template" type="text/template">
-            <div class="head">
-                <div class="video"></div>
-                <div class="sub-head">
-                    <div class="streamer"></div>
-                    <div class="length"></div>
-                    <div class="views"></div>
-                </div>
+        <script id="video-info-head-template" type="text/template">
+            <div class="video">{0}</div>
+            <div class="sub-head">
+                <div class="streamer">{1}</div>
+                <div class="length">{2}</div>
+                <div class="views">{3} views</div>
             </div>
-            <div class="left"></div>
-            <div class="center">
-                <div class="top"></div>
-                <div class="middle">
-                    <div class="content">
-                        <div class="preview"></div>
-                    </div>
-                </div>
-                <div class="bottom"></div>
-            </div>
-            <div class="right"></div>
         </script>
 
         <script id="player-template" type="text/template">
