@@ -41,7 +41,7 @@ Number.prototype.formatSeconds = function(): string {
     var secDiv = minDiv % 60;
     var secs = Math.ceil(secDiv);
 
-    return ((hours > 0) ? hours + ':' : '') + ':' +
+    return ((hours > 0) ? hours + ':' : '') +
         ((mins < 10) ? '0' + mins : mins) + ':' +
         ((secs < 10) ? '0' + secs : secs)
 }
