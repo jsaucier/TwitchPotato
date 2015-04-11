@@ -116,11 +116,11 @@ module TwitchPotato {
              * the item. */
             if (users.length === 1) {
                 if (this.followType === FollowType.Channel) {
-                    Application.Twitch.FollowChannel(users[0], this.key, this.unfollow);
+                    Application.Twitch.Follow(users[0], this.key, FollowType.Channel, this.unfollow);
                     return true;
                 }
                 else if (this.followType === FollowType.Game) {
-                    Application.Twitch.FollowGame(users[0], this.key, this.unfollow);
+                    Application.Twitch.Follow(users[0], this.key, FollowType.Game, this.unfollow);
                     return true;
                 }
             }
@@ -170,9 +170,9 @@ module TwitchPotato {
 
             if (user !== 'cancel') {
                 if (this.followType === FollowType.Channel)
-                    Application.Twitch.FollowChannel(user, this.key, this.unfollow);
+                    Application.Twitch.Follow(user, this.key, FollowType.Channel, this.unfollow);
                 else if (this.followType === FollowType.Game)
-                    Application.Twitch.FollowGame(user, this.key, this.unfollow);
+                    Application.Twitch.Follow(user, this.key, FollowType.Game, this.unfollow);
 
                 /** Close the menu. */
                 this.Close(true);
