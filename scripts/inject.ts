@@ -1,16 +1,16 @@
-// Some of these are documented, some aren't.
+/** Some of these are documented, some aren't. */
 //
-// Twitch player methods:
-// playVideo, pauseVideo, mute, unmute, fullscreen, loadStream, loadVideo,
-// setQuality, videoSeek, setOauthToken, onlineStatus, isPaused, setVideoTime,
-// adFeedbackDone, setTrackingData, showChromecast, setChromecastConnected,
-// togglePlayPause
+/** Twitch player methods: */
+/** playVideo, pauseVideo, mute, unmute, fullscreen, loadStream, loadVideo, */
+/** setQuality, videoSeek, setOauthToken, onlineStatus, isPaused, setVideoTime, */
+/** adFeedbackDone, setTrackingData, showChromecast, setChromecastConnected, */
+/** togglePlayPause */
 //
-// Twitch player events:
-// chromecastMediaSet, chromecastSessionRequested, chromecastVolumeUpdated,
-// pauseChromecastSession, offline, online, adCompanionRendered, loginRequest,
-// mouseScroll, playerInit, popout, tosViolation, viewerCount, streamLoaded,
-// videoLoaded, seekFailed, videoLoading, videoPlaying, adFeedbackShow
+/** Twitch player events: */
+/** chromecastMediaSet, chromecastSessionRequested, chromecastVolumeUpdated, */
+/** pauseChromecastSession, offline, online, adCompanionRendered, loginRequest, */
+/** mouseScroll, playerInit, popout, tosViolation, viewerCount, streamLoaded, */
+/** videoLoaded, seekFailed, videoLoading, videoPlaying, adFeedbackShow */
 
 interface PlayerWindow extends Window {
     pc: PlayerController;
@@ -51,15 +51,15 @@ class PlayerController {
         this.player = <PlayerEmbed>$('embed')[0];
     }
 
-    public OnMessage(event): void {
-        /* Save this message to reply with. */
+    OnMessage(event): void {
+        /** Save this message to reply with. */
         if (this.message === undefined) this.message = event;
 
-        /* Parse the json message. */
+        /** Parse the json message. */
         var json = JSON.parse(event.data);
         var params = json.params;
 
-        /* Call the method based on the message. */
+        /** Call the method based on the message. */
         switch (json.method) {
             case 'LoadVideo':
                 this.LoadVideo(params.channel, params.isVideo);
@@ -90,7 +90,7 @@ class PlayerController {
                 break;
 
             case 'LoadPreview':
-                this.LoadPreview(params.channel);
+                this.LoadPreview(params.channel, params.isVideo);
                 break;
 
             default:
@@ -127,10 +127,15 @@ class PlayerController {
         this.player.setQuality(quality);
     }
 
-    private LoadPreview(channel: string): void {
-        console.log(channel);
-        /** Load the channel. */
-        this.player.loadStream(channel);
+    private LoadPreview(channel: string, isVideo: boolean): void {
+        /** Set the quality to low. */
+        this.SetQuality('Low');
+
+        /** Determine if a stream or video is loaded. */
+        if (isVideo === true)
+            this.player.loadVideo(channel);
+        else
+            this.player.loadStream(channel);
 
         /** Ensure the video is playing. */
         this.player.playVideo();
@@ -139,30 +144,30 @@ class PlayerController {
         this.SetMute(true);
 
         /** Set the quality to low. */
-        this.SetQuality('Low');
+        setTimeout(() => this.SetQuality('Low'), 5000);
 
         /** Enter fullscreen mode. */
-        this.SetFullscreen(FullscreenAction.Enter);
+        //this.SetFullscreen(FullscreenAction.Enter);
     }
 
     private LoadVideo(channel: string, isVideo: boolean): void {
-        /* Determine if a stream or video is loaded. */
+        /** Determine if a stream or video is loaded. */
         if (isVideo === true)
             this.player.loadVideo(channel);
         else
             this.player.loadStream(channel);
 
-        /* Ensure the video is playing. */
+        /** Ensure the video is playing. */
         this.player.playVideo();
 
-        /* Ensure the video is not muted. */
+        /** Ensure the video is not muted. */
         this.SetMute(false);
 
-        /* Enter fullscreen mode. */
+        /** Enter fullscreen mode. */
         this.SetFullscreen(FullscreenAction.Enter);
     }
 
-    public SetFullscreen(action: FullscreenAction): void {
+    SetFullscreen(action: FullscreenAction): void {
         if (action !== FullscreenAction.Enter)
             this.player.height = '100%';
 
@@ -179,18 +184,18 @@ class PlayerController {
         var heightStr = height + '';
 
         if (action === FullscreenAction.Refresh) {
-            /* Set the player to fullscreen. */
+            /** Set the player to fullscreen. */
             if (this.isFullscreen) heightStr = (height + 32) + 'px';
         } else {
             if (action === FullscreenAction.Toggle)
                 action = (this.isFullscreen === true) ? FullscreenAction.Exit : FullscreenAction.Enter;
 
             if (action === FullscreenAction.Enter && this.isFullscreen === false) {
-                // Toggle player to fullscreen.
+                /** Toggle player to fullscreen. */
                 heightStr = (height + 32) + 'px';
                 this.isFullscreen = true;
             } else if (action === FullscreenAction.Exit) {
-                // Toggle player to normal.
+                /** Toggle player to normal. */
                 heightStr = "100%";
                 this.isFullscreen = false;
             }
