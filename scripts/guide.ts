@@ -154,6 +154,9 @@ module TwitchPotato {
             /** Display the notification window. */
             Application.Notification.Notify();
 
+            /** Hide the loading screen. */
+            Application.ShowLoading(false);
+
             this.firstUpdate = false;
         }
 
