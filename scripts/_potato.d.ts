@@ -1,5 +1,13 @@
 declare var chrome: any;
 
+interface EmptyCallback {
+    (): void;
+}
+
+interface TwitchUserCallback {
+    (user: TwitchUser): void
+}
+
 interface XMLHttpRequest {
     contentType: string;
 }
@@ -23,11 +31,17 @@ interface Dictionary<T> {
 }
 
 interface Channel {
+    /** The channel's name. */
     name: string;
+    /** The display name of the channel. */
     streamer: string;
+    /** The current title of the channel. */
     title: string;
+    /** The number of channel viewers. */
     viewers: number;
+    /** The current game of the channel. */
     game: string;
+    /** The preview image of the channel. */
     preview: string;
 }
 
@@ -69,6 +83,7 @@ interface StorageData {
 }
 
 interface TwitchUser {
-    name: string,
-    token: string
+    id: string;
+    name: string;
+    token: string;
 }

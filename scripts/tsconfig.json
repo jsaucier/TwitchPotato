@@ -16,6 +16,7 @@
         "!./node_modules/**/*.ts"
     ],
     "files": [
+        "./_potato.d.ts",
         "./chat.ts",
         "./chrome.d.ts",
         "./contextmenu.ts",
@@ -26,7 +27,6 @@
         "./jquery.d.ts",
         "./notification.ts",
         "./player.ts",
-        "./potato.d.ts",
         "./potato.ts",
         "./storage.ts",
         "./twitch.ts",
