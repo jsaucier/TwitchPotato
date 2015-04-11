@@ -100,6 +100,9 @@ module TwitchPotato {
 
         /** Handles the input events and routes the actions. */
         private OnInputEvent(event) {
+            /** Inputs are disabled when the loading window is shown. */
+            if (Application.IsLoading()) return;
+
             if (this.registered[event.keyCode] !== undefined) {
                 /** Iterate all inputs registered to the keycode. */
                 $.each(this.registered[event.keyCode], (index: number, input: Input) => {

@@ -57,7 +57,7 @@ module TwitchPotato {
         }
 
         /** Shows or hides the loading window. */
-        ShowLoading(showOrHide: boolean): void {
+        Loading(showOrHide: boolean): void {
             $('#loading').toggle(showOrHide);
         }
 
@@ -228,6 +228,9 @@ module TwitchPotato {
 
         /** Add a stored user. */
         private AddUser(user: string): void {
+            /** Show the loading window. */
+            Application.Loading(true);
+
             /** Get the stored users. */
             var users = this.Storage.GetUsers();
 
