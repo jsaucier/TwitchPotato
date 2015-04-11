@@ -104,6 +104,10 @@ module TwitchPotato {
 
         /** Resets the application settings. */
         Reset(): void {
+            /** Show the loading screen. */
+            this.Loading(true);
+
+            /** Reset the settings. */
             this.Twitch.ClearPartitions(undefined, () => {
                 this.Storage.LoadDefaults(() => {
                     this.Guide.Refresh();
@@ -135,60 +139,72 @@ module TwitchPotato {
 
         /** Callback triggered after a keypress event. */
         private OnInput(input: Input): void {
+            if (this.HandleWebviewInput(input) !== true)
+                switch (input.input) {
+                    case Inputs.Global_Exit:
+                        /** Exit the applications. */
+                        window.close();
+                        break;
+                    case Inputs.Global_ToggleGuide:
+                        this.ToggleGuide();
+                        break;
+                    case Inputs.Global_ZoomIn:
+                        this.UpdateZoom(ZoomType.In);
+                        break;
+                    case Inputs.Global_ZoomOut:
+                        this.UpdateZoom(ZoomType.Out);
+                        break;
+                    case Inputs.Global_ZoomReset:
+                        this.UpdateZoom(ZoomType.Reset);
+                        break;
+                    case Inputs.Global_SaveSetting:
+                        this.SaveSetting();
+                        break;
+                    default:
+                        break;
+                }
+        }
+
+        /** Handle the webview input */
+        private HandleWebviewInput(input: Input): boolean {
+            if ($('#webviews webview:visible').length === 0) return false;
+
             switch (input.input) {
                 case Inputs.Global_Exit:
-                    this.GlobalExit();
+                    this.CloseWebview();
                     break;
-                case Inputs.Global_ToggleGuide:
-                    this.ToggleGuide();
-                    break;
-                case Inputs.Global_ZoomIn:
-                    this.UpdateZoom(ZoomType.In);
-                    break;
-                case Inputs.Global_ZoomOut:
-                    this.UpdateZoom(ZoomType.Out);
-                    break;
-                case Inputs.Global_ZoomReset:
-                    this.UpdateZoom(ZoomType.Reset);
-                    break;
-                case Inputs.Global_SaveSetting:
-                    this.SaveSetting();
-                    break;
-                default:
-                    break;
+                default: break;
             }
+
+            return true;
         }
 
         /** Handles the GlobalExit keydown event. */
-        private GlobalExit(): void {
-            if ($('#webviews webview:visible').length === 0) {
-                window.close();
-            } else {
-                if ($('#webviews #users webview:visible').length !== 0) {
-                    var webview = $('#webviews #users webview:eq(0)');
-                    var username = webview.attr('username');
+        private CloseWebview(): void {
+            if ($('#webviews #users webview:visible').length !== 0) {
+                var webview = $('#webviews #users webview:eq(0)');
+                var username = webview.attr('username');
 
-                    /** Remove the username from the list. */
-                    this.Storage.RemoveUser(username);
+                /** Remove the username from the list. */
+                this.Storage.RemoveUser(username);
 
-                    this.Twitch.ClearPartitions(username, () => {
-                        /** Check to see if no webviews exist. */
-                        if ($('#webviews #users webview').length === 0) {
-                            /** Hide the container. */
-                            $('#webviews #users').fadeOut();
-                        }
-                    });
-                } else if ($('#webviews #login webview:visible').length !== 0) {
-                    /** Load a blank window to stop the video playing. */
-                    $('#webviews #login webview').attr('src', 'about:blank');
+                this.Twitch.ClearPartitions(username, () => {
+                    /** Check to see if no webviews exist. */
+                    if ($('#webviews #users webview').length === 0) {
+                        /** Hide the container. */
+                        $('#webviews #users').fadeOut();
+                    }
+                });
+            } else if ($('#webviews #login webview:visible').length !== 0) {
+                /** Load a blank window to stop the video playing. */
+                $('#webviews #login webview').attr('src', 'about:blank');
 
-                    /** Hide the webviews */
-                    $('#webviews #login').fadeOut();
-                }
-
-                /** Register the guide inputs. */
-                this.Input.RegisterInputs(InputType.Guide);
+                /** Hide the webviews */
+                $('#webviews #login').fadeOut();
             }
+
+            /** Register the guide inputs. */
+            this.Input.RegisterInputs(InputType.Guide);
         }
 
         /** Updates the zoom level. */
