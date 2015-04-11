@@ -13,7 +13,7 @@ See the Apache Version 2.0 License for specific language governing permissions
 and limitations under the License.
 ***************************************************************************** */
 
-// Typing for the jQuery library, version 1.10
+/** Typing for the jQuery library, version 1.10 */
 
 /*
     Interface for the AJAX setting that will configure the AJAX request
@@ -168,7 +168,7 @@ interface JQueryTransport {
 */
 interface JQueryStatic {
 
-    // AJAX
+    /** AJAX */
     ajax(settings: JQueryAjaxSettings): JQueryXHR;
     ajax(url: string, settings: JQueryAjaxSettings): JQueryXHR;
 
@@ -187,10 +187,10 @@ interface JQueryStatic {
 
     post(url: string, data?: any, success?: any, dataType?: any): JQueryXHR;
 
-    // Callbacks
+    /** Callbacks */
     Callbacks(flags: any): JQueryCallback;
 
-    // Core
+    /** Core */
     holdReady(hold: boolean): any;
 
     (): JQuery;
@@ -205,12 +205,12 @@ interface JQueryStatic {
 
     when(...deferreds: any[]): JQueryPromise;
 
-    // CSS
+    /** CSS */
     css(e: any, propertyName: string, value?: any): any;
     css(e: any, propertyName: any, value?: any): any;
     cssHooks: { [key: string]: any; };
 
-    // Data
+    /** Data */
     data(element: Element, key: string, value: any): Object;
 
     dequeue(element: Element, queueName?: string): any;
@@ -222,29 +222,29 @@ interface JQueryStatic {
 
     removeData(element: Element, name?: string): JQuery;
 
-    // Deferred
+    /** Deferred */
     Deferred(beforeStart?: (deferred: JQueryDeferred) => any): JQueryDeferred;
 
-    // Effects
+    /** Effects */
     fx: { tick: () => void; interval: number; stop: () => void; speeds: { slow: number; fast: number; }; off: boolean; step: any; };
 
-    // Events
+    /** Events */
     proxy(func: Function, context: any): any;
     proxy(context: any, name: string): any;
 
-    // Internals
+    /** Internals */
     error(message: any): void;
 
-    // Miscellaneous
+    /** Miscellaneous */
     expr: any;
     fn: any;  //TODO: Decide how we want to type this
     isReady: boolean;
 
-    // Properties
+    /** Properties */
     browser: JQueryBrowserInfo;
     support: JQuerySupport;
 
-    // Utilities
+    /** Utilities */
     contains(container: Element, contained: Element): boolean;
 
     each(collection: any, callback: (indexInArray: any, valueOfElement: any) => any): any;
@@ -295,7 +295,7 @@ interface JQueryStatic {
     The jQuery instance members
 */
 interface JQuery {
-    // AJAX
+    /** AJAX */
     ajaxComplete(handler: any): JQuery;
     ajaxError(handler: (evt: any, xhr: any, opts: any) => any): JQuery;
     ajaxSend(handler: (evt: any, xhr: any, opts: any) => any): JQuery;
@@ -306,7 +306,7 @@ interface JQuery {
     serialize(): string;
     serializeArray(): any[];
 
-    // Attributes
+    /** Attributes */
     addClass(classNames: string): JQuery;
     addClass(func: (index: any, currentClass: any) => JQuery): JQuery;
 
@@ -341,7 +341,7 @@ interface JQuery {
     val(value: string): JQuery;
     val(func: (index: any, value: any) => any): JQuery;
 
-    // CSS
+    /** CSS */
     css(propertyNames: any[]): string;
     css(propertyName: string): string;
     css(propertyName: string, value: any): JQuery;
@@ -373,7 +373,7 @@ interface JQuery {
     width(value: number): JQuery;
     width(func: (index: any, height: any) => any): JQuery;
 
-    // Data
+    /** Data */
     clearQueue(queueName?: string): JQuery;
 
     data(key: string, value: any): JQuery;
@@ -388,10 +388,10 @@ interface JQuery {
 
     removeData(nameOrList?: any): JQuery;
 
-    // Deferred
+    /** Deferred */
     promise(type?: any, target?: any): JQueryPromise;
 
-    // Effects
+    /** Effects */
     animate(properties: any, options: { duration?: any; easing?: string; complete?: Function; step?: Function; queue?: boolean; specialEasing?: any; }): JQuery;
     animate(properties: any, duration?: any, easing?: "linear", complete?: Function): JQuery;
     animate(properties: any, duration?: any, easing?: "swing", complete?: Function): JQuery;
@@ -455,7 +455,7 @@ interface JQuery {
     toggle(duration?: any, easing?: string, complete?: Function): JQuery;
     toggle(duration?: any, complete?: Function): JQuery;
 
-    // Events
+    /** Events */
     bind(eventType: string, preventBubble: boolean): JQuery;
     bind(eventType: string, eventData?: any, handler?: (eventObject: JQueryEventObject) => any): JQuery;
     bind(eventType: string, eventData: any, preventBubble: boolean): JQuery;
@@ -557,13 +557,13 @@ interface JQuery {
     undelegate(selector: any, events: any): JQuery;
     undelegate(namespace: string): JQuery;
 
-    // Internals
+    /** Internals */
     context: Element;
     jquery: string;
     pushStack(elements: any[]): JQuery;
     pushStack(elements: any[], name: any, arguments: any): JQuery;
 
-    // Manipulation
+    /** Manipulation */
     after(func: (index: any) => any): JQuery;
     after(...content: any[]): JQuery;
 
@@ -610,18 +610,18 @@ interface JQuery {
     wrapInner(func: (index: any) => any): JQuery;
     wrapInner(wrappingElement: any): JQuery;
 
-    // Miscellaneous
+    /** Miscellaneous */
     each(func: (index: any, elem: Element) => any): JQuery;
 
     get(index?: number): any;
 
     index(selectorOrElement?: any): number;
 
-    // Properties
+    /** Properties */
     length: number;
     [x: number]: HTMLElement;
 
-    // Traversing
+    /** Traversing */
     add(selector: string, context?: any): JQuery;
     add(html: string): JQuery;
     add(obj: JQuery): JQuery;
