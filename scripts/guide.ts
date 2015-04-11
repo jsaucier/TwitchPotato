@@ -122,21 +122,11 @@ module TwitchPotato {
 
                 switch (type) {
                     case 'login':
-                        /** Register only Global inputs. */
-                        Application.Input.RegisterInputs(InputType.Global);
-                        $('#login webview').attr('src', 'http://twitch.tv/login');
-                        $('#login').fadeIn();
-                        break;
+                        /** Log into Twitch.tv. */
+                        return Application.Login();
                     case 'reset':
-                        /* Clear the webview partition data.
-                         * Resest the storage values.
-                         * Refresh the guide. */
-                        Application.Twitch.ClearPartitions(undefined, () => {
-                            Application.Storage.LoadDefaults(() => {
-                                this.Refresh();
-                            });
-                        });
-                        break;
+                        /** Reset the application settings. */
+                        return Application.Reset();
                 }
             }
         }

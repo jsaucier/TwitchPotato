@@ -102,6 +102,37 @@ module TwitchPotato {
             }
         }
 
+        /** Resets the application settings. */
+        Reset(): void {
+            this.Twitch.ClearPartitions(undefined, () => {
+                this.Storage.LoadDefaults(() => {
+                    this.Guide.Refresh();
+                });
+            });
+        }
+
+        /** Log into Twitch.tv */
+        Login(): void {
+            /** Register only Global inputs. */
+            Application.Input.RegisterInputs(InputType.Global);
+
+            /** Get the login webvew. */
+            var webview = <Webview>$('#login webview')[0];
+
+            webview.addEventListener('contentload', () => {
+                /** Insert the script and execute the code. */
+                webview.focus();
+                webview.executeScript({ file: 'js/jquery-2.1.1.min.js' });
+                webview.executeScript({ code: '$("#login").focus();' });
+            });
+
+            /** Navigate to the Twitch.tv login page. */
+            $(webview).attr('src', 'http://twitch.tv/login');
+
+            /** Show the webview. */
+            $('#login').fadeIn();
+        }
+
         /** Callback triggered after a keypress event. */
         private OnInput(input: Input): void {
             switch (input.input) {
