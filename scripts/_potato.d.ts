@@ -5,7 +5,11 @@ interface EmptyCallback {
 }
 
 interface TwitchUserCallback {
-    (user: TwitchUser): void
+    (user: TwitchUser): void;
+}
+
+interface WebviewCallback {
+    (webview: Webview): void;
 }
 
 interface XMLHttpRequest {
