@@ -124,7 +124,7 @@ module TwitchPotato {
             webview.addEventListener('contentload', () => {
                 /** Insert the script and execute the code. */
                 webview.focus();
-                webview.executeScript({ file: 'js/jquery-2.1.1.min.js' });
+                webview.executeScript({ file: 'js/vendor/jquery.min.js' });
                 webview.executeScript({ code: '$("#login").focus();' });
             });
 

@@ -628,7 +628,7 @@ module TwitchPotato {
 
             this.preview.addEventListener('loadcommit', () => {
                 /** Inject the script files. */
-                this.preview.executeScript({ file: 'js/jquery-2.1.1.min.js' });
+                this.preview.executeScript({ file: 'js/vendor/jquery.min.js' });
                 this.preview.executeScript({ file: 'js/inject.js' });
 
                 /** Hook the console message event. */

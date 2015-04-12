@@ -157,7 +157,7 @@ module TwitchPotato {
                 /** Catch load events. */
                 player.webview.addEventListener('loadcommit', () => {
                     /** Inject the script files. */
-                    player.webview.executeScript({ file: 'js/jquery-2.1.1.min.js' });
+                    player.webview.executeScript({ file: 'js/vendor/jquery.min.js' });
                     player.webview.executeScript({ file: 'js/inject.js' });
 
                     /** Hook the console message event. */

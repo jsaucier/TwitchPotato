@@ -124,17 +124,14 @@ module TwitchPotato {
             this.onAuthorizedCallback = callback;
 
             /** Get the webview for the user. */
-            var webview = this.GetWebview(user, true, (webview) => {
-                console.log('init');
-                this.InitializeWebView(user);
-            });
+            var webview = this.GetWebview(user, true, (webview) => this.InitializeWebView(user));
 
             /** Register an event for when the webview has finished loading. */
-            // webview.addEventListener('did-start-loading', () =>
-            //     this.InitializeWebView(user));
+            webview.addEventListener('dcontentload', () =>
+                this.InitializeWebView(user));
 
             /** Hook the console message event. */
-            webview.addEventListener('console-message', (e) =>
+            webview.addEventListener('consolemessage', (e) =>
                 ConsoleMessage(e));
         }
 
@@ -398,16 +395,12 @@ module TwitchPotato {
 
                 /** Add the webview to the document. */
                 $('#users').append(html);
-                $('#users').show();
 
                 /** Get the newly created webview for the user. */
                 webview = <Webview>$('#users webview[username="{0}"]'.format(user))[0];
-                console.log(webview);
-                // webview.reload();
 
                 /** Content loaded event listener. */
-                webview.addEventListener('did-start-loading', () => {
-                    console.log('asd');
+                webview.addEventListener('contentload', () => {
                     if (typeof (callback) === 'function')
                         /** Fire the callback. */
                         callback(webview);
@@ -477,7 +470,7 @@ module TwitchPotato {
 
                     /** Insert the script and execute the code. */
                     webview.focus();
-                    webview.executeScript({ file: 'js/jquery-2.1.1.min.js' });
+                    webview.executeScript({ file: 'js/vendor/jquery.min.js' });
                     webview.executeScript({ code: '$("#login").val("{0}")'.format(user) });
                     webview.executeScript({ code: '$("#password").focus();' });
                 } else {
@@ -488,9 +481,7 @@ module TwitchPotato {
                     };
 
                     /** Post the data to the remote webview. */
-                    //webview.contentWindow.postMessage(JSON.stringify(data), '*');
-                    //webview.send('Init', user, TwitchHandler.clientId, TwitchHandler.scope);
-                    //webview.executeScript('window.potato.onInit', user, TwitchHandler.clientId, TwitchHandler.scope);
+                    webview.contentWindow.postMessage(JSON.stringify(data), '*');
                 }
             });
         }

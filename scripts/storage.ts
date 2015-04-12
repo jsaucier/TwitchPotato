@@ -50,8 +50,6 @@ module TwitchPotato {
                     /** Set the settings. */
                     this.settings = store.settings;
 
-                this.LoadDefaults(callback);
-
                 /** Fire the callback. */
                 if (typeof (callback) === 'function')
                     callback();
