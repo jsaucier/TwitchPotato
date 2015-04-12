@@ -1,20 +1,17 @@
 /** Some of these are documented, some aren't. */
-//
-/** Twitch player methods: */
-/** playVideo, pauseVideo, mute, unmute, fullscreen, loadStream, loadVideo, */
-/** setQuality, videoSeek, setOauthToken, onlineStatus, isPaused, setVideoTime, */
-/** adFeedbackDone, setTrackingData, showChromecast, setChromecastConnected, */
-/** togglePlayPause */
-//
-/** Twitch player events: */
-/** chromecastMediaSet, chromecastSessionRequested, chromecastVolumeUpdated, */
-/** pauseChromecastSession, offline, online, adCompanionRendered, loginRequest, */
-/** mouseScroll, playerInit, popout, tosViolation, viewerCount, streamLoaded, */
-/** videoLoaded, seekFailed, videoLoading, videoPlaying, adFeedbackShow */
 
+/* Twitch player methods: */
+/* playVideo, pauseVideo, mute, unmute, fullscreen, loadStream, loadVideo, */
+/* setQuality, videoSeek, setOauthToken, onlineStatus, isPaused, setVideoTime, */
+/* adFeedbackDone, setTrackingData, showChromecast, setChromecastConnected, */
+/* togglePlayPause */
+
+/* Twitch player events: */
+/* chromecastMediaSet, chromecastSessionRequested, chromecastVolumeUpdated, */
+/* pauseChromecastSession, offline, online, adCompanionRendered, loginRequest, */
+/* mouseScroll, playerInit, popout, tosViolation, viewerCount, streamLoaded, */
+/* videoLoaded, seekFailed, videoLoading, videoPlaying, adFeedbackShow */
 module TwitchPotato {
-    "use strict";
-
     export class PlayerHandler {
         private players: Dictionary<Player> = {};
         private layout: PlayerLayout = PlayerLayout.Default;

@@ -1,6 +1,4 @@
 module TwitchPotato {
-    "use strict";
-
     export class InputHandler {
         private registered: Dictionary<Input[]> = {};
         private inputs: Dictionary<Input> = {};

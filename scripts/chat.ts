@@ -1,6 +1,4 @@
 module TwitchPotato {
-    "use strict";
-
     export class ChatHandler {
         /** Gets or sets if the webview has been loaded. */
         private isLoaded = false;
@@ -36,7 +34,7 @@ module TwitchPotato {
             this.isShown = false;
         }
 
-        /** Shows the chat window for the specified channel. */
+        /** Shows the chat for the selected channel. */
         Show(channel: string): void {
             /** Toggle visibility. */
             if (this.isShown === true) {

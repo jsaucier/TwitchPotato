@@ -1,6 +1,4 @@
 module TwitchPotato {
-    "use strict";
-
     export class TwitchHandler {
         private users: Dictionary<TwitchUser> = {};
         private menus: Dictionary<any> = {};
@@ -126,14 +124,17 @@ module TwitchPotato {
             this.onAuthorizedCallback = callback;
 
             /** Get the webview for the user. */
-            var webview = this.GetWebview(user, true);
+            var webview = this.GetWebview(user, true, (webview) => {
+                console.log('init');
+                this.InitializeWebView(user);
+            });
 
             /** Register an event for when the webview has finished loading. */
-            webview.addEventListener('contentload', () =>
-                this.InitializeWebView(user));
+            // webview.addEventListener('did-start-loading', () =>
+            //     this.InitializeWebView(user));
 
             /** Hook the console message event. */
-            webview.addEventListener('consolemessage', (e) =>
+            webview.addEventListener('console-message', (e) =>
                 ConsoleMessage(e));
         }
 
@@ -397,12 +398,16 @@ module TwitchPotato {
 
                 /** Add the webview to the document. */
                 $('#users').append(html);
+                $('#users').show();
 
                 /** Get the newly created webview for the user. */
                 webview = <Webview>$('#users webview[username="{0}"]'.format(user))[0];
+                console.log(webview);
+                // webview.reload();
 
                 /** Content loaded event listener. */
-                webview.addEventListener('contentload', () => {
+                webview.addEventListener('did-start-loading', () => {
+                    console.log('asd');
                     if (typeof (callback) === 'function')
                         /** Fire the callback. */
                         callback(webview);
@@ -483,7 +488,9 @@ module TwitchPotato {
                     };
 
                     /** Post the data to the remote webview. */
-                    webview.contentWindow.postMessage(JSON.stringify(data), '*');
+                    //webview.contentWindow.postMessage(JSON.stringify(data), '*');
+                    //webview.send('Init', user, TwitchHandler.clientId, TwitchHandler.scope);
+                    //webview.executeScript('window.potato.onInit', user, TwitchHandler.clientId, TwitchHandler.scope);
                 }
             });
         }
