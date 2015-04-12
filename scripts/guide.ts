@@ -1,6 +1,4 @@
 module TwitchPotato {
-    "use strict";
-
     export class GuideHandler {
         private objectURLs: string[] = [];
         private firstUpdate = true;
@@ -17,6 +15,8 @@ module TwitchPotato {
         FollowMenu = new FollowMenuHandler();
 
         constructor() {
+            window.addEventListener('resize', () => this.UpdateMenuSize());
+
             /** Initialize the preview player. */
             this.InitializePreview();
 
