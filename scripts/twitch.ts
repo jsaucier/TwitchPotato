@@ -197,9 +197,9 @@ module TwitchPotato {
             else {
                 for (var u in this.users) {
                     /** Only unfollow the game if the user is following the game. */
-                    if ((unfollow === true && followed[follow][user] !== undefined) ||
+                    if ((unfollow === true && followed[follow][u] !== undefined) ||
                         unfollow !== true)
-                        users[user] = this.users[user];
+                        users[u] = this.users[u];
                 }
             }
 
@@ -212,14 +212,14 @@ module TwitchPotato {
                 $.ajax({
                     url: url,
                     type: (unfollow === true) ? 'DELETE' : 'PUT',
-                    error: (xhr, status, error) => this.AuthenticationError(xhr, status, error, user),
+                    error: (xhr, status, error) => this.AuthenticationError(xhr, status, error, u),
                     success: () => {
                         if (type === FollowType.Channel)
                             /** Update the followed channels after a delay. */
-                            setTimeout(() => this.GetFollowedChannels(user), 500);
+                            setTimeout(() => this.GetFollowedChannels(u), 500);
                         else
                             /** Update the followed channels after a delay. */
-                            setTimeout(() => this.GetFollowedGames(user), 500);
+                            setTimeout(() => this.GetFollowedGames(u), 500);
                     }
                 });
             }
@@ -488,6 +488,13 @@ module TwitchPotato {
 
         /** Callback function when the remote webview has authorized the user. */
         private OnAuthorized(user: string, token: string): void {
+            /** Create a temporary user. */
+            this.users[user] = {
+                id: user,
+                name: user,
+                token: token
+            }
+
             /** Remove the webview. */
             this.RemoveWebview(user);
 
