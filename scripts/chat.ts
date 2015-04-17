@@ -13,31 +13,28 @@ module TwitchPotato {
         private webview = <Webview>$('#chat webview')[0];
 
         /** The #chat jQuery element */
-        private chat = $('#chat');
+        private chat = '#chat';
 
-        /** Gets or sets if the chat is currently shown. */
-        private isShown = false;
+        /** Gets or sets the current chat channel. */
+        private channel: string;
 
         constructor() { }
 
         /** Gets whether the chat is shown. */
         IsShown(): boolean {
-            return this.isShown;
+            return $(this.chat).is('visible') || false;
         }
 
         /** Closes the chat window. */
         Close() {
             /** Fades the chat window out. */
-            this.chat.fadeOut();
-
-            /** Set the chat as no longer shown. */
-            this.isShown = false;
+            $(this.chat).fadeOut();
         }
 
         /** Shows the chat for the selected channel. */
         Show(channel: string): void {
             /** Toggle visibility. */
-            if (this.isShown === true) {
+            if (this.IsShown() === true) {
                 /** Update the player layout so that it is not in dock layout.  */
                 Application.Player.UpdateLayout(false, PlayersLayout.Full);
                 /** Close the chat window. */
@@ -45,8 +42,7 @@ module TwitchPotato {
             }
 
             /** Ensure the channel is not already loaded. */
-            if (channel !== undefined &&
-                channel !== this.chat.attr('channel')) {
+            if (channel && channel !== this.channel) {
                 /** Set the webview source. */
                 $(this.webview).attr('src', this.chatUrl.format(channel));
 
@@ -62,8 +58,8 @@ module TwitchPotato {
                     this.UpdateZoom();
                 });
 
-                /** Set the channel attribute. */
-                this.chat.attr('channel', channel);
+                /** Set the current chat channel. */
+                this.channel = channel;
             }
 
             /** Update the chat layout. */
@@ -71,12 +67,11 @@ module TwitchPotato {
         }
 
         /** Toggles the chat visibility on guide toggle. */
-        ToggleChat(show, isGuideToggle): void {
-            if (show === true &&
-                this.isShown === true)
+        ToggleChat(show: boolean, isGuideToggle: boolean): void {
+            if (show === true && this.IsShown() === true)
                 this.UpdateLayout(undefined, isGuideToggle);
             else
-                this.chat.hide();
+                $(this.chat).hide();
         }
 
         /** Updates the font-size of the chat based on the zoom level. */
@@ -93,7 +88,7 @@ module TwitchPotato {
         /** Updates the layout for the chat window. */
         UpdateLayout(direction = Direction.Down, isGuideToggle = false): void {
             /** Ensure the chat is actually shown. */
-            if (this.isShown !== true) return;
+            if (this.IsShown() !== true) return;
 
             /** Determine the new layout. */
             if (direction === Direction.Left) this.layout--;
@@ -109,7 +104,7 @@ module TwitchPotato {
                 this.layout = 0;
 
             /** Update the chat layout. */
-            this.chat
+            $(this.chat)
                 .hide()
                 .attr('layout', this.layout)
                 .fadeIn();
@@ -122,8 +117,6 @@ module TwitchPotato {
                 else
                     Application.Player.UpdateLayout(true, PlayersLayout.Full);
             }
-
-            this.isShown = true;
         }
     }
 }
