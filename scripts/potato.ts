@@ -61,12 +61,15 @@ module TwitchPotato {
 
         /** Toggles the Guide. */
         ToggleGuide(hidePlayer = false): void {
-            if ($('#guide:visible').length !== 0) {
+            if ($('#guide').is(':visible') === true) {
+                /** Register the player inputs. */
+                this.Input.RegisterInputs(InputType.Player);
+
                 /** Ensure there is a stream playing. */
-                if (this.Player.isPlaying !== true) return;
+                if (this.Player.isPlaying === false) return;
 
                 /** Show the players fullscreen. */
-                this.Player.UpdateLayout(true);
+                //this.Player.UpdateLayout(true);
 
                 /** Fade the guide out. */
                 $('#guide').fadeOut();
@@ -75,11 +78,11 @@ module TwitchPotato {
                 Application.Guide.PausePreview();
 
                 /** Show the chat window. */
-                Application.Chat.ToggleChat(true, true);
-
-                /** Register the player inputs. */
-                this.Input.RegisterInputs(InputType.Player);
+                Application.Chat.Guide(true);
             } else {
+                /** Register the guide inputs. */
+                this.Input.RegisterInputs(InputType.Guide);
+
                 if (hidePlayer !== true)
                     /** Show the players in the guide. */
                     this.Player.UpdateLayout(true, PlayersLayout.Guide);
@@ -87,16 +90,13 @@ module TwitchPotato {
                     $('#players').fadeOut();
 
                 /** Show the chat window. */
-                Application.Chat.ToggleChat(false, true);
+                Application.Chat.Guide(false);
 
                 /** Play the guide channel preview. */
                 Application.Guide.PlayPreview();
 
                 /** Fade the guide in. */
                 $('#guide').fadeIn();
-
-                /** Register the guide inputs. */
-                this.Input.RegisterInputs(InputType.Guide);
             }
         }
 

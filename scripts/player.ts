@@ -101,7 +101,7 @@ module TwitchPotato {
                     break;
 
                 case Inputs.Player_ToggleChat:
-                    Application.Chat.Show(this.GetPlayerByNumber(0).channel);
+                    Application.Chat.Toggle(this.GetPlayerByNumber(0).channel);
                     break;
 
                 case Inputs.Player_ChatLayoutNext:
