@@ -330,14 +330,23 @@ module TwitchPotato {
             /** Load the channel item template */
             var html = $($('#channel-item-template').html());
 
+            /** Gets whether the channel is followed. */
+            var followed = Application.Twitch.IsFollowing(FollowType.Channel, channel.name);
+
+            /** Gets whether the game is hidden. */
+            var hidden = Application.Storage.IsGameHidden(channel.game);
+
+            /** Ignore hidden games that are not followed. */
+            if (followed === false && hidden === true && menu !== MenuType.Game) return;
+
             /** Set the attributes. */
             html.attr({
                 'key': key,
                 'game': channel.game,
                 'menu': menu,
                 'viewers': channel.viewers,
-                'followed': Application.Twitch.IsFollowing(FollowType.Channel, channel.name),
-                'followed-game': Application.Twitch.IsFollowing(FollowType.Game, channel.game)
+                'followed': followed,
+                'followed-game': Application.Twitch.IsFollowing(FollowType.Game, channel.game),
             });
 
             /** Set the item streamer. */
@@ -358,11 +367,12 @@ module TwitchPotato {
 
             /** Set the attributes. */
             html.attr({
-                key: key,
-                menu: MenuType.Games,
-                viewers: game.viewers,
-                channels: game.channels,
-                followed: Application.Twitch.IsFollowing(FollowType.Game, game.name)
+                'key': key,
+                'menu': MenuType.Games,
+                'viewers': game.viewers,
+                'channels': game.channels,
+                'followed': Application.Twitch.IsFollowing(FollowType.Game, game.name),
+                'hide': Application.Storage.IsGameHidden(game.name)
             });
 
             /** Set the item text. */
@@ -380,8 +390,8 @@ module TwitchPotato {
 
             /** Set the attributes. */
             html.attr({
-                key: key,
-                menu: MenuType.Videos,
+                'key': key,
+                'menu': MenuType.Videos,
             });
 
             /** Set the video streamer. */

@@ -203,6 +203,12 @@ body {
                         &:first-child {
                             margin-top: 0;
                         }
+                        &[hide="true"] {
+                            background-color: #666;
+                            &[type="channel"] {
+                                display: none;
+                            }
+                        }
                         &[followed="true"] {
                             background-color: #444;
                         }
@@ -291,6 +297,14 @@ body {
                 padding: 5px;
                 font-size: 0.9em;
                 color: #fff;
+                &[type="hide-game"] {
+                    &:after {
+                        content: "Unhide Game";
+                    }
+                    &[hide="true"]:after {
+                        content: "Hide Game";
+                    }
+                }
                 &.selected {
                     background-color: @purple;
                 }

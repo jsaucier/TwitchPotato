@@ -3,6 +3,13 @@ module TwitchPotato {
         /** The storage settings. */
         private settings: StorageData;
 
+        /** Default settings. */
+        private defaults: StorageData = {
+            zoom: 100,
+            hidden: [],
+            users: []
+        }
+
         /** Gets the stored users. */
         GetUsers(): string[] {
             return this.settings.users;
@@ -40,15 +47,36 @@ module TwitchPotato {
             return this.settings.zoom;
         }
 
+        /** Hide a game. */
+        HideGame(game: string, hide?: boolean): void {
+
+            /** The index of the game in the hidden array. */
+            var index = this.settings.hidden.indexOf(game.toLowerCase())
+
+            if (hide === undefined)
+                /** Determine if we need to show or hide the game. */
+                hide = (index === -1) ? true : false;
+
+            if (hide === true)
+                /** Add the game to the hidden array. */
+                this.settings.hidden.push(game.toLowerCase());
+            else
+                /** Remove the game from the hidden array. */
+                this.settings.hidden.splice(index, 1);
+
+            this.Save();
+        }
+
+        /** Gets whether the game is hidden. */
+        IsGameHidden(game: string): boolean {
+            return (this.settings.hidden.indexOf(game.toLowerCase()) !== -1)
+        }
+
         /** Loads the settings. */
         Load(callback?: EmptyCallback): void {
             chrome.storage.local.get(null, (store) => {
                 /** Set the default value. */
-                if ($.isEmptyObject(store) === true)
-                    this.LoadDefaults(callback);
-                else
-                    /** Set the settings. */
-                    this.settings = store.settings;
+                this.settings = <StorageData>$.extend(true, store.settings, this.defaults);
 
                 /** Fire the callback. */
                 if (typeof (callback) === 'function')
@@ -58,10 +86,7 @@ module TwitchPotato {
 
         /** Loads the default settings. */
         LoadDefaults(callback?: EmptyCallback): void {
-            this.settings = {
-                zoom: 100,
-                users: []
-            };
+            this.settings = this.defaults;
 
             this.ClearStorage(callback);
         }

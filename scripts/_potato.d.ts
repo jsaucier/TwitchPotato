@@ -83,6 +83,7 @@ interface Player {
 
 interface StorageData {
     users: string[];
+    hidden: string[];
     zoom: number;
 }
 

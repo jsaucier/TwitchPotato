@@ -105,20 +105,34 @@ module TwitchPotato {
 
                 if (Object.keys(users).length === Object.keys(gameFollowers).length)
                     html.find('[type="follow-game"]').remove();
+
+
             }
             else if (menu === MenuType.Games) {
                 gameFollowers = Application.Twitch.GetFollowing(FollowType.Game, key);
-
-                console.log(
-                    'users:', Object.keys(users).length,
-                    'following:', Object.keys(gameFollowers).length);
 
                 if (Object.keys(gameFollowers).length === 0)
                     html.find('[type="unfollow-game"]').remove();
 
                 if (Object.keys(users).length === Object.keys(gameFollowers).length)
                     html.find('[type="follow-game"]').remove();
+
+                if (Application.Storage.IsGameHidden(key) === true)
+                    html.find(['type="hide-game"]']).remove();
+                else
+                    html.find(['type="unhide-game"]']).remove();
             }
+
+            /** Gets if the game is hidden. */
+            var hidden = Application.Storage.IsGameHidden(game || key) || false;
+
+            /** Create the hide-game menu item. */
+            this.AddMenuItem(html, {
+                'type': 'hide-game',
+                'hide': !hidden,
+                'key': game || key,
+
+            });
 
             /** Select the appropriate button. */
             html.find('.button:eq(0)').addClass('selected');
@@ -128,6 +142,14 @@ module TwitchPotato {
 
             /** Scroll the guide menu. */
             Application.Guide.UpdateMenuScroll();
+        }
+
+        /** Create a context menu item. */
+        private AddMenuItem(html: JQuery, attrs: { [key: string]: any }): JQuery {
+            return $('<div>')
+                .addClass('button')
+                .attr(attrs)
+                .insertBefore(html.find('[type="cancel"]'));
         }
 
         /** Update the selected button. */
@@ -217,6 +239,16 @@ module TwitchPotato {
                     /** Unfollow the game. */
                     Application.Guide.FollowMenu.Show(item, FollowType.Game, true);
                     return;
+                case 'hide-game':
+                    /** Determines if the game should be hidden. */
+                    var hide = ($(this.selectedButton).attr('hide') === 'true') ? true : false;
+                    /** The game to hide or unhide. */
+                    var game = $(this.selectedButton).attr('key');
+                    /** Hide the game. */
+                    Application.Storage.HideGame(game, hide);
+                    /** Refresh the guide. */
+                    Application.Guide.Refresh();
+                    break;
                 default:
                     break;
             }

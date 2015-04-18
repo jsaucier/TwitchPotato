@@ -1,2 +1,3 @@
 Fix issue with multiple twitch logins, the webview doesnt show for the second ones.
 Fix top games api not loading when there is a lot of games.
+Update context menu to create menu items like hide games.
