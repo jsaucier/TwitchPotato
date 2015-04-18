@@ -124,15 +124,7 @@ module TwitchPotato {
             this.onAuthorizedCallback = callback;
 
             /** Get the webview for the user. */
-            var webview = this.GetWebview(user, true, (webview) => this.InitializeWebView(user));
-
-            /** Register an event for when the webview has finished loading. */
-            webview.addEventListener('dcontentload', () =>
-                this.InitializeWebView(user));
-
-            /** Hook the console message event. */
-            webview.addEventListener('consolemessage', (e) =>
-                ConsoleMessage(e));
+            this.GetWebview(user, true, (webview) => this.InitializeWebView(user, webview));
         }
 
         /** Removes and clears all of the partition data. */
@@ -384,7 +376,7 @@ module TwitchPotato {
 
 
         /** Gets the webview for the user. */
-        private GetWebview(user: string, create: boolean, callback?: WebviewCallback): Webview {
+        private GetWebview(user: string, create: boolean, callback?: WebviewCallback): void {
             /** The webview for the user. */
             var webview = <Webview>$('#users webview[username="{0}"]'.format(user))[0]
 
@@ -405,13 +397,16 @@ module TwitchPotato {
                         /** Fire the callback. */
                         callback(webview);
                 });
+
+                /** Hook the console message event. */
+                webview.addEventListener('consolemessage', (e) =>
+                    ConsoleMessage(e));
             }
             else {
                 if (typeof (callback) === 'function')
                     /** Fire the callback. */
                     callback(webview);
             }
-            return webview;
         }
 
         /** Removes the webview for the user. */
@@ -449,41 +444,40 @@ module TwitchPotato {
         }
 
         /** Initializes the webview and loads the remote url to handle the oauth redirect. */
-        private InitializeWebView(user): void {
+        private InitializeWebView(user: string, webview: Webview): void {
             /** Hide all of the webviews. */
             $('#users webview').hide();
+            $('#users').hide();
 
-            this.GetWebview(user, true, (webview) => {
-                if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/') === 0) {
-                    /** Set the title head. */
-                    $('#users .head').text('Enter the login for {0} | Press ESC to Cancel'.format(this.users[user].name));
+            if ($(webview).attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/') === 0) {
+                /** Set the title head. */
+                $('#users .head').text('Enter the login for {0} | Press ESC to Cancel'.format(this.users[user].name));
 
-                    /** Show the webview. */
-                    $(webview).show();
-                    $('#users').fadeIn();
+                /** Show the webview. */
+                $(webview).show();
+                $('#users').fadeIn();
 
-                    /** Hide the loading window. */
-                    Application.Loading(false);
+                /** Hide the loading window. */
+                Application.Loading(false);
 
-                    /** Register the global inputs. */
-                    Application.Input.RegisterInputs(InputType.Global);
+                /** Register the global inputs. */
+                Application.Input.RegisterInputs(InputType.Global);
 
-                    /** Insert the script and execute the code. */
-                    webview.focus();
-                    webview.executeScript({ file: 'js/vendor/jquery.min.js' });
-                    webview.executeScript({ code: '$("#login").val("{0}")'.format(user) });
-                    webview.executeScript({ code: '$("#password").focus();' });
-                } else {
-                    /** Data to post. */
-                    var data = {
-                        method: 'Init',
-                        args: [user, TwitchHandler.clientId, TwitchHandler.scope]
-                    };
+                /** Insert the script and execute the code. */
+                webview.focus();
+                webview.executeScript({ file: 'js/vendor/jquery.min.js' });
+                webview.executeScript({ code: '$("#login").val("{0}")'.format(user) });
+                webview.executeScript({ code: '$("#password").focus();' });
+            } else {
+                /** Data to post. */
+                var data = {
+                    method: 'Init',
+                    args: [user, TwitchHandler.clientId, TwitchHandler.scope]
+                };
 
-                    /** Post the data to the remote webview. */
-                    webview.contentWindow.postMessage(JSON.stringify(data), '*');
-                }
-            });
+                /** Post the data to the remote webview. */
+                webview.contentWindow.postMessage(JSON.stringify(data), '*');
+            }
         }
 
         /** Callback function when the remote webview has authorized the user. */
