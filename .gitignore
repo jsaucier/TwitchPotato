@@ -1,5 +1,5 @@
+*.bat
 *.zip
 *.map
-css/*.*
-js/*.*
-*.bat
+css/
+js/
