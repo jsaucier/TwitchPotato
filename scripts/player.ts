@@ -13,7 +13,7 @@
 /* videoLoaded, seekFailed, videoLoading, videoPlaying, adFeedbackShow */
 module TwitchPotato {
     export class PlayerHandler {
-        private players: Dictionary<Player> = {};
+        private players: IDictionary<IPlayer> = {};
         private layout: PlayerLayout = PlayerLayout.Default;
         private selectionTimer: number;
         private qualityTimer: number;
@@ -33,7 +33,7 @@ module TwitchPotato {
         /*
          * Callback for player input events.
          */
-        OnInput(input: Input): void {
+        OnInput(input: IInput): void {
             switch (input.input) {
 
                 case Inputs.Player_SelectPrevious:
@@ -117,7 +117,7 @@ module TwitchPotato {
             }
         }
 
-        GetPlayerByNumber(number: number): Player {
+        GetPlayerByNumber(number: number): IPlayer {
             for (var i in this.players) {
                 var player = this.players[i];
 
@@ -128,12 +128,12 @@ module TwitchPotato {
             return undefined;
         }
 
-        GetSelectedPlayer(): Player {
+        GetSelectedPlayer(): IPlayer {
             var number = parseInt($('#players .player.selected').attr('number')) || 0;
             return this.GetPlayerByNumber(number);
         }
 
-        private Create(channel: string, isVideo = false, isFake = false): Player {
+        private Create(channel: string, isVideo = false, isFake = false): IPlayer {
             /** Check to see if a player for this id exists. */
             var player = this.players[channel];
 
@@ -272,7 +272,7 @@ module TwitchPotato {
             }
         }
 
-        private Remove(player: Player): void {
+        private Remove(player: IPlayer): void {
             /** Get the number of the removed player. */
             var num = player.number;
 
@@ -423,7 +423,7 @@ module TwitchPotato {
             });
         }
 
-        private Load(player: Player, channel: string, isVideo = false, isFake = false): void {
+        private Load(player: IPlayer, channel: string, isVideo = false, isFake = false): void {
             /** Set the flashback value. */
             player.flashback = (player.channel !== channel) ? player.channel : player.flashback;
 
@@ -442,7 +442,7 @@ module TwitchPotato {
             this.PostMessage(player, 'Mute');
         }
 
-        private PostMessage(player: Player, method: string, params = {}): void {
+        private PostMessage(player: IPlayer, method: string, params = {}): void {
             /** Make sure the contentwindow is loaded. */
             if (player.webview.contentWindow === undefined) {
                 setTimeout(() => this.PostMessage(player, method, params), 100);

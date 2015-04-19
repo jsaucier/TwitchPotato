@@ -16,7 +16,7 @@ module TwitchPotato {
         private key: string;
 
         /** Handles input for the context menu. */
-        HandleInput(input: Input, item: JQuery): boolean {
+        HandleInput(input: IInput, item: JQuery): boolean {
             /** Follow menu is not visible. */
             if ($(this.followMenu).length === 0) return false;
 

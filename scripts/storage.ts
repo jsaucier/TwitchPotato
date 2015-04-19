@@ -1,10 +1,10 @@
 module TwitchPotato {
     export class StorageHandler {
         /** The storage settings. */
-        private settings: StorageData;
+        private settings: IStorage;
 
         /** Default settings. */
-        private defaults: StorageData = {
+        private defaults: IStorage = {
             zoom: 100,
             hidden: [],
             users: []
@@ -73,10 +73,10 @@ module TwitchPotato {
         }
 
         /** Loads the settings. */
-        Load(callback?: EmptyCallback): void {
+        Load(callback?: IEmptyCallback): void {
             chrome.storage.local.get(null, (store) => {
                 /** Set the default value. */
-                this.settings = <StorageData>$.extend(
+                this.settings = <IStorage>$.extend(
                     true,
                     this.settings,
                     this.defaults,
@@ -89,21 +89,21 @@ module TwitchPotato {
         }
 
         /** Loads the default settings. */
-        LoadDefaults(callback?: EmptyCallback): void {
+        LoadDefaults(callback?: IEmptyCallback): void {
             this.settings = this.defaults;
 
             this.ClearStorage(callback);
         }
 
         /** Savaes the settings. */
-        Save(callback?: EmptyCallback): void {
+        Save(callback?: IEmptyCallback): void {
             chrome.storage.local.set({
                 settings: this.settings
             }, callback);
         }
 
         /** Clears the storage. */
-        private ClearStorage(callback?: EmptyCallback): void {
+        private ClearStorage(callback?: IEmptyCallback): void {
             chrome.storage.local.clear(() => {
                 chrome.storage.sync.clear(() => {
                     Application.ShowError('The settings have been reset to defaults.')

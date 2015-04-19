@@ -1,7 +1,7 @@
 module TwitchPotato {
     export class NotificationHandler {
         /** Dictionary containing the online channels and the current game for the channel. */
-        private online: Dictionary<string> = {};
+        private online: IDictionary<string> = {};
 
         /**
          * Displays a notification of the new channels that are online or when
@@ -15,10 +15,10 @@ module TwitchPotato {
             /**
              * Temporary dictionary containing the online channels and
              * the current game for the channel. */
-            var online: Dictionary<string> = {};
+            var online: IDictionary<string> = {};
 
             /** The data for the channel. */
-            var channel: Channel;
+            var channel: IChannel;
 
             for (var o in followed) {
                 /** Update the channel. */
@@ -50,7 +50,7 @@ module TwitchPotato {
             }
 
             /** Temporary dictionary containing only online channels.  */
-            var cleanup: Dictionary<string> = {};
+            var cleanup: IDictionary<string> = {};
 
             /** Iterate the online channels and ensure they are truely online. */
             for (var i in this.online)

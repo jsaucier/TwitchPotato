@@ -1,14 +1,14 @@
 declare var chrome: any;
 
-interface EmptyCallback {
+interface IEmptyCallback {
     (): void;
 }
 
-interface TwitchUserCallback {
-    (user: TwitchUser): void;
+interface ITwitchUserCallback {
+    (user: ITwitchUser): void;
 }
 
-interface WebviewCallback {
+interface IWebviewCallback {
     (webview: Webview): void;
 }
 
@@ -26,15 +26,15 @@ interface JQuery {
 }
 
 
-interface Dictionary<T> {
+interface IDictionary<T> {
     [key: string]: T;
 }
 
-interface Dictionary<T> {
+interface IDictionary<T> {
     [key: number]: T;
 }
 
-interface Channel {
+interface IChannel {
     /** The channel's name. */
     name: string;
     /** The display name of the channel. */
@@ -49,14 +49,14 @@ interface Channel {
     preview: string;
 }
 
-interface Game {
+interface IGame {
     name: string;
     channels: number;
     viewers: number;
     boxArt: string;
 }
 
-interface Video {
+interface IVideo {
     name: string;
     streamer: string;
     title: string;
@@ -65,7 +65,7 @@ interface Video {
     preview: string;
 }
 
-interface Input {
+interface IInput {
     input: TwitchPotato.Inputs;
     type: TwitchPotato.InputType;
     name: string;
@@ -73,7 +73,7 @@ interface Input {
     code: number;
 }
 
-interface Player {
+interface IPlayer {
     channel: string;
     isLoaded: boolean;
     number: number;
@@ -81,13 +81,13 @@ interface Player {
     webview: Webview;
 }
 
-interface StorageData {
+interface IStorage {
     users: string[];
     hidden: string[];
     zoom: number;
 }
 
-interface TwitchUser {
+interface ITwitchUser {
     id: string;
     name: string;
     token: string;

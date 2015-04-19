@@ -1,12 +1,12 @@
 module TwitchPotato {
     export class TwitchHandler {
-        private users: Dictionary<TwitchUser> = {};
-        private menus: Dictionary<any> = {};
+        private users: IDictionary<ITwitchUser> = {};
+        private menus: IDictionary<any> = {};
 
         /** The last game searched. */
         private game: string;
-        private followed: Dictionary<Dictionary<Dictionary<boolean>>> = {};
-        private onAuthorizedCallback: TwitchUserCallback;
+        private followed: IDictionary<IDictionary<IDictionary<boolean>>> = {};
+        private onAuthorizedCallback: ITwitchUserCallback;
 
         constructor() {
             window.addEventListener('message', (event) => {
@@ -44,12 +44,12 @@ module TwitchPotato {
         }
 
         /** Gets the channel information. */
-        GetChannel(key: string): Channel {
+        GetChannel(key: string): IChannel {
             return this.menus[MenuType.Channels][key];
         }
 
         /** Gets the game information. */
-        GetGame(key: string): Game {
+        GetGame(key: string): IGame {
             return this.menus[MenuType.Games][key];
         }
 
@@ -88,7 +88,7 @@ module TwitchPotato {
         }
 
         /** Gets the user's twitch account information. */
-        GetTwitchUser(user: string, callback?: TwitchUserCallback): void {
+        GetTwitchUser(user: string, callback?: ITwitchUserCallback): void {
             $.ajax({
                 url: TwitchHandler.urls.user.format(user),
                 error: (xhr, status, error) => this.ShowError(xhr, status, error),
@@ -122,7 +122,7 @@ module TwitchPotato {
         }
 
         /** Creates a new webview to authorize and retrieve the oauth code. */
-        Authorize(user: string, callback?: TwitchUserCallback): void {
+        Authorize(user: string, callback?: ITwitchUserCallback): void {
             /** Set the callback. */
             this.onAuthorizedCallback = callback;
 
@@ -131,7 +131,7 @@ module TwitchPotato {
         }
 
         /** Removes and clears all of the partition data. */
-        ClearPartitions(username = undefined, callback?: TwitchUserCallback) {
+        ClearPartitions(username = undefined, callback?: ITwitchUserCallback) {
             /** String array containing the users' partition to clear. */
             var users = this.users;
 
@@ -186,7 +186,7 @@ module TwitchPotato {
             Application.Guide.SetUpdateType(UpdateType.Refresh);
 
             /** Array of users to follow the game. */
-            var users: Dictionary<TwitchUser> = {};
+            var users: IDictionary<ITwitchUser> = {};
 
             /** The followed games. */
             var followed = this.followed[type];
@@ -385,7 +385,7 @@ module TwitchPotato {
 
 
         /** Gets the webview for the user. */
-        private GetWebview(user: string, create: boolean, callback?: WebviewCallback): void {
+        private GetWebview(user: string, create: boolean, callback?: IWebviewCallback): void {
             /** The webview for the user. */
             var webview = <Webview>$('#users webview[username="{0}"]'.format(user))[0]
 
@@ -425,7 +425,7 @@ module TwitchPotato {
         }
 
         /** Clears the stored data for the webview's partition. */
-        private ClearData(user: string, webview: Webview, callback?: TwitchUserCallback): void {
+        private ClearData(user: string, webview: Webview, callback?: ITwitchUserCallback): void {
             /** The data types to clear. */
             var clearTypes = {
                 appcache: true,
@@ -590,7 +590,7 @@ module TwitchPotato {
                     data = data.stream;
 
                 /** Create the channel dictionary entry. */
-                var channel: Channel = {
+                var channel: IChannel = {
                     name: data.channel.name,
                     streamer: data.channel.display_name,
                     title: data.channel.status || '',

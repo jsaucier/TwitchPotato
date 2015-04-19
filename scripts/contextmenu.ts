@@ -6,7 +6,7 @@ module TwitchPotato {
         private selectedButton = '#guide #context-menu .button.selected';
 
         /** Handles input for the context menu. */
-        HandleInput(input: Input, item: JQuery): boolean {
+        HandleInput(input: IInput, item: JQuery): boolean {
             /** Context menu is not visible, return false. */
             if ($(this.contextMenu).length === 0) return false;
 

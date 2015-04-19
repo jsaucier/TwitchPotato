@@ -136,7 +136,7 @@ module TwitchPotato {
         }
 
         /** Callback triggered after a keypress event. */
-        private OnInput(input: Input): void {
+        private OnInput(input: IInput): void {
             if (this.HandleWebviewInput(input) !== true)
                 switch (input.input) {
                     case Inputs.Global_Exit:
@@ -164,7 +164,7 @@ module TwitchPotato {
         }
 
         /** Handle the webview input */
-        private HandleWebviewInput(input: Input): boolean {
+        private HandleWebviewInput(input: IInput): boolean {
             if ($('#webviews webview:visible').length === 0) return false;
 
             switch (input.input) {
@@ -280,11 +280,11 @@ module TwitchPotato {
             var users = this.Storage.GetUsers();
 
             /** Check to see if the user is a valid account. */
-            this.Twitch.GetTwitchUser(user, (twitchUser: TwitchUser) => {
+            this.Twitch.GetTwitchUser(user, (twitchUser: ITwitchUser) => {
                 /** Ensure we haven't already added the user. */
                 if (users.indexOf(user) === -1) {
                     /** Login to the twitch user. */
-                    this.Twitch.Authorize(user, (twitchUser: TwitchUser) => {
+                    this.Twitch.Authorize(user, (twitchUser: ITwitchUser) => {
                         /** Add the user to the settings. */
                         this.Storage.AddUser(user);
 

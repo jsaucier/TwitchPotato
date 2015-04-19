@@ -1,7 +1,7 @@
 module TwitchPotato {
     export class InputHandler {
-        private registered: Dictionary<Input[]> = {};
-        private inputs: Dictionary<Input> = {};
+        private registered: IDictionary<IInput[]> = {};
+        private inputs: IDictionary<IInput> = {};
 
         constructor() {
             this.AddInput(InputType.Global, Inputs.Global_Exit, 27, 'Exit');
@@ -84,10 +84,10 @@ module TwitchPotato {
         }
 
         /** Gets the inputs based on input type. */
-        private GetInputsByType(type: InputType): Dictionary<Input> {
-            var inputs: Dictionary<Input> = {};
+        private GetInputsByType(type: InputType): IDictionary<IInput> {
+            var inputs: IDictionary<IInput> = {};
 
-            $.each(this.inputs, (id: string, input: Input) => {
+            $.each(this.inputs, (id: string, input: IInput) => {
                 if (input.type === type) {
                     inputs[id] = input;
                 }
@@ -103,7 +103,7 @@ module TwitchPotato {
 
             if (this.registered[event.keyCode] !== undefined) {
                 /** Iterate all inputs registered to the keycode. */
-                $.each(this.registered[event.keyCode], (index: number, input: Input) => {
+                $.each(this.registered[event.keyCode], (index: number, input: IInput) => {
                     /** Get the context based on InputType. */
                     var context = (input.type === InputType.Global) ? Application : Application[InputType[input.type]];
 
