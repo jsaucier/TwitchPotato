@@ -1,6 +1,5 @@
-smalltile.png
-screenshot.png
-manifest*.zip
+*.zip
 *.map
 css/*.*
 js/*.*
+*.bat
