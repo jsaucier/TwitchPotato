@@ -76,10 +76,11 @@ module TwitchPotato {
         Load(callback?: EmptyCallback): void {
             chrome.storage.local.get(null, (store) => {
                 /** Set the default value. */
-                console.log('Store:', store.settings);
-                console.log('Defaults:', this.defaults);
-                this.settings = <StorageData>$.extend(true, this.settings, this.defaults, store.settings);
-                console.log('Settings:', this.settings);
+                this.settings = <StorageData>$.extend(
+                    true,
+                    this.settings,
+                    this.defaults,
+                    store.settings);
 
                 /** Fire the callback. */
                 if (typeof (callback) === 'function')
