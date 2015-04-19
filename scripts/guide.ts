@@ -206,13 +206,54 @@ module TwitchPotato {
         }
 
         private UpdateMenuItems(menu: MenuType, goto = false) {
-            /** Sort the items based on followed and viewers. */
-            var sortByFollowedAndViewers = (a: HTMLElement, b: HTMLElement): number => {
-                var aIsFollowed = $(a).attr('followed') === 'true';
-                var bIsFollowed = $(b).attr('followed') === 'true';
 
-                var aNumber = parseInt($(a).attr('viewers'));
-                var bNumber = parseInt($(b).attr('viewers'));
+            var sortChannels = (a: string, b: string): number => {
+                var aItem: Channel,
+                    bItem: Channel;
+
+                aItem = <Channel>Application.Twitch.GetMenu(menu)[a];
+                bItem = <Channel>Application.Twitch.GetMenu(menu)[b];
+
+                var aIsFollowed = Application.Twitch.IsFollowing(FollowType.Channel, a);
+                var bIsFollowed = Application.Twitch.IsFollowing(FollowType.Channel, b);
+
+                var aNumber = aItem.viewers;
+                var bNumber = bItem.viewers;
+
+                aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
+                bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
+
+                if (aNumber > bNumber)
+                    return -1;
+                if (aNumber < bNumber)
+                    return 1;
+
+                /** Viewers are equal, sort by streamer instead. */
+                if (aNumber === bNumber) {
+                    a += (aIsFollowed === true) ? 'aaaaaaaaa' : a;
+                    b += (bIsFollowed === true) ? 'aaaaaaaaa' : b;
+
+                    if (a < b)
+                        return -1;
+                    if (a > b)
+                        return 1;
+                }
+
+                return 0;
+            };
+
+            var sortGames = (a: string, b: string): number => {
+                var aItem: Game,
+                    bItem: Game;
+
+                aItem = <Game>Application.Twitch.GetMenu(menu)[a];
+                bItem = <Game>Application.Twitch.GetMenu(menu)[b];
+
+                var aIsFollowed = Application.Twitch.IsFollowing(FollowType.Game, a);
+                var bIsFollowed = Application.Twitch.IsFollowing(FollowType.Game, b);
+
+                var aNumber = aItem.viewers;
+                var bNumber = bItem.viewers;
 
                 aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
                 bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
@@ -224,8 +265,8 @@ module TwitchPotato {
 
                 /** Viewers are equal, sort by channels instead. */
                 if (aNumber === bNumber) {
-                    aNumber = parseInt($(a).attr('channels'));
-                    bNumber = parseInt($(b).attr('channels'));
+                    aNumber = aItem.channels;
+                    bNumber = bItem.channels;
 
                     aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
                     bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
@@ -237,15 +278,12 @@ module TwitchPotato {
 
                     /** Channels are equal, sort by key instead. */
                     if (aNumber === bNumber) {
-                        var aKey = $(a).attr('key').toLowerCase();
-                        var bKey = $(b).attr('key').toLowerCase();
+                        a += (aIsFollowed === true) ? 'aaaaaaaaa' : a;
+                        b += (bIsFollowed === true) ? 'aaaaaaaaa' : b;
 
-                        aKey += (aIsFollowed === true) ? 'aaaaaaaaa' : aKey;
-                        bKey += (bIsFollowed === true) ? 'aaaaaaaaa' : bKey;
-
-                        if (aKey < bKey)
+                        if (a < b)
                             return -1;
-                        if (aKey > bKey)
+                        if (a > b)
                             return 1;
                     }
                 }
@@ -267,7 +305,19 @@ module TwitchPotato {
 
             var showMenu = false;
 
-            for (var key in Application.Twitch.GetMenu(menu)) {
+            var menuItems: string[] = [];
+
+            for (var key in Application.Twitch.GetMenu(menu))
+                menuItems.push(key);
+
+            if (menu === MenuType.Channels || menu === MenuType.Game)
+                menuItems.sort(sortChannels);
+            else if (menu === MenuType.Games)
+                menuItems.sort(sortGames);
+
+            for (var i = 0; i < menuItems.length; i++) {
+                key = menuItems[i];
+
                 showMenu = true;
 
                 var html: JQuery;
@@ -295,12 +345,6 @@ module TwitchPotato {
             /** Reload the follow menu's previous state */
             if (followMenu !== undefined)
                 this.FollowMenu.Update($(this.selectedItem), followMenu);
-
-            /** Sort the items. */
-            if (menu !== MenuType.Videos)
-                jMenu.find('.items .item')
-                    .sort(sortByFollowedAndViewers)
-                    .appendTo(jMenu.find('.items'));
 
             if (showMenu === true)
                 /** Show the list. */
