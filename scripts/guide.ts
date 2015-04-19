@@ -277,11 +277,19 @@ module TwitchPotato {
                 var aIsFollowed = Application.Twitch.IsFollowing(FollowType.Game, a);
                 var bIsFollowed = Application.Twitch.IsFollowing(FollowType.Game, b);
 
+                var aIsHidden = Application.Storage.IsGameHidden(a);
+                var bIsHidden = Application.Storage.IsGameHidden(b);
+
                 var aNumber = aItem.viewers;
                 var bNumber = bItem.viewers;
 
-                aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
-                bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
+                if (aIsFollowed === true) aNumber += 999999999;
+                else if (aIsHidden === true) aNumber += 99999999;
+                if (bIsFollowed === true) bNumber += 999999999;
+                else if (bIsHidden === true) bNumber += 99999999;
+
+                // aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
+                // bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
 
                 if (aNumber > bNumber)
                     return -1;
@@ -293,8 +301,10 @@ module TwitchPotato {
                     aNumber = aItem.channels;
                     bNumber = bItem.channels;
 
-                    aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
-                    bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
+                    if (aIsFollowed === true) aNumber += 999999999;
+                    else if (aIsHidden === true) aNumber += 99999999;
+                    if (bIsFollowed === true) bNumber += 999999999;
+                    else if (bIsHidden === true) bNumber += 99999999;
 
                     if (aNumber > bNumber)
                         return -1;
