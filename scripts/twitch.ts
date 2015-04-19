@@ -2,6 +2,9 @@ module TwitchPotato {
     export class TwitchHandler {
         private users: Dictionary<TwitchUser> = {};
         private menus: Dictionary<any> = {};
+
+        /** The last game searched. */
+        private game: string;
         private followed: Dictionary<Dictionary<Dictionary<boolean>>> = {};
         private onAuthorizedCallback: TwitchUserCallback;
 
@@ -160,6 +163,12 @@ module TwitchPotato {
             /** Reset the top games dictionary. */
             this.menus[MenuType.Games] = {};
 
+            /** Resets the game dictionary. */
+            this.menus[MenuType.Game] = {};
+
+            if (this.game !== undefined)
+                this.GetGameChannels(this.game);
+
             this.GetChannels();
             this.GetGames();
 
@@ -261,8 +270,8 @@ module TwitchPotato {
 
         /** Gets the channels for a game. */
         GetGameChannels(game: string, getAll = true) {
-            /** Resets the game dictionary. */
-            this.menus[MenuType.Game] = {};
+            /** Save the game. */
+            this.game = game;
 
             /** Format the url for the ajax call. */
             var url = TwitchHandler.urls.game.format(game, TwitchHandler.limit);

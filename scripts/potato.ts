@@ -61,7 +61,7 @@ module TwitchPotato {
 
         /** Toggles the Guide. */
         ToggleGuide(hidePlayer = false): void {
-            if ($('#guide').is(':visible') === true) {
+            if (this.Guide.IsShown() === true) {
                 /** Register the player inputs. */
                 this.Input.RegisterInputs(InputType.Player);
 

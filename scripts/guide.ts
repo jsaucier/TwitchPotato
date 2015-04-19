@@ -5,11 +5,14 @@ module TwitchPotato {
         private refreshTimeout: number;
         private timeTimeout: number;
         private infoTimeout: number;
-        private selectedItem = '#guide .item.selected:visible';
+        private selectedItem = '#guide .list.selected .item.selected';
         private updateType: UpdateType = UpdateType.All;
         private preview: Webview;
         private previewChannel: string;
         private useImagePreview = true;
+
+        /** Determines if the guide is shown. */
+        private isShown = true;
 
         ContextMenu = new ContextMenuHandler();
         FollowMenu = new FollowMenuHandler();
@@ -74,6 +77,27 @@ module TwitchPotato {
         /** Sets the guide update type. */
         SetUpdateType(updateType: UpdateType): void {
             this.updateType = updateType;
+        }
+
+        /** Shows the guide. */
+        Toggle(showOrHide?: boolean, fade = true): void {
+            if (showOrHide === undefined)
+                showOrHide = !this.isShown;
+
+            if (fade === true)
+                if (showOrHide === true)
+                    $('#guide').fadeIn();
+                else
+                    $('#guide').fadeOut();
+            else
+                $('#guide').toggle(showOrHide);
+
+            this.isShown = showOrHide;
+        }
+
+        /** Gets if the guide is shown. */
+        IsShown(): boolean {
+            return this.isShown;
         }
 
         private OpenMenuItem(): void {
@@ -185,6 +209,7 @@ module TwitchPotato {
                 case UpdateType.All:
                     this.UpdateMenuItems(MenuType.Channels, this.firstUpdate);
                     this.UpdateMenuItems(MenuType.Games);
+                    this.UpdateMenuItems(MenuType.Game);
                     break;
                 case UpdateType.Channels:
                     this.UpdateMenuItems(MenuType.Channels);
@@ -456,9 +481,14 @@ module TwitchPotato {
         }
 
         UpdateMenu(direction: Direction, delay = 0): void {
-            if ($('#guide').is(':visible')) {
-                /** Update the selected menu head */
-                this.UpdateMenuList(direction);
+
+            if (this.isShown === true) {
+
+                if (direction === Direction.Left ||
+                    direction === Direction.Right ||
+                    direction === Direction.None)
+                    /** Update the selected menu head */
+                    this.UpdateMenuList(direction);
 
                 /** Update the selected menu item */
                 this.UpdateMenuItem(direction);
@@ -477,6 +507,7 @@ module TwitchPotato {
         }
 
         private UpdateMenuList(direction: Direction): void {
+
             /** Get the index of the selected menu list. */
             var index = $('#guide .lists .list:visible').index($('#guide .lists .list.selected'));
 
@@ -488,7 +519,7 @@ module TwitchPotato {
             $('#guide .lists .list.selected').removeClass('selected');
 
             /** Hide the current visible items list. */
-            $('#guide .lists .items:visible').hide();
+            $('#guide .lists .items').attr('hide', 'true').hide();
 
             /** Update the selected list index. */
             if (direction === Direction.Right && index < $('#guide .lists .head:visible').length - 1)
@@ -500,19 +531,19 @@ module TwitchPotato {
             $('#guide .lists .list:visible').eq(index).addClass('selected');
 
             /** Show the selected list items. */
-            $('#guide .lists .list.selected .items').show();
+            $('#guide .lists .list.selected .items').attr('hide', 'false').show();
         }
 
         private UpdateMenuItem(direction): void {
             /** Get the index of the selected menu item. */
-            var index = $('#guide .item:visible').index($('.item.selected:visible'));
+            var index = $('#guide .list.selected .item').index($('#guide .list.selected .item.selected'));
 
             /** Set default menu item. */
             if (index === -1)
                 index = 0;
 
             /** Remove selected menu item. */
-            $('#guide .item.selected:visible').removeClass('selected');
+            $('#guide .list.selected .item.selected').removeClass('selected');
 
             /** Update the selected item index. */
             if (direction === Direction.Down)
@@ -524,40 +555,42 @@ module TwitchPotato {
             else if (direction === Direction.JumpUp)
                 index -= 10;
 
+            var max = $('#guide .list.selected .items .item').length - 1;
+
             /** Constrain the index bounds. */
             if (index < 0)
                 index = 0;
-            else if (index > $('#guide .items .item:visible').length - 1)
-                index = $('#guide .items .item:visible').length - 1;
+            else if (index > max)
+                index = max
 
             /** Select the new menu item. */
-            $('#guide .item:visible').eq(index).addClass('selected');
+            $('#guide .list.selected .item').eq(index).addClass('selected');
         }
 
         UpdateMenuSize(): void {
             var height = $('#guide .lists').outerHeight(true);
 
-            $('#guide .lists .head:visible').each(function() {
+            $('#guide .lists .head[hide="false"]').each(function() {
                 height -= $(this).outerHeight(true);
             });
 
-            $('#guide .lists .items:visible').height(height);
+            $('#guide .list.selected .items').height(height);
         }
 
         UpdateMenuScroll(): void {
-            if ($('#guide .items:visible').length !== 0) {
+            if ($('#guide .list.selected .items').length !== 0) {
                 /** Get the list mid point */
-                var mid = $('#guide .items:visible').innerHeight() / 2;
+                var mid = $('#guide .list.selected .items').innerHeight() / 2;
 
                 /** Get half the item height */
-                var half = $('#guide .items:visible .item.selected').outerHeight(true) / 2;
+                var half = $('#guide .list.selected .item.selected').outerHeight(true) / 2;
 
                 /** Get the top offset */
-                var offset = $('#guide .items:visible').offset().top + mid - half;
+                var offset = $('#guide .list.selected .items').offset().top + mid - half;
 
                 /** Update scroll */
-                if ($('#guide .items:visible .item.selected').length > 0) {
-                    $('#guide .items:visible').scrollTo('#guide .items:visible .item.selected', {
+                if ($('#guide .list.selected .items .item.selected').length > 0) {
+                    $('#guide .list.selected .items').scrollTo('#guide .list.selected .items .item.selected', {
                         offsetTop: offset,
                         duration: 0
                     });
@@ -566,10 +599,10 @@ module TwitchPotato {
         }
 
         private UpdateInfo(): void {
-            var key = $('#guide .item.selected:visible').attr('key');
-            var menu = parseInt($('#guide .item.selected:visible').attr('menu'));
+            var key = $('#guide .list.selected .item.selected').attr('key');
+            var menu = parseInt($('#guide .list.selected .item.selected').attr('menu'));
 
-            if ($('#guide .item.selected:visible').attr('setting') === 'true')
+            if ($('#guide .list.selected .item.selected').attr('setting') === 'true')
                 return this.ShowSetting();
 
             if (menu === MenuType.Channels ||
