@@ -68,11 +68,9 @@ module TwitchPotato {
                 /** Ensure there is a stream playing. */
                 if (this.Player.isPlaying === false) return;
 
-                /** Show the players fullscreen. */
-                //this.Player.UpdateLayout(true);
-
                 /** Fade the guide out. */
-                $('#guide').fadeOut();
+                this.Guide.Toggle(false, true);
+
 
                 /** Pause the guide channel preview. */
                 Application.Guide.PausePreview();
@@ -96,7 +94,7 @@ module TwitchPotato {
                 Application.Guide.PlayPreview();
 
                 /** Fade the guide in. */
-                $('#guide').fadeIn();
+                this.Guide.Toggle(true, true);
             }
         }
 

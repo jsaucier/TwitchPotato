@@ -212,7 +212,7 @@ module TwitchPotato {
             $('#players').fadeIn();
 
             /** Hide the guide */
-            $('#guide').fadeOut();
+            Application.Guide.Toggle(false, true)
         }
 
         private Select(): void {

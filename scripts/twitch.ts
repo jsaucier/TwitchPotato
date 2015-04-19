@@ -504,7 +504,8 @@ module TwitchPotato {
             /** No webviews are open. */
             if ($('#users webview').length === 0) {
                 $('#users').fadeOut();
-                $('#guide').fadeIn();
+                Application.Guide.Toggle(true, true);
+
 
                 Application.Input.RegisterInputs(InputType.Guide);
             }
