@@ -1,117 +1,102 @@
 module TwitchPotato {
     export class InputHandler {
-        private registered: IDictionary<IInput[]> = {};
-        private inputs: IDictionary<IInput> = {};
+        /** Keycode map array. */
+        private _keyLookup = ['', '', '', 'CANCEL', '', '', 'HELP', '', 'BACK_SPACE', 'TAB', '', '', 'CLEAR', 'ENTER', 'RETURN', '', 'SHIFT', 'CONTROL', 'ALT', 'PAUSE', 'CAPS_LOCK', 'KANA', 'EISU', 'JUNJA', 'FINAL', 'HANJA', '', 'ESCAPE', 'CONVERT', 'NONCONVERT', 'ACCEPT', 'MODECHANGE', 'SPACE', 'PAGE_UP', 'PAGE_DOWN', 'END', 'HOME', 'LEFT', 'UP', 'RIGHT', 'DOWN', 'SELECT', 'PRINT', 'EXECUTE', 'PRINTSCREEN', 'INSERT', 'DELETE', '', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'COLON', 'SEMICOLON', 'LESS_THAN', 'EQUALS', 'GREATER_THAN', 'QUESTION_MARK', 'AT', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'WIN', '', 'CONTEXT_MENU', '', 'SLEEP', 'NUMPAD0', 'NUMPAD1', 'NUMPAD2', 'NUMPAD3', 'NUMPAD4', 'NUMPAD5', 'NUMPAD6', 'NUMPAD7', 'NUMPAD8', 'NUMPAD9', 'MULTIPLY', 'ADD', 'SEPARATOR', 'SUBTRACT', 'DECIMAL', 'DIVIDE', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14', 'F15', 'F16', 'F17', 'F18', 'F19', 'F20', 'F21', 'F22', 'F23', 'F24', '', '', '', '', '', '', '', '', 'NUM_LOCK', 'SCROLL_LOCK', 'WIN_OEM_FJ_JISHO', 'WIN_OEM_FJ_MASSHOU', 'WIN_OEM_FJ_TOUROKU', 'WIN_OEM_FJ_LOYA', 'WIN_OEM_FJ_ROYA', '', '', '', '', '', '', '', '', '', 'CIRCUMFLEX', 'EXCLAMATION', 'DOUBLE_QUOTE', 'HASH', 'DOLLAR', 'PERCENT', 'AMPERSAND', 'UNDERSCORE', 'OPEN_PAREN', 'CLOSE_PAREN', 'ASTERISK', 'PLUS', 'PIPE', 'HYPHEN_MINUS', 'OPEN_CURLY_BRACKET', 'CLOSE_CURLY_BRACKET', 'TILDE', '', '', '', '', 'VOLUME_MUTE', 'VOLUME_DOWN', 'VOLUME_UP', '', '', 'SEMICOLON', 'EQUALS', 'COMMA', 'MINUS', 'PERIOD', 'SLASH', 'BACK_QUOTE', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'OPEN_BRACKET', 'BACK_SLASH', 'CLOSE_BRACKET', 'QUOTE', '', 'META', 'ALTGR', '', 'WIN_ICO_HELP', 'WIN_ICO_00', '', 'WIN_ICO_CLEAR', '', '', 'WIN_OEM_RESET', 'WIN_OEM_JUMP', 'WIN_OEM_PA1', 'WIN_OEM_PA2', 'WIN_OEM_PA3', 'WIN_OEM_WSCTRL', 'WIN_OEM_CUSEL', 'WIN_OEM_ATTN', 'WIN_OEM_FINISH', 'WIN_OEM_COPY', 'WIN_OEM_AUTO', 'WIN_OEM_ENLW', 'WIN_OEM_BACKTAB', 'ATTN', 'CRSEL', 'EXSEL', 'EREOF', 'PLAY', 'ZOOM', '', 'PA1', 'WIN_OEM_CLEAR', ''];
 
+        /** Input keycode lookup table. */
+        private _inputLookup: { [keyCode: number]: Array<number> } = {};
+
+        /** Input settings array. */
+        private _inputs: Array<Input2> = [
+            { name: 'Close', desc: 'Closes the application or current webview.', type: Inputs.Close, key: "ESCAPE" },
+            { name: 'Toggle Guide', desc: 'Toggles the guide.', type: Inputs.Close, key: "G" },
+            { name: 'Font Size Increase', desc: 'Increases the application font size.', type: Inputs.FontSizeIncrease, key: "EQUALS" },
+            { name: 'Font Size Decrease', desc: 'Decreases the application font size.', type: Inputs.FontSizeDecrease, key: "MINUS" },
+            { name: 'Font Size Reset', desc: 'Toggles the guide.', type: Inputs.FontSizeReset, key: "0" },
+            { name: 'Save Setting', desc: 'Saves the new setting value.', type: Inputs.SaveSetting, key: "ENTER", hidden: true },
+            { name: 'Scroll Up', desc: '', type: Inputs.Guide_Up, key: "UP" },
+            { name: 'Scroll Down', desc: '', type: Inputs.Guide_Down, key: "DOWN" },
+            { name: 'Move Up', desc: '', type: Inputs.Guide_Left, key: "LEFT" },
+            { name: 'Move Down', desc: '', type: Inputs.Guide_Right, key: "RIGHT" },
+            { name: 'Jump Up', desc: '', type: Inputs.Guide_PageUp, key: "PAGE_UP" },
+            { name: 'Jump Down', desc: '', type: Inputs.Guide_PageDown, key: "PAGE_DOWN" },
+            { name: 'Select Item', desc: '', type: Inputs.Guide_Select, key: "ENTER" },
+            { name: 'Refresh Guide', desc: '', type: Inputs.Guide_Refresh, key: "R" },
+            { name: 'Context Menu', desc: '', type: Inputs.Guide_ContextMenu, key: "P" },
+            { name: 'Previous Player', desc: '', type: Inputs.Player_SelectPrevious, key: "UP" },
+            { name: 'Next Player', desc: '', type: Inputs.Player_SelectNext, key: "DOWN" },
+            { name: 'Toggle Chat', desc: '', type: Inputs.Player_ToggleChat, key: "G" },
+            { name: 'Previous Chat Layout', desc: '', type: Inputs.Player_ChatLayoutPrevious, key: "LEFT" },
+            { name: 'Next Chat Layout', desc: '', type: Inputs.Player_ChatLayoutNext, key: "RIGHT" },
+            { name: 'Stop Player', desc: '', type: Inputs.Player_Stop, key: "S" },
+            { name: 'Pause Player', desc: '', type: Inputs.Player_PlayPause, key: "SPACE" },
+            { name: 'Mute Volume', desc: '', type: Inputs.Player_Mute, key: "M" },
+            { name: 'Previous Channel', desc: '', type: Inputs.Player_Flashback, key: "F" },
+            { name: 'Select Channel', desc: '', type: Inputs.Player_Select, key: "ENTER" },
+            { name: 'Change Layout', desc: '', type: Inputs.Player_Layout, key: "H" },
+            { name: 'Toggle Fullscreen', desc: '', type: Inputs.Player_FullscreenToggle, key: "U" },
+            { name: 'Enter Fullscreen', desc: '', type: Inputs.Player_FullscreenEnter, key: "I" },
+            { name: 'Exit Fullscreen', desc: '', type: Inputs.Player_FullscreenExit, key: "O" },
+            { name: 'Mobile Resolution', desc: '', type: Inputs.Player_QualityMobile, key: "1" },
+            { name: 'Low Resolution', desc: '', type: Inputs.Player_QualityLow, key: "2" },
+            { name: 'Medium Resolution', desc: '', type: Inputs.Player_QualityMedium, key: "3" },
+            { name: 'High Resolution', desc: '', type: Inputs.Player_QualityHigh, key: "4" },
+            { name: 'Source Resolution', desc: '', type: Inputs.Player_QualitySource, key: "5" }
+        ];
+
+        /** Creates a new input handler class. */
         constructor() {
-            this.AddInput(InputType.Global, Inputs.Global_Exit, 27, 'Exit');
-            this.AddInput(InputType.Global, Inputs.Global_ToggleGuide, 71, 'Toggle Guide');
-            this.AddInput(InputType.Global, Inputs.Global_ZoomIn, 187, 'Zoom In');
-            this.AddInput(InputType.Global, Inputs.Global_ZoomOut, 189, 'Zoom Out');
-            this.AddInput(InputType.Global, Inputs.Global_ZoomReset, 48, 'Zoom Reset');
-            this.AddInput(InputType.Global, Inputs.Global_SaveSetting, 13, 'Save Setting');
 
-            this.AddInput(InputType.Guide, Inputs.Guide_Up, 38, 'Scroll Up');
-            this.AddInput(InputType.Guide, Inputs.Guide_Down, 40, 'Scroll Down');
-            this.AddInput(InputType.Guide, Inputs.Guide_Left, 37, 'Move Up');
-            this.AddInput(InputType.Guide, Inputs.Guide_Right, 39, 'Move Down');
-            this.AddInput(InputType.Guide, Inputs.Guide_PageUp, 33, 'Jump Up');
-            this.AddInput(InputType.Guide, Inputs.Guide_PageDown, 34, 'Jump Down');
-            this.AddInput(InputType.Guide, Inputs.Guide_Select, 13, 'Select Item');
-            this.AddInput(InputType.Guide, Inputs.Guide_Refresh, 82, 'Refresh Guide');
-            this.AddInput(InputType.Guide, Inputs.Guide_ContextMenu, 80, 'Context Menu');
+            /** Create the keycode lookup table. */
+            for (var i = 0; i < this._inputs.length; i++) {
+                /** The current input. */
+                var input = this._inputs[i];
 
-            this.AddInput(InputType.Player, Inputs.Player_SelectPrevious, 38, 'Previous Player');
-            this.AddInput(InputType.Player, Inputs.Player_SelectNext, 40, 'Next Player');
-            this.AddInput(InputType.Player, Inputs.Player_ToggleChat, 67, 'Toggle Chat');
-            this.AddInput(InputType.Player, Inputs.Player_ChatLayoutPrevious, 37, 'Previous Chat Layout');
-            this.AddInput(InputType.Player, Inputs.Player_ChatLayoutNext, 39, 'Next Chat Layout');
-            this.AddInput(InputType.Player, Inputs.Player_Stop, 83, 'Stop Player');
-            this.AddInput(InputType.Player, Inputs.Player_PlayPause, 32, 'Pause Player');
-            this.AddInput(InputType.Player, Inputs.Player_Mute, 77, 'Mute Volume');
-            this.AddInput(InputType.Player, Inputs.Player_Flashback, 70, 'Previous Channel');
-            this.AddInput(InputType.Player, Inputs.Player_Select, 13, 'Select Channel');
-            this.AddInput(InputType.Player, Inputs.Player_Layout, 72, 'Change Layout');
-            this.AddInput(InputType.Player, Inputs.Player_FullscreenToggle, 85, 'Toggle Fullscreen');
-            this.AddInput(InputType.Player, Inputs.Player_FullscreenEnter, 79, 'Enter Fullscreen');
-            this.AddInput(InputType.Player, Inputs.Player_FullscreenExit, 73, 'Exit Fullscreen');
-            this.AddInput(InputType.Player, Inputs.Player_QualityMobile, 49, 'Mobile Resolution');
-            this.AddInput(InputType.Player, Inputs.Player_QualityLow, 50, 'Low Resolution');
-            this.AddInput(InputType.Player, Inputs.Player_QualityMedium, 51, 'Medium Resolution');
-            this.AddInput(InputType.Player, Inputs.Player_QualityHigh, 52, 'High Resolution');
-            this.AddInput(InputType.Player, Inputs.Player_QualitySource, 53, 'Source Resolution');
+                /** The input keycode. */
+                var keycode = this._keyLookup.indexOf(input.key);
 
-            $(document).keydown((event) => { this.OnInputEvent(event); });
-        }
+                /** Initialize the keycode array. */
+                if (this._inputLookup[keycode] === undefined)
+                    this._inputLookup[keycode] = [];
 
-        /** Registers an input for action. */
-        RegisterInput(id: string) {
-            /** Get the input. */
-            var input = this.inputs[id];
-
-            /** Default the array if needed. */
-            if (this.registered[input.code] === undefined)
-                this.registered[input.code] = [];
-
-            /** Add the input to the registered list. */
-            this.registered[input.code].push(input);
-        }
-
-        /** Registers all inputs for action for the input type. */
-        RegisterInputs(type: InputType): void {
-            /** Unregister all inputs. */
-            this.registered = {};
-
-            /** Register all of the global inputs. */
-            for (var id in this.GetInputsByType(InputType.Global))
-                this.RegisterInput(id);
-
-            /** Register the inputs specified. */
-            if (type !== InputType.Global)
-                for (var id in this.GetInputsByType(type))
-                    this.RegisterInput(id);
-        }
-
-        /** Creates a new input. */
-        private AddInput(type: InputType, input: Inputs, code: number, name: string, desc = ''): void {
-            this.inputs[input] = {
-                input: input,
-                type: type,
-                code: code,
-                name: name,
-                desc: desc
-            };
-        }
-
-        /** Gets the inputs based on input type. */
-        private GetInputsByType(type: InputType): IDictionary<IInput> {
-            var inputs: IDictionary<IInput> = {};
-
-            $.each(this.inputs, (id: string, input: IInput) => {
-                if (input.type === type) {
-                    inputs[id] = input;
-                }
-            });
-
-            return inputs;
-        }
-
-        /** Handles the input events and routes the actions. */
-        private OnInputEvent(event) {
-            /** Inputs are disabled when the loading window is shown. */
-            if (Application.IsLoading()) return;
-
-            if (this.registered[event.keyCode] !== undefined) {
-                /** Iterate all inputs registered to the keycode. */
-                $.each(this.registered[event.keyCode], (index: number, input: IInput) => {
-                    /** Get the context based on InputType. */
-                    var context = (input.type === InputType.Global) ? Application : Application[InputType[input.type]];
-
-                    /** Call the registered callback. */
-                    context['OnInput'].call(context, input);
-                });
+                /** Add the input to the lookup table. */
+                this._inputLookup[keycode].push(i);
             }
 
+            /** Bind to the keydown event. */
+            $(document).keydown((event) => this.HandleInput(event));
+        }
+
+        /** Handles and routes the input for the application. */
+        HandleInput(event): void {
+
+            /** Inputs are disabled when the loading window is shown. */
+            if (App.IsLoading()) return;
+
+            /** The inputs for the keycode. */
+            var inputs = this.GetInputsFromKeyCode(event.keyCode);
+
+            for (var i in inputs) {
+                /** The input type. */
+                var input = inputs[i].type;
+
+                /** Route the input to the modules. */
+                if (App.HandleInput(input)) { }
+                else if (App.Guide.HandleInput(input)) { }
+                else if (App.Player.HandleInput(input)) { }
+            }
+        }
+
+        /** Gets the inputs for the keycode. */
+        private GetInputsFromKeyCode(keyCode: number): Array<Input2> {
+
+            /** Array containing the inputs for the keycode. */
+            var inputs: Array<Input2> = [];
+
+            for (var i in this._inputLookup[keyCode])
+                inputs.push(this._inputs[this._inputLookup[keyCode][i]]);
+
+            return inputs;
         }
     }
 }
