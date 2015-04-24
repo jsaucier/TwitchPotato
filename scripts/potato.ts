@@ -358,44 +358,6 @@ module TwitchPotato {
         Player
     }
 
-    export enum Inputs {
-        Close,
-        FontSizeIncrease,
-        FontSizeDecrease,
-        FontSizeReset,
-        SaveSetting,
-        ToggleGuide,
-        Guide_Up,
-        Guide_Down,
-        Guide_Left,
-        Guide_Right,
-        Guide_PageUp,
-        Guide_PageDown,
-        Guide_Select,
-        Guide_Refresh,
-        Guide_ContextMenu,
-        Player_Stop,
-        Player_PlayPause,
-        Player_Mute,
-        Player_Select,
-        Player_Layout,
-        Player_FullscreenEnter,
-        Player_FullscreenExit,
-        Player_FullscreenToggle,
-        Player_Flashback,
-        Player_SelectNext,
-        Player_SelectPrevious,
-        Player_QualityMobile,
-        Player_QualityLow,
-        Player_QualityMedium,
-        Player_QualityHigh,
-        Player_QualitySource,
-        Player_ToggleChat,
-        Player_ChatLayoutNext,
-        Player_ChatLayoutPrevious,
-        Reload
-    }
-
     export enum Direction {
         None,
         Up,
