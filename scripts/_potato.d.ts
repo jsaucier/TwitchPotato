@@ -78,14 +78,6 @@ interface Input {
     hidden?: boolean;
 }
 
-interface IPlayer {
-    channel: string;
-    isVideo: boolean;
-    isLoaded: boolean;
-    number: number;
-    flashback?: string;
-    webview: Webview;
-}
 
 interface IStorage {
     users: string[];

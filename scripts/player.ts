@@ -1,25 +1,49 @@
-/** Some of these are documented, some aren't. */
-
-/* Twitch player methods: */
-/* playVideo, pauseVideo, mute, unmute, fullscreen, loadStream, loadVideo, */
-/* setQuality, videoSeek, setOauthToken, onlineStatus, isPaused, setVideoTime, */
-/* adFeedbackDone, setTrackingData, showChromecast, setChromecastConnected, */
-/* togglePlayPause */
-
-/* Twitch player events: */
-/* chromecastMediaSet, chromecastSessionRequested, chromecastVolumeUpdated, */
-/* pauseChromecastSession, offline, online, adCompanionRendered, loginRequest, */
-/* mouseScroll, playerInit, popout, tosViolation, viewerCount, streamLoaded, */
-/* videoLoaded, seekFailed, videoLoading, videoPlaying, adFeedbackShow */
 module TwitchPotato {
-    export class PlayerHandler {
-        private players: IDictionary<IPlayer> = {};
-        private layout: PlayerLayout = PlayerLayout.Default;
-        private selectionTimer: number;
-        private qualityTimer: number;
 
-        private playersLayout: PlayersLayout;
-        private previousLayout: PlayersLayout;
+    /** The player interface. */
+    export interface Player {
+        channel: string;
+        isVideo: boolean;
+        isLoaded: boolean;
+        number: number;
+        flashback?: string;
+        webview: Webview;
+    }
+
+    /** Enumeration of the players layout. */
+    export enum PlayersLayout {
+        Default,
+        Equal
+    }
+
+    /** Enumeration of the player layout. */
+    export enum PlayerLayout {
+        Full,
+        Guide,
+        ChatLeft,
+        ChatRight
+    }
+
+    /** Instance of the PlayerHandler. */
+    export class PlayerHandler {
+
+        /** The table of current players. */
+        private _players: { [id: string]: Player } = {};
+
+        /** The current players layout. */
+        private _playerLayout: PlayersLayout = PlayersLayout.Default;
+
+        /** The selection timeout id. */
+        private _selectionTimer: number;
+
+        /** The quality notification timeout id. */
+        private _qualityTimer: number;
+
+        /** The current player layout. */
+        private _layout: PlayerLayout;
+
+        /** The previous player layout. */
+        private _previousLayout: PlayerLayout;
 
         /** Gets or sets if this is a fake load. */
         private _isFake = true;
@@ -28,18 +52,18 @@ module TwitchPotato {
         private _isPlaying = false;
 
         constructor() {
+
             /** Create a blank player. */
             this.Create('Twitch-Potato-Init', false);
         }
 
         /** Determines if there is any channels playing. */
-        IsPlaying(): boolean {
-            return this._isPlaying;
-        }
+        IsPlaying(): boolean { return this._isPlaying; }
 
-        /** Callback for player input events. */
+        /** Processes all input for the player. */
         HandleInput(input: Inputs): boolean {
 
+            /** Ensure the player is playing before allowing input. */
             if (!this._isPlaying) return false;
 
             switch (input) {
@@ -128,30 +152,37 @@ module TwitchPotato {
             }
         }
 
-        GetPlayerByNumber(number: number): IPlayer {
-            for (var i in this.players) {
-                var player = this.players[i];
+        /** Returns the player by number. */
+        GetPlayerByNumber(number: number): Player {
 
-                if (player.number === number) {
-                    return player;
-                }
+            for (var i in this._players) {
+
+                var player = this._players[i];
+
+                if (player.number === number) return player;
             }
+
             return undefined;
         }
 
-        GetSelectedPlayer(): IPlayer {
+        /** Returns the selected or current player. */
+        GetSelectedPlayer(): Player {
+
             var number = parseInt($('#players .player.selected').attr('number')) || 0;
+
             return this.GetPlayerByNumber(number);
         }
 
-        private Create(channel: string, isVideo = false): IPlayer {
+        /** Creates the player for the channel or video. */
+        private Create(channel: string, isVideo = false): Player {
+
             /** Check to see if a player for this id exists. */
-            var player = this.players[channel];
+            var player = this._players[channel];
 
             if (player === undefined) {
 
                 /** Get the number of current players */
-                var numPlayers = Object.keys(this.players).length;
+                var numPlayers = Object.keys(this._players).length;
 
                 /** Append the new player. */
                 $('#players').append($($('#player-template').html().format(numPlayers)));
@@ -186,7 +217,7 @@ module TwitchPotato {
                 });
 
                 /** Add the player to our list. */
-                this.players[numPlayers] = player;
+                this._players[numPlayers] = player;
 
                 return player;
             }
@@ -195,17 +226,17 @@ module TwitchPotato {
         Play(channel: string, create = false, isVideo = false): void {
 
             /** Get the number of current players */
-            var numPlayers = Object.keys(this.players).length;
+            var numPlayers = Object.keys(this._players).length;
 
             /** Make sure we dont have more than 4 videos playing at once. */
             if (numPlayers === 4) return;
 
             /** Attempt to get the player by channel. */
-            var player = this.players[channel];
+            var player = this._players[channel];
 
             if (create === true) {
                 /** Create a new player. */
-                player = this.players[channel] || this.Create(channel, isVideo);
+                player = this._players[channel] || this.Create(channel, isVideo);
             } else {
                 /** Get the main player or create a new one if one doesn't exist. */
                 player = this.GetPlayerByNumber(0) || this.Create(channel, isVideo);
@@ -216,7 +247,7 @@ module TwitchPotato {
             if (player.isLoaded) this.Load(player, channel, isVideo);
 
             /** Show the player. */
-            this.UpdateLayout(true, PlayersLayout.Full);
+            this.UpdateLayout(true, PlayerLayout.Full);
 
             /** Arrange the players. */
             this.ArrangePlayers(true);
@@ -232,6 +263,7 @@ module TwitchPotato {
         }
 
         private Select(): void {
+
             /** Get the current player. */
             var current = this.GetPlayerByNumber(0);
 
@@ -242,18 +274,19 @@ module TwitchPotato {
                 /** Update number of the currently selected player. */
                 current.number = player.number;
                 $(current.webview).attr('number', player.number);
-                this.players[player.number] = current;
+                this._players[player.number] = current;
 
                 /** Update the number of the selected player. */
                 player.number = 0;
                 $(player.webview).attr('number', 0);
-                this.players[0] = player;
+                this._players[0] = player;
             }
 
             this.ClearSelected();
         }
 
         private Stop(): void {
+
             /** Get the selected player. */
             var player = this.GetSelectedPlayer();
 
@@ -261,7 +294,7 @@ module TwitchPotato {
                 /** We only want to make sure we have one player open at all times */
                 /** so that we dont have to waste time reloading the .swf when */
                 /** starting a new one. */
-                if (Object.keys(this.players).length > 1) {
+                if (Object.keys(this._players).length > 1) {
                     /** We have more than one player, so since we are stopping this one */
                     /** go ahead and delete the current one. */
                     this.Remove(player);
@@ -279,6 +312,7 @@ module TwitchPotato {
         }
 
         private PlayPause(): void {
+
             /** Get the selected player. */
             var player = this.GetSelectedPlayer();
 
@@ -288,7 +322,8 @@ module TwitchPotato {
             }
         }
 
-        private Remove(player: IPlayer): void {
+        private Remove(player: Player): void {
+
             /** Get the number of the removed player. */
             var num = player.number;
 
@@ -296,7 +331,7 @@ module TwitchPotato {
             $(player.webview).remove();
 
             /** Remove the player from the player list. */
-            delete this.players[num];
+            delete this._players[num];
 
             /** Update the player numbers. */
             this.UpdateNumbers(num);
@@ -306,9 +341,10 @@ module TwitchPotato {
         }
 
         private UpdateNumbers(removed: number): void {
+
             /** Update the number of any player after the removed. */
-            for (var i in this.players) {
-                var player = this.players[i];
+            for (var i in this._players) {
+                var player = this._players[i];
 
                 if (player.number > removed) {
                     /** Update the number. */
@@ -318,55 +354,58 @@ module TwitchPotato {
                     $(player.webview).attr('number', player.number);
 
                     /** Copy the player to the previous index. */
-                    this.players[player.number] = player;
+                    this._players[player.number] = player;
 
                     /** Delete the copied player. */
-                    delete this.players[player.number + 1];
+                    delete this._players[player.number + 1];
                 }
             }
         }
 
         private ArrangePlayers(update = false): void {
+
             if (update !== true) {
                 /** Increase the layout. */
-                this.layout++;
+                this._playerLayout++;
             }
 
             /** The size of the layouts enum. */
-            var size = Object.keys(PlayerLayout).length / 2;
+            var size = Object.keys(PlayersLayout).length / 2;
 
             /** Bounds for the enum. */
-            if (this.layout < 0) this.layout = size - 1;
-            else if (this.layout > size - 1) this.layout = 0;
+            if (this._playerLayout < 0) this._playerLayout = size - 1;
+            else if (this._playerLayout > size - 1) this._playerLayout = 0;
 
             /** Update the players and selector layouts. */
             $('#players .player, #players .selector')
                 .hide()
-                .attr('layout', this.layout)
+                .attr('layout', this._playerLayout)
                 .show();
         }
 
-        UpdateLayout(fadeIn: boolean, layout?: PlayersLayout): void {
-            if (this.playersLayout === layout) {
+        UpdateLayout(fadeIn: boolean, layout?: PlayerLayout): void {
+
+            if (this._layout === layout) {
                 if (fadeIn === true) $('#players').fadeIn();
                 else $('#players').show();
                 return;
             }
-            if (layout === PlayersLayout.Guide)
-                this.previousLayout = this.playersLayout;
+            if (layout === PlayerLayout.Guide)
+                this._previousLayout = this._layout;
 
             if (layout === undefined)
-                layout = this.previousLayout;
+                layout = this._previousLayout;
 
             if (fadeIn === true)
                 $('#players').hide().attr('layout', layout).fadeIn();
             else
                 $('#players').hide().attr('layout', layout).show();
 
-            this.playersLayout = layout;
+            this._layout = layout;
         }
 
         private UpdateSelected(direction: Direction): void {
+
             /** Get the index of the selected player. */
             var index = parseInt($('#players .player.selected').attr('number')) || 0;
 
@@ -393,13 +432,14 @@ module TwitchPotato {
             $('#players .selector').attr('number', index);
 
             /** Clear the selected timer. */
-            clearTimeout(this.selectionTimer);
+            clearTimeout(this._selectionTimer);
 
             /** Set a new selected timer. */
-            this.selectionTimer = setTimeout(this.ClearSelected, 5000);
+            this._selectionTimer = setTimeout(this.ClearSelected, 5000);
         }
 
         private ClearSelected(): void {
+
             /** Remove the selected class from the player. */
             $('#players .player').removeClass('selected');
 
@@ -408,6 +448,7 @@ module TwitchPotato {
         }
 
         private Flashback(): void {
+
             /** Get the selected player. */
             var player = this.GetSelectedPlayer();
 
@@ -418,6 +459,7 @@ module TwitchPotato {
         }
 
         private Fullscreen(action = FullscreenAction.Refresh): void {
+
             /** Get the selected player or the default. */
             var player = this.GetSelectedPlayer();
 
@@ -426,6 +468,7 @@ module TwitchPotato {
         }
 
         private SetQuality(quality: Quality): void {
+
             /** Get the selected Player or the default. */
             var player = this.GetSelectedPlayer();
 
@@ -434,12 +477,13 @@ module TwitchPotato {
 
             /** Show the quality notification. */
             $('#players .quality').html(Quality[quality] + ' Quality').fadeIn(() => {
-                clearTimeout(this.qualityTimer);
-                this.qualityTimer = setTimeout(() => $('#players .quality').fadeOut(), 2000)
+                clearTimeout(this._qualityTimer);
+                this._qualityTimer = setTimeout(() => $('#players .quality').fadeOut(), 2000)
             });
         }
 
-        private Load(player: IPlayer, channel: string, isVideo = false, isFake = false): void {
+        /** Loads the channel or video in the player. */
+        private Load(player: Player, channel: string, isVideo = false, isFake = false): void {
 
             /** Set the flashback value. */
             player.flashback = (player.channel !== channel) ? player.channel : player.flashback;
@@ -459,7 +503,9 @@ module TwitchPotato {
             });
         }
 
+        /** Reloads the player object. */
         private Reload(): void {
+
             /** Get the selected player. */
             var player = this.GetSelectedPlayer();
 
@@ -470,12 +516,16 @@ module TwitchPotato {
             player.webview.reload();
         }
 
-        private Mute(mute?: boolean): void {
+        /** Toggles mute for the selected player. */
+        private Mute(): void {
+
             var player = this.GetSelectedPlayer();
             this.PostMessage(player, 'Mute');
         }
 
-        private PostMessage(player: IPlayer, method: string, params = {}): void {
+        /** Executes a method with the given param object on the player. */
+        private PostMessage(player: Player, method: string, params = {}): void {
+
             /** Make sure the contentwindow is loaded. */
             if (player.webview.contentWindow === undefined) {
                 setTimeout(() => this.PostMessage(player, method, params), 100);
@@ -493,3 +543,17 @@ module TwitchPotato {
         }
     }
 }
+
+/** Some of these are documented, some aren't. */
+
+/* Twitch player methods: */
+/* playVideo, pauseVideo, mute, unmute, fullscreen, loadStream, loadVideo, */
+/* setQuality, videoSeek, setOauthToken, onlineStatus, isPaused, setVideoTime, */
+/* adFeedbackDone, setTrackingData, showChromecast, setChromecastConnected, */
+/* togglePlayPause */
+
+/* Twitch player events: */
+/* chromecastMediaSet, chromecastSessionRequested, chromecastVolumeUpdated, */
+/* pauseChromecastSession, offline, online, adCompanionRendered, loginRequest, */
+/* mouseScroll, playerInit, popout, tosViolation, viewerCount, streamLoaded, */
+/* videoLoaded, seekFailed, videoLoading, videoPlaying, adFeedbackShow */

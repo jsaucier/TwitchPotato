@@ -74,7 +74,7 @@ module TwitchPotato {
 
                 if (hidePlayer !== true)
                     /** Show the players in the guide. */
-                    this.Player.UpdateLayout(true, PlayersLayout.Guide);
+                    this.Player.UpdateLayout(true, PlayerLayout.Guide);
                 else
                     $('#players').fadeOut();
 
@@ -284,10 +284,7 @@ module TwitchPotato {
         Setting
     }
 
-    export enum PlayerLayout {
-        Default,
-        Equal
-    }
+
 
     export enum FullscreenAction {
         Toggle,
@@ -337,12 +334,6 @@ module TwitchPotato {
         BottomRight,
     }
 
-    export enum PlayersLayout {
-        Full,
-        Guide,
-        ChatLeft,
-        ChatRight
-    }
 
     export enum UpdateType {
         All,
