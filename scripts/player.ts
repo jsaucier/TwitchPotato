@@ -25,12 +25,17 @@ module TwitchPotato {
         private isFake = true;
 
         /** Gets or sets if there is any channels playing. */
-        isPlaying = false;
+        private isPlaying = false;
 
 
         constructor() {
             /** Create a blank player. */
             this.Create('Twitch-Potato-Init', false);
+        }
+
+        /** Determines if there is any channels playing. */
+        IsPlaying(): boolean {
+            return this.isPlaying;
         }
 
         /*
