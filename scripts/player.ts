@@ -380,7 +380,7 @@ module TwitchPotato {
             $('#players .player, #players .selector')
                 .hide()
                 .attr('layout', this._playerLayout)
-                .show();
+                .fadeIn();
         }
 
         UpdateLayout(fadeIn: boolean, layout?: PlayerLayout): void {
@@ -390,6 +390,7 @@ module TwitchPotato {
                 else $('#players').show();
                 return;
             }
+
             if (layout === PlayerLayout.Guide)
                 this._previousLayout = this._layout;
 
