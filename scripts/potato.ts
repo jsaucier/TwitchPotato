@@ -1,5 +1,5 @@
 module TwitchPotato {
-    export class Main {
+    export class Application {
         private initialized = false;
 
         Storage: StorageHandler;
@@ -11,7 +11,7 @@ module TwitchPotato {
         Chat: ChatHandler;
 
         /** Displays an error message. */
-        ShowError(error): void {
+        ShowMessage(error): void {
             $('#error .error').html(error);
             $('#error').fadeIn(() => setTimeout(() => { $('#error').fadeOut(); }, 10000));
         }
@@ -28,21 +28,16 @@ module TwitchPotato {
             this.Notification = new NotificationHandler();
             this.Chat = new ChatHandler();
 
-            this.Input.RegisterInputs(InputType.Guide);
-
             this.initialized = true;
 
-            this.Storage.Load(() => {
-                /** Update the zoom level. */
-                this.UpdateZoom(ZoomType.Update);
-
-                /** Get the stored users. */
-                var users = this.Storage.GetUsers()
+            this.Storage.Load((settings) => {
+                /** Update the font size. */
+                this.UpdateFontSize(FontSize.Update);
 
                 /** Load the saved users. */
-                for (var user in users)
+                for (var user in settings.users)
                     /** Login the user. */
-                    this.Twitch.Login(users[user]);
+                    this.Twitch.Login(settings.users[user]);
 
                 /** Update the guide. */
                 this.Guide.Refresh();
@@ -62,8 +57,6 @@ module TwitchPotato {
         /** Toggles the Guide. */
         ToggleGuide(hidePlayer = false): void {
             if (this.Guide.IsShown() === true) {
-                /** Register the player inputs. */
-                this.Input.RegisterInputs(InputType.Player);
 
                 /** Ensure there is a stream playing. */
                 if (this.Player.isPlaying === false) return;
@@ -73,13 +66,11 @@ module TwitchPotato {
 
 
                 /** Pause the guide channel preview. */
-                Application.Guide.PausePreview();
+                App.Guide.PausePreview();
 
                 /** Show the chat window. */
-                Application.Chat.Guide(true);
+                App.Chat.Guide(true);
             } else {
-                /** Register the guide inputs. */
-                this.Input.RegisterInputs(InputType.Guide);
 
                 if (hidePlayer !== true)
                     /** Show the players in the guide. */
@@ -88,10 +79,10 @@ module TwitchPotato {
                     $('#players').fadeOut();
 
                 /** Show the chat window. */
-                Application.Chat.Guide(false);
+                App.Chat.Guide(false);
 
                 /** Play the guide channel preview. */
-                Application.Guide.PlayPreview();
+                App.Guide.PlayPreview();
 
                 /** Fade the guide in. */
                 this.Guide.Toggle(true, true);
@@ -105,16 +96,12 @@ module TwitchPotato {
 
             /** Reset the settings. */
             this.Twitch.ClearPartitions(undefined, () => {
-                this.Storage.LoadDefaults(() => {
-                    this.Guide.Refresh();
-                });
+                this.Storage.Load(() => this.Guide.Refresh(), true);
             });
         }
 
         /** Log into Twitch.tv */
         Login(): void {
-            /** Register only Global inputs. */
-            Application.Input.RegisterInputs(InputType.Global);
 
             /** Get the login webvew. */
             var webview = <Webview>$('#login webview')[0];
@@ -134,26 +121,33 @@ module TwitchPotato {
         }
 
         /** Callback triggered after a keypress event. */
-        private OnInput(input: IInput): void {
-            if (this.HandleWebviewInput(input) !== true)
-                switch (input.input) {
-                    case Inputs.Global_Exit:
-                        /** Exit the applications. */
+        HandleInput(input: Inputs): void {
+
+            if (this.IsWebviewOpen())
+                switch (input) {
+                    case Inputs.Close:
+                        return this.CloseWebview();
+                    default:
+                        return;
+                }
+            else
+                switch (input) {
+                    case Inputs.Close:
                         window.close();
                         break;
-                    case Inputs.Global_ToggleGuide:
+                    case Inputs.ToggleGuide:
                         this.ToggleGuide();
                         break;
-                    case Inputs.Global_ZoomIn:
-                        this.UpdateZoom(ZoomType.In);
+                    case Inputs.FontSizeIncrease:
+                        this.UpdateFontSize(FontSize.Increase);
                         break;
-                    case Inputs.Global_ZoomOut:
-                        this.UpdateZoom(ZoomType.Out);
+                    case Inputs.FontSizeDecrease:
+                        this.UpdateFontSize(FontSize.Decrease);
                         break;
-                    case Inputs.Global_ZoomReset:
-                        this.UpdateZoom(ZoomType.Reset);
+                    case Inputs.FontSizeReset:
+                        this.UpdateFontSize(FontSize.Reset);
                         break;
-                    case Inputs.Global_SaveSetting:
+                    case Inputs.SaveSetting:
                         this.SaveSetting();
                         break;
                     default:
@@ -161,18 +155,9 @@ module TwitchPotato {
                 }
         }
 
-        /** Handle the webview input */
-        private HandleWebviewInput(input: IInput): boolean {
-            if ($('#webviews webview:visible').length === 0) return false;
-
-            switch (input.input) {
-                case Inputs.Global_Exit:
-                    this.CloseWebview();
-                    break;
-                default: break;
-            }
-
-            return true;
+        /** Gets whether a webview is opened. */
+        private IsWebviewOpen(): boolean {
+            return $('#webviews webview:visible').length > 0;
         }
 
         /** Handles the GlobalExit keydown event. */
@@ -182,7 +167,7 @@ module TwitchPotato {
                 var username = webview.attr('username');
 
                 /** Remove the username from the list. */
-                this.Storage.RemoveUser(username);
+                this.Storage.Users(username, true);
 
                 this.Twitch.ClearPartitions(username, () => {
                     /** Check to see if no webviews exist. */
@@ -198,29 +183,26 @@ module TwitchPotato {
                 /** Hide the webviews */
                 $('#webviews #login').fadeOut();
             }
-
-            /** Register the guide inputs. */
-            this.Input.RegisterInputs(InputType.Guide);
         }
 
-        /** Updates the zoom level. */
-        private UpdateZoom(type: ZoomType): void {
-            /** Get the stored zoom. */
-            var zoom = this.Storage.GetZoom();
+        /** Updates the font size. */
+        private UpdateFontSize(type: FontSize): void {
+            /** Get the font size. */
+            var fontSize = this.Storage.FontSize();
 
-            /** Update the zoom value. */
-            if (type === ZoomType.In)
-                zoom += 1;
-            else if (type === ZoomType.Out)
-                zoom -= 1;
-            else if (type === ZoomType.Reset)
-                zoom = 100;
+            /** Update the font size. */
+            if (type === FontSize.Increase)
+                fontSize += 1;
+            else if (type === FontSize.Decrease)
+                fontSize -= 1;
+            else if (type === FontSize.Reset)
+                fontSize = 100;
 
-            /** Save the zoom. */
-            this.Storage.SetZoom(zoom);
+            /** Save the font size. */
+            this.Storage.FontSize(fontSize);
 
             /** Update the application font size. */
-            $('body').css('font-size', zoom + '%');
+            $('body').css('font-size', fontSize + '%');
 
             this.Guide.UpdateMenu(Direction.None);
 
@@ -231,7 +213,7 @@ module TwitchPotato {
             this.Guide.UpdateMenuScroll();
 
             /** Update the chat font size. */
-            this.Chat.UpdateZoom();
+            this.Chat.UpdateFontSize();
         }
 
         private SaveSetting(): void {
@@ -242,9 +224,6 @@ module TwitchPotato {
 
                 /** Input does not have focus. */
                 if (input.length === 0) {
-                    /** Register the global inputs only. */
-                    this.Input.RegisterInputs(InputType.Global);
-
                     /** Get the setting type. */
                     var type = $('#guide .item.selected:visible').attr('type');
 
@@ -262,9 +241,6 @@ module TwitchPotato {
 
                     input.val('');
                     input.blur();
-
-                    /** Register the guide inputs. */
-                    this.Input.RegisterInputs(InputType.Guide);
                 }
             }
         }
@@ -272,10 +248,10 @@ module TwitchPotato {
         /** Add a stored user. */
         private AddUser(user: string): void {
             /** Show the loading window. */
-            Application.Loading(true);
+            App.Loading(true);
 
             /** Get the stored users. */
-            var users = this.Storage.GetUsers();
+            var users = this.Storage.Users();
 
             /** Check to see if the user is a valid account. */
             this.Twitch.GetTwitchUser(user, (twitchUser: ITwitchUser) => {
@@ -284,21 +260,21 @@ module TwitchPotato {
                     /** Login to the twitch user. */
                     this.Twitch.Authorize(user, (twitchUser: ITwitchUser) => {
                         /** Add the user to the settings. */
-                        this.Storage.AddUser(user);
+                        this.Storage.Users(user);
 
                         /** Update the guide. */
                         this.Guide.Refresh();
                     });
                 } else {
                     /** Display an error. */
-                    this.ShowError('{0} has already been added.'.format(twitchUser.name));
+                    this.ShowMessage('{0} has already been added.'.format(twitchUser.name));
                 }
             });
         }
     }
 
-    /** The current Main class instance */
-    export var Application: Main = new Main();
+    /** The current application instance */
+    export var App: Application = new Application();
 
     export enum MenuItemType {
         Channel,
@@ -327,10 +303,10 @@ module TwitchPotato {
         Source
     }
 
-    export enum ZoomType {
+    export enum FontSize {
         Update,
-        In,
-        Out,
+        Increase,
+        Decrease,
         Reset
     }
 
@@ -383,12 +359,12 @@ module TwitchPotato {
     }
 
     export enum Inputs {
-        Global_Exit,
-        Global_ZoomIn,
-        Global_ZoomOut,
-        Global_ZoomReset,
-        Global_SaveSetting,
-        Global_ToggleGuide,
+        Close,
+        FontSizeIncrease,
+        FontSizeDecrease,
+        FontSizeReset,
+        SaveSetting,
+        ToggleGuide,
         Guide_Up,
         Guide_Down,
         Guide_Left,
@@ -445,5 +421,5 @@ module TwitchPotato {
 
 /** Initialize the Application only after the page has loaded. */
 $(() => {
-    TwitchPotato.Application.Initialize();
+    TwitchPotato.App.Initialize();
 });
