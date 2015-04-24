@@ -63,7 +63,7 @@ module TwitchPotato {
             { name: 'Refresh Guide', desc: '', type: Inputs.Refresh, key: 'R' },
             { name: 'Context Menu', desc: '', type: Inputs.ContextMenu, key: 'P' },
 
-            { name: 'Toggle Chat', desc: '', type: Inputs.ToggleChat, key: 'G' },
+            { name: 'Toggle Chat', desc: '', type: Inputs.ToggleChat, key: 'C' },
             { name: 'Stop Player', desc: '', type: Inputs.Stop, key: 'S' },
             { name: 'Pause Player', desc: '', type: Inputs.PlayPause, key: 'SPACE' },
             { name: 'Mute Volume', desc: '', type: Inputs.Mute, key: 'M' },
