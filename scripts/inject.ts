@@ -167,7 +167,7 @@ class PlayerController {
         this.SetFullscreen(FullscreenAction.Enter);
     }
 
-    SetFullscreen(action: FullscreenAction): void {
+    private SetFullscreen(action: FullscreenAction): void {
         if (action !== FullscreenAction.Enter)
             this.player.height = '100%';
 
