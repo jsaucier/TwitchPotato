@@ -40,6 +40,9 @@ module TwitchPotato {
         /** Input keycode lookup table. */
         private _inputLookup: { [keyCode: number]: Array<number> } = {};
 
+        /** Input has focus. */
+        private _inputFocued = false;
+
         /** Input settings array. */
         private _inputs: Array<Input> = [
             { name: 'Close', desc: 'Closes the application or current webview.', type: Inputs.Close, key: 'ESCAPE' },
@@ -48,34 +51,33 @@ module TwitchPotato {
             { name: 'Font Size Decrease', desc: 'Decreases the application font size.', type: Inputs.FontSizeDecrease, key: 'MINUS' },
             { name: 'Font Size Reset', desc: 'Toggles the guide.', type: Inputs.FontSizeReset, key: '0' },
             { name: 'Save Setting', desc: 'Saves the new setting value.', type: Inputs.SaveSetting, key: 'ENTER', hidden: true },
-            { name: 'Scroll Up', desc: '', type: Inputs.Guide_Up, key: 'UP' },
-            { name: 'Scroll Down', desc: '', type: Inputs.Guide_Down, key: 'DOWN' },
-            { name: 'Move Up', desc: '', type: Inputs.Guide_Left, key: 'LEFT' },
-            { name: 'Move Down', desc: '', type: Inputs.Guide_Right, key: 'RIGHT' },
-            { name: 'Jump Up', desc: '', type: Inputs.Guide_PageUp, key: 'PAGE_UP' },
-            { name: 'Jump Down', desc: '', type: Inputs.Guide_PageDown, key: 'PAGE_DOWN' },
-            { name: 'Select Item', desc: '', type: Inputs.Guide_Select, key: 'ENTER' },
-            { name: 'Refresh Guide', desc: '', type: Inputs.Guide_Refresh, key: 'R' },
-            { name: 'Context Menu', desc: '', type: Inputs.Guide_ContextMenu, key: 'P' },
-            { name: 'Previous Player', desc: '', type: Inputs.Player_SelectPrevious, key: 'UP' },
-            { name: 'Next Player', desc: '', type: Inputs.Player_SelectNext, key: 'DOWN' },
-            { name: 'Toggle Chat', desc: '', type: Inputs.Player_ToggleChat, key: 'G' },
-            { name: 'Previous Chat Layout', desc: '', type: Inputs.Player_ChatLayoutPrevious, key: 'LEFT' },
-            { name: 'Next Chat Layout', desc: '', type: Inputs.Player_ChatLayoutNext, key: 'RIGHT' },
-            { name: 'Stop Player', desc: '', type: Inputs.Player_Stop, key: 'S' },
-            { name: 'Pause Player', desc: '', type: Inputs.Player_PlayPause, key: 'SPACE' },
-            { name: 'Mute Volume', desc: '', type: Inputs.Player_Mute, key: 'M' },
-            { name: 'Previous Channel', desc: '', type: Inputs.Player_Flashback, key: 'F' },
-            { name: 'Select Channel', desc: '', type: Inputs.Player_Select, key: 'ENTER' },
-            { name: 'Change Layout', desc: '', type: Inputs.Player_Layout, key: 'H' },
-            { name: 'Toggle Fullscreen', desc: '', type: Inputs.Player_FullscreenToggle, key: 'U' },
-            { name: 'Enter Fullscreen', desc: '', type: Inputs.Player_FullscreenEnter, key: 'I' },
-            { name: 'Exit Fullscreen', desc: '', type: Inputs.Player_FullscreenExit, key: 'O' },
-            { name: 'Mobile Resolution', desc: '', type: Inputs.Player_QualityMobile, key: '1' },
-            { name: 'Low Resolution', desc: '', type: Inputs.Player_QualityLow, key: '2' },
-            { name: 'Medium Resolution', desc: '', type: Inputs.Player_QualityMedium, key: '3' },
-            { name: 'High Resolution', desc: '', type: Inputs.Player_QualityHigh, key: '4' },
-            { name: 'Source Resolution', desc: '', type: Inputs.Player_QualitySource, key: '5' },
+
+            { name: 'Up', desc: 'Guide - Scrolls up the items.<br/>Player - Selects the previous player.', type: Inputs.Up, key: 'UP' },
+            { name: 'Down', desc: 'Guide - Scrolls down the items.<br/>Player - Selects the next player.', type: Inputs.Down, key: 'DOWN' },
+            { name: 'Left', desc: 'Guide - Scrolls up the menu.<br/>Player - Selects the previous chat layout.', type: Inputs.Left, key: 'LEFT' },
+            { name: 'Right', desc: 'Guide - Scrolls down the menu.<br/>Player - Selects the next chat layout', type: Inputs.Right, key: 'RIGHT' },
+
+            { name: 'Jump Up', desc: '', type: Inputs.PageUp, key: 'PAGE_UP' },
+            { name: 'Jump Down', desc: '', type: Inputs.PageDown, key: 'PAGE_DOWN' },
+            { name: 'Select Item', desc: '', type: Inputs.Select, key: 'ENTER' },
+            { name: 'Refresh Guide', desc: '', type: Inputs.Refresh, key: 'R' },
+            { name: 'Context Menu', desc: '', type: Inputs.ContextMenu, key: 'P' },
+
+            { name: 'Toggle Chat', desc: '', type: Inputs.ToggleChat, key: 'G' },
+            { name: 'Stop Player', desc: '', type: Inputs.Stop, key: 'S' },
+            { name: 'Pause Player', desc: '', type: Inputs.PlayPause, key: 'SPACE' },
+            { name: 'Mute Volume', desc: '', type: Inputs.Mute, key: 'M' },
+            { name: 'Previous Channel', desc: '', type: Inputs.Flashback, key: 'F' },
+            { name: 'Select Channel', desc: '', type: Inputs.Select, key: 'ENTER' },
+            { name: 'Change Layout', desc: '', type: Inputs.Layout, key: 'H' },
+            { name: 'Toggle Fullscreen', desc: '', type: Inputs.FullscreenToggle, key: 'U' },
+            { name: 'Enter Fullscreen', desc: '', type: Inputs.FullscreenEnter, key: 'I' },
+            { name: 'Exit Fullscreen', desc: '', type: Inputs.FullscreenExit, key: 'O' },
+            { name: 'Mobile Resolution', desc: '', type: Inputs.QualityMobile, key: '1' },
+            { name: 'Low Resolution', desc: '', type: Inputs.QualityLow, key: '2' },
+            { name: 'Medium Resolution', desc: '', type: Inputs.QualityMedium, key: '3' },
+            { name: 'High Resolution', desc: '', type: Inputs.QualityHigh, key: '4' },
+            { name: 'Source Resolution', desc: '', type: Inputs.QualitySource, key: '5' },
             { name: 'Reload Player', desc: 'Reloads the player completely.', type: Inputs.Reload, key: 'T' }
         ];
 
@@ -100,13 +102,13 @@ module TwitchPotato {
 
             /** Bind to the keydown event. */
             $(document).keydown((event) => this.HandleInput(event));
+
+            $(document).on('focus', 'input', () => this._inputFocued = true);
+            $(document).on('blur', 'input', () => this._inputFocued = false);
         }
 
         /** Handles and routes the input for the application. */
         HandleInput(event): void {
-
-            /** Inputs are disabled when the loading window is shown. */
-            if (App.IsLoading()) return;
 
             /** The inputs for the keycode. */
             var inputs = this.GetInputsFromKeyCode(event.keyCode);
@@ -114,6 +116,17 @@ module TwitchPotato {
             for (var i in inputs) {
                 /** The input type. */
                 var input = inputs[i].type;
+
+                /** Inputs are disabled when the loading window is shown. */
+                if (App.IsLoading())
+                    if (input !== Inputs.Close)
+                        return;
+
+                /** Only allow the save setting input when an input is focued. */
+                if (this._inputFocued)
+                    if (input !== Inputs.SaveSetting &&
+                        input !== Inputs.Close)
+                        return;
 
                 /** Route the input to the modules. */
                 if (App.HandleInput(input)) { }
