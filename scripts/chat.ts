@@ -23,6 +23,7 @@ module TwitchPotato {
 
         /** Shows the chat for the selected channel. */
         private Load(channel: string): void {
+
             /** Set the chat as not loaded. */
             this.isLoaded = false;
 
@@ -52,6 +53,7 @@ module TwitchPotato {
 
         /** Toggle the chat when the guide visibility is changed. */
         Guide(showOrHide: boolean): void {
+
             if (showOrHide === false)
                 $(this.chat).fadeOut();
             else {
@@ -68,6 +70,7 @@ module TwitchPotato {
 
         /** Toggles the chat visibility on guide toggle. */
         Toggle(channel = this.channel): void {
+
             if ($(this.chat).is(':visible') === true) {
                 this.showChat = false;
 
@@ -89,6 +92,7 @@ module TwitchPotato {
 
         /** Updates the font size of the chat. */
         UpdateFontSize(): void {
+
             /** Cannot update the font-size if the webview is not loaded. */
             if (this.isLoaded === false) return;
 
@@ -100,7 +104,7 @@ module TwitchPotato {
 
         /** Updates the layout for the chat window. */
         UpdateLayout(direction = Direction.Down): void {
-            console.log(this.showChat);
+
             /** Ensure the chat is actually shown. */
             if (this.showChat === false && $(this.chat).is(':visible') === false) return;
 
