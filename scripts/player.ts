@@ -108,7 +108,7 @@ module TwitchPotato {
                     return true;
 
                 case Inputs.ToggleChat:
-                    //App.Chat.Toggle(this.GetPlayerByNumber(0).channel);
+                    App.Chat.Toggle(this.GetPlayerByNumber(0).channel);
                     return true;
 
                 case Inputs.Right:
@@ -468,19 +468,6 @@ module TwitchPotato {
 
             /** Reload the webview. */
             player.webview.reload();
-
-            // /** The current player channe. */
-            // var channel = player.channel;
-            //
-            // /** Gets whether the player is playing a video. */
-            // var isVideo = player.isVideo;
-            //
-            // /** Reset the player values. */
-            // player.channel = undefined;
-            // player.isVideo = undefined;
-            //
-            // /** Restart the previous channel or video. */
-            // this.Play(channel, isVideo);
         }
 
         private Mute(mute?: boolean): void {
