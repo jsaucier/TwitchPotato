@@ -89,10 +89,10 @@ module TwitchPotato {
         }
 
         /** Gets the inputs for the keycode. */
-        private GetInputsFromKeyCode(keyCode: number): Array<Input2> {
+        private GetInputsFromKeyCode(keyCode: number): Array<Input> {
 
             /** Array containing the inputs for the keycode. */
-            var inputs: Array<Input2> = [];
+            var inputs: Array<Input> = [];
 
             for (var i in this._inputLookup[keyCode])
                 inputs.push(this._inputs[this._inputLookup[keyCode][i]]);

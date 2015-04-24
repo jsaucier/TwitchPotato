@@ -1,9 +1,5 @@
 declare var chrome: any;
 
-interface IEmptyCallback {
-    (): void;
-}
-
 interface ITwitchUserCallback {
     (user: ITwitchUser): void;
 }
@@ -73,8 +69,18 @@ interface IInput {
     code: number;
 }
 
+interface Input {
+    name: string;
+    desc: string;
+    type: TwitchPotato.Inputs;
+    key?: string;
+    keyCode?: number;
+    hidden?: boolean;
+}
+
 interface IPlayer {
     channel: string;
+    isVideo: boolean;
     isLoaded: boolean;
     number: number;
     flashback?: string;
@@ -84,7 +90,7 @@ interface IPlayer {
 interface IStorage {
     users: string[];
     hidden: string[];
-    zoom: number;
+    fontSize: number;
 }
 
 interface ITwitchUser {
