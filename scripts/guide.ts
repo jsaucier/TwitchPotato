@@ -34,46 +34,48 @@ module TwitchPotato {
             this.UpdateMenu(Direction.None);
         }
 
-        HandleInput(input: Inputs): void {
+        HandleInput(input: Inputs): boolean {
             /** If the guide isn't shown, exit the function. */
             if (!this.isShown) return;
 
             /** The selected menu item. */
             var item = $(this.selectedItem);
 
-            if (this.FollowMenu.HandleInput(input, item)) { }
-            if (this.ContextMenu.HandleInput(input, item)) { }
+            if (this.FollowMenu.HandleInput(input, item))
+                return true;
+            else if (this.ContextMenu.HandleInput(input, item))
+                return true;
             else {
                 switch (input) {
-                    case Inputs.Guide_Up:
+                    case Inputs.Up:
                         this.UpdateMenu(Direction.Up, 200);
-                        break;
-                    case Inputs.Guide_Down:
+                        return true;
+                    case Inputs.Down:
                         this.UpdateMenu(Direction.Down, 200);
-                        break;
-                    case Inputs.Guide_Left:
+                        return true;
+                    case Inputs.Left:
                         this.UpdateMenu(Direction.Left, 200);
-                        break;
-                    case Inputs.Guide_Right:
+                        return true;
+                    case Inputs.Right:
                         this.UpdateMenu(Direction.Right, 200);
-                        break;
-                    case Inputs.Guide_PageUp:
+                        return true;
+                    case Inputs.PageUp:
                         this.UpdateMenu(Direction.JumpUp, 200);
-                        break;
-                    case Inputs.Guide_PageDown:
+                        return true;
+                    case Inputs.PageDown:
                         this.UpdateMenu(Direction.JumpDown, 200);
-                        break;
-                    case Inputs.Guide_Select:
+                        return true;
+                    case Inputs.Select:
                         this.OpenMenuItem();
-                        break;
-                    case Inputs.Guide_Refresh:
+                        return true;
+                    case Inputs.Refresh:
                         this.Refresh();
-                        break;
-                    case Inputs.Guide_ContextMenu:
+                        return true;
+                    case Inputs.ContextMenu:
                         this.ContextMenu.Show($(this.selectedItem));
-                        break;
+                        return true;
                     default:
-                        break;
+                        return false;
                 }
             }
         }

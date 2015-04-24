@@ -56,14 +56,14 @@ module TwitchPotato {
 
         /** Toggles the Guide. */
         ToggleGuide(hidePlayer = false): void {
-            if (this.Guide.IsShown() === true) {
 
-                /** Ensure there is a stream playing. */
-                if (this.Player.isPlaying === false) return;
+            /** Ensure there is a stream playing. */
+            if (!this.Player.IsPlaying()) return;
+
+            if (this.Guide.IsShown() === true) {
 
                 /** Fade the guide out. */
                 this.Guide.Toggle(false, true);
-
 
                 /** Pause the guide channel preview. */
                 App.Guide.PausePreview();
@@ -121,37 +121,38 @@ module TwitchPotato {
         }
 
         /** Callback triggered after a keypress event. */
-        HandleInput(input: Inputs): void {
+        HandleInput(input: Inputs): boolean {
 
             if (this.IsWebviewOpen())
                 switch (input) {
                     case Inputs.Close:
-                        return this.CloseWebview();
+                        this.CloseWebview();
+                        return true;
                     default:
-                        return;
+                        return true;
                 }
             else
                 switch (input) {
                     case Inputs.Close:
                         window.close();
-                        break;
+                        return true;
                     case Inputs.ToggleGuide:
                         this.ToggleGuide();
-                        break;
+                        return true;
                     case Inputs.FontSizeIncrease:
                         this.UpdateFontSize(FontSize.Increase);
-                        break;
+                        return true;
                     case Inputs.FontSizeDecrease:
                         this.UpdateFontSize(FontSize.Decrease);
-                        break;
+                        return true;
                     case Inputs.FontSizeReset:
                         this.UpdateFontSize(FontSize.Reset);
-                        break;
+                        return true;
                     case Inputs.SaveSetting:
                         this.SaveSetting();
-                        break;
+                        return true;
                     default:
-                        break;
+                        return false;
                 }
         }
 

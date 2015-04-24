@@ -22,11 +22,10 @@ module TwitchPotato {
         private previousLayout: PlayersLayout;
 
         /** Gets or sets if this is a fake load. */
-        private isFake = true;
+        private _isFake = true;
 
         /** Gets or sets if there is any channels playing. */
-        private isPlaying = false;
-
+        private _isPlaying = false;
 
         constructor() {
             /** Create a blank player. */
@@ -35,99 +34,97 @@ module TwitchPotato {
 
         /** Determines if there is any channels playing. */
         IsPlaying(): boolean {
-            return this.isPlaying;
+            return this._isPlaying;
         }
 
-        /*
-         * Callback for player input events.
-         */
-        HandleInput(input: Inputs): void {
+        /** Callback for player input events. */
+        HandleInput(input: Inputs): boolean {
 
-            if (!this.isPlaying) return;
+            if (!this._isPlaying) return false;
 
             switch (input) {
-                case Inputs.Player_SelectPrevious:
+                case Inputs.Up:
                     this.UpdateSelected(Direction.Up);
-                    break;
+                    return true;
 
-                case Inputs.Player_SelectNext:
+                case Inputs.Down:
                     this.UpdateSelected(Direction.Down);
-                    break;
+                    return true;
 
-                case Inputs.Player_Stop:
+                case Inputs.Stop:
                     this.Stop();
-                    break;
+                    return true;
 
-                case Inputs.Player_PlayPause:
+                case Inputs.PlayPause:
                     this.PlayPause();
-                    break;
+                    return true;
 
-                case Inputs.Player_Mute:
+                case Inputs.Mute:
                     this.Mute();
-                    break;
+                    return true;
 
-                case Inputs.Player_Flashback:
+                case Inputs.Flashback:
                     this.Flashback();
-                    break;
+                    return true;
 
-                case Inputs.Player_Select:
+                case Inputs.Select:
                     this.Select();
-                    break;
+                    return true;
 
-                case Inputs.Player_Layout:
+                case Inputs.Layout:
                     this.ArrangePlayers();
-                    break;
+                    return true;
 
-                case Inputs.Player_FullscreenToggle:
+                case Inputs.FullscreenToggle:
                     this.Fullscreen(FullscreenAction.Toggle);
-                    break;
+                    return true;
 
-                case Inputs.Player_FullscreenEnter:
+                case Inputs.FullscreenEnter:
                     this.Fullscreen(FullscreenAction.Enter);
-                    break;
+                    return true;
 
-                case Inputs.Player_FullscreenExit:
+                case Inputs.FullscreenExit:
                     this.Fullscreen(FullscreenAction.Exit);
-                    break;
+                    return true;
 
-                case Inputs.Player_QualityMobile:
+                case Inputs.QualityMobile:
                     this.SetQuality(Quality.Mobile);
-                    break;
+                    return true;
 
-                case Inputs.Player_QualityLow:
+                case Inputs.QualityLow:
                     this.SetQuality(Quality.Low);
-                    break;
+                    return true;
 
-                case Inputs.Player_QualityMedium:
+                case Inputs.QualityMedium:
                     this.SetQuality(Quality.Medium);
-                    break;
+                    return true;
 
-                case Inputs.Player_QualityHigh:
+                case Inputs.QualityHigh:
                     this.SetQuality(Quality.High);
-                    break;
+                    return true;
 
-                case Inputs.Player_QualitySource:
+                case Inputs.QualitySource:
                     this.SetQuality(Quality.Source);
-                    break;
+                    return true;
 
-                case Inputs.Player_ToggleChat:
-                    App.Chat.Toggle(this.GetPlayerByNumber(0).channel);
-                    break;
+                case Inputs.ToggleChat:
+                    //App.Chat.Toggle(this.GetPlayerByNumber(0).channel);
+                    return true;
 
-                case Inputs.Player_ChatLayoutNext:
+                case Inputs.Right:
                     App.Chat.UpdateLayout(Direction.Right);
-                    break;
+                    return true;
 
-                case Inputs.Player_ChatLayoutPrevious:
+                case Inputs.Left:
                     App.Chat.UpdateLayout(Direction.Left);
-                    break;
+                    return true;
 
                 case Inputs.Reload:
                     this.Reload();
-                    break;
+                    return true;
 
                 default:
-                    break;
+                    return false;
             }
         }
 
@@ -179,10 +176,10 @@ module TwitchPotato {
                     player.webview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
 
                     /** Load the player. */
-                    if (!this.isFake)
+                    if (!this._isFake)
                         setTimeout(() => this.Load(player, player.channel, player.isVideo), 100);
                     else
-                        this.isFake = false;
+                        this._isFake = false;
 
                     /** Set the playe ras loaded. */
                     player.isLoaded = true;
@@ -225,7 +222,7 @@ module TwitchPotato {
             this.ArrangePlayers(true);
 
             /** Set as currently playing a channel. */
-            this.isPlaying = true;
+            this._isPlaying = true;
 
             /** Show the player */
             $('#players').fadeIn();
@@ -270,7 +267,7 @@ module TwitchPotato {
                     this.Remove(player);
                 } else {
                     /** Sets no channels as playing. */
-                    this.isPlaying = false;
+                    this._isPlaying = false;
 
                     /** Stop the player. */
                     this.PostMessage(player, 'PauseVideo');

@@ -21,17 +21,17 @@ module TwitchPotato {
             if ($(this.followMenu).length === 0) return false;
 
             switch (input) {
-                case Inputs.Guide_ContextMenu:
+                case Inputs.ContextMenu:
                     this.Close();
                     App.Guide.ContextMenu.Close();
                     break;
-                case Inputs.Guide_Up:
+                case Inputs.Up:
                     this.UpdateButton(Direction.Up);
                     break;
-                case Inputs.Guide_Down:
+                case Inputs.Down:
                     this.UpdateButton(Direction.Down);
                     break;
-                case Inputs.Guide_Select:
+                case Inputs.Select:
                     this.SelectButton(item);
                     break;
                 default:
