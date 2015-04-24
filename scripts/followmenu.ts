@@ -16,14 +16,14 @@ module TwitchPotato {
         private key: string;
 
         /** Handles input for the context menu. */
-        HandleInput(input: IInput, item: JQuery): boolean {
+        HandleInput(input: Inputs, item: JQuery): boolean {
             /** Follow menu is not visible. */
             if ($(this.followMenu).length === 0) return false;
 
-            switch (input.input) {
+            switch (input) {
                 case Inputs.Guide_ContextMenu:
                     this.Close();
-                    Application.Guide.ContextMenu.Close();
+                    App.Guide.ContextMenu.Close();
                     break;
                 case Inputs.Guide_Up:
                     this.UpdateButton(Direction.Up);
@@ -46,9 +46,9 @@ module TwitchPotato {
             $(this.followMenu).remove();
 
             if (closeContextMenu === true)
-                Application.Guide.ContextMenu.Close();
+                App.Guide.ContextMenu.Close();
             else
-                Application.Guide.UpdateMenuScroll();
+                App.Guide.UpdateMenuScroll();
         }
 
         /** Updates the follow menu after the guide refreshes. */
@@ -74,8 +74,8 @@ module TwitchPotato {
                 item.attr('game') !== undefined)
                 this.key = item.attr('game');
 
-            var users = Application.Twitch.GetUsers();
-            var following = Application.Twitch.GetFollowing(followType, this.key);
+            var users = App.Twitch.GetUsers();
+            var following = App.Twitch.GetFollowing(followType, this.key);
 
             if (unfollow === true)
                 users = following;
@@ -97,7 +97,7 @@ module TwitchPotato {
                 var div = $('<div>')
                     .addClass('button')
                     .attr('user', users[i])
-                    .text(Application.Twitch.GetDisplayName(users[i]))
+                    .text(App.Twitch.GetDisplayName(users[i]))
                     .insertBefore(html.find('.button[user="cancel"]'));
             }
 
@@ -107,7 +107,7 @@ module TwitchPotato {
             html.appendTo(item);
 
             /** Scroll the guide menu. */
-            Application.Guide.UpdateMenuScroll();
+            App.Guide.UpdateMenuScroll();
         }
 
         /** Handle following and unfollowing if possible. */
@@ -116,11 +116,11 @@ module TwitchPotato {
              * the item. */
             if (users.length === 1) {
                 if (this.followType === FollowType.Channel) {
-                    Application.Twitch.Follow(users[0], this.key, FollowType.Channel, this.unfollow);
+                    App.Twitch.Follow(users[0], this.key, FollowType.Channel, this.unfollow);
                     return true;
                 }
                 else if (this.followType === FollowType.Game) {
-                    Application.Twitch.Follow(users[0], this.key, FollowType.Game, this.unfollow);
+                    App.Twitch.Follow(users[0], this.key, FollowType.Game, this.unfollow);
                     return true;
                 }
             }
@@ -170,9 +170,9 @@ module TwitchPotato {
 
             if (user !== 'cancel') {
                 if (this.followType === FollowType.Channel)
-                    Application.Twitch.Follow(user, this.key, FollowType.Channel, this.unfollow);
+                    App.Twitch.Follow(user, this.key, FollowType.Channel, this.unfollow);
                 else if (this.followType === FollowType.Game)
-                    Application.Twitch.Follow(user, this.key, FollowType.Game, this.unfollow);
+                    App.Twitch.Follow(user, this.key, FollowType.Game, this.unfollow);
 
                 /** Close the menu. */
                 this.Close(true);

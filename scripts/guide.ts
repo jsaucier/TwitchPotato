@@ -34,44 +34,48 @@ module TwitchPotato {
             this.UpdateMenu(Direction.None);
         }
 
-        OnInput(input: IInput): void {
+        HandleInput(input: Inputs): void {
+            /** If the guide isn't shown, exit the function. */
+            if (!this.isShown) return;
+
             /** The selected menu item. */
             var item = $(this.selectedItem);
 
-            if (this.FollowMenu.HandleInput(input, item) !== true)
-                if (this.ContextMenu.HandleInput(input, item) !== true) {
-                    switch (input.input) {
-                        case Inputs.Guide_Up:
-                            this.UpdateMenu(Direction.Up, 200);
-                            break;
-                        case Inputs.Guide_Down:
-                            this.UpdateMenu(Direction.Down, 200);
-                            break;
-                        case Inputs.Guide_Left:
-                            this.UpdateMenu(Direction.Left, 200);
-                            break;
-                        case Inputs.Guide_Right:
-                            this.UpdateMenu(Direction.Right, 200);
-                            break;
-                        case Inputs.Guide_PageUp:
-                            this.UpdateMenu(Direction.JumpUp, 200);
-                            break;
-                        case Inputs.Guide_PageDown:
-                            this.UpdateMenu(Direction.JumpDown, 200);
-                            break;
-                        case Inputs.Guide_Select:
-                            this.OpenMenuItem();
-                            break;
-                        case Inputs.Guide_Refresh:
-                            this.Refresh();
-                            break;
-                        case Inputs.Guide_ContextMenu:
-                            this.ContextMenu.Show($(this.selectedItem));
-                            break;
-                        default:
-                            break;
-                    }
+            if (this.FollowMenu.HandleInput(input, item)) { }
+            if (this.ContextMenu.HandleInput(input, item)) { }
+            else {
+                switch (input) {
+                    case Inputs.Guide_Up:
+                        this.UpdateMenu(Direction.Up, 200);
+                        break;
+                    case Inputs.Guide_Down:
+                        this.UpdateMenu(Direction.Down, 200);
+                        break;
+                    case Inputs.Guide_Left:
+                        this.UpdateMenu(Direction.Left, 200);
+                        break;
+                    case Inputs.Guide_Right:
+                        this.UpdateMenu(Direction.Right, 200);
+                        break;
+                    case Inputs.Guide_PageUp:
+                        this.UpdateMenu(Direction.JumpUp, 200);
+                        break;
+                    case Inputs.Guide_PageDown:
+                        this.UpdateMenu(Direction.JumpDown, 200);
+                        break;
+                    case Inputs.Guide_Select:
+                        this.OpenMenuItem();
+                        break;
+                    case Inputs.Guide_Refresh:
+                        this.Refresh();
+                        break;
+                    case Inputs.Guide_ContextMenu:
+                        this.ContextMenu.Show($(this.selectedItem));
+                        break;
+                    default:
+                        break;
                 }
+            }
         }
 
         /** Sets the guide update type. */
@@ -111,7 +115,7 @@ module TwitchPotato {
                     case MenuType.Channels:
                     case MenuType.Game:
                         /** Play the channel. */
-                        Application.Player.Play(key);
+                        App.Player.Play(key);
 
                         /** Stop the preivew. */
                         return this.PostMessage('PauseVideo');
@@ -129,10 +133,10 @@ module TwitchPotato {
                         this.updateType = UpdateType.Game;
 
                         /** Load the game search. */
-                        return Application.Twitch.GetGameChannels(key);
+                        return App.Twitch.GetGameChannels(key);
                     case MenuType.Videos:
                         /** Play the channel. */
-                        Application.Player.Play(key, false, true);
+                        App.Player.Play(key, false, true);
 
                         /** Stop the preivew. */
                         return this.PostMessage('PauseVideo');
@@ -147,10 +151,10 @@ module TwitchPotato {
                 switch (type) {
                     case 'login':
                         /** Log into Twitch.tv. */
-                        return Application.Login();
+                        return App.Login();
                     case 'reset':
                         /** Reset the application settings. */
-                        return Application.Reset();
+                        return App.Reset();
                 }
             }
         }
@@ -166,10 +170,10 @@ module TwitchPotato {
             this.UpdateAllMenuItems();
 
             /** Display the notification window. */
-            Application.Notification.Notify();
+            App.Notification.Notify();
 
             /** Hide the loading screen. */
-            Application.Loading(false);
+            App.Loading(false);
 
             this.firstUpdate = false;
         }
@@ -236,11 +240,11 @@ module TwitchPotato {
                 var aItem: IChannel,
                     bItem: IChannel;
 
-                aItem = <IChannel>Application.Twitch.GetMenu(menu)[a];
-                bItem = <IChannel>Application.Twitch.GetMenu(menu)[b];
+                aItem = <IChannel>App.Twitch.GetMenu(menu)[a];
+                bItem = <IChannel>App.Twitch.GetMenu(menu)[b];
 
-                var aIsFollowed = Application.Twitch.IsFollowing(FollowType.Channel, a);
-                var bIsFollowed = Application.Twitch.IsFollowing(FollowType.Channel, b);
+                var aIsFollowed = App.Twitch.IsFollowing(FollowType.Channel, a);
+                var bIsFollowed = App.Twitch.IsFollowing(FollowType.Channel, b);
 
                 var aNumber = aItem.viewers;
                 var bNumber = bItem.viewers;
@@ -271,14 +275,14 @@ module TwitchPotato {
                 var aItem: IGame,
                     bItem: IGame;
 
-                aItem = <IGame>Application.Twitch.GetMenu(menu)[a];
-                bItem = <IGame>Application.Twitch.GetMenu(menu)[b];
+                aItem = <IGame>App.Twitch.GetMenu(menu)[a];
+                bItem = <IGame>App.Twitch.GetMenu(menu)[b];
 
-                var aIsFollowed = Application.Twitch.IsFollowing(FollowType.Game, a);
-                var bIsFollowed = Application.Twitch.IsFollowing(FollowType.Game, b);
+                var aIsFollowed = App.Twitch.IsFollowing(FollowType.Game, a);
+                var bIsFollowed = App.Twitch.IsFollowing(FollowType.Game, b);
 
-                var aIsHidden = Application.Storage.IsGameHidden(a);
-                var bIsHidden = Application.Storage.IsGameHidden(b);
+                var aIsHidden = App.Storage.IsGameHidden(a);
+                var bIsHidden = App.Storage.IsGameHidden(b);
 
                 var aNumber = aItem.viewers;
                 var bNumber = bItem.viewers;
@@ -342,7 +346,7 @@ module TwitchPotato {
 
             var menuItems: string[] = [];
 
-            for (var key in Application.Twitch.GetMenu(menu))
+            for (var key in App.Twitch.GetMenu(menu))
                 menuItems.push(key);
 
             if (menu === MenuType.Channels || menu === MenuType.Game)
@@ -404,16 +408,16 @@ module TwitchPotato {
 
         private CreateChannelItem(key: string, menu: MenuType): JQuery {
             /** Get the item data. */
-            var channel = <IChannel>Application.Twitch.GetMenu(menu)[key];
+            var channel = <IChannel>App.Twitch.GetMenu(menu)[key];
 
             /** Load the channel item template */
             var html = $($('#channel-item-template').html());
 
             /** Gets whether the channel is followed. */
-            var followed = Application.Twitch.IsFollowing(FollowType.Channel, channel.name);
+            var followed = App.Twitch.IsFollowing(FollowType.Channel, channel.name);
 
             /** Gets whether the game is hidden. */
-            var hidden = Application.Storage.IsGameHidden(channel.game);
+            var hidden = App.Storage.IsGameHidden(channel.game);
 
             /** Ignore hidden games that are not followed. */
             if (followed === false && hidden === true && menu !== MenuType.Game) return;
@@ -425,7 +429,7 @@ module TwitchPotato {
                 'menu': menu,
                 'viewers': channel.viewers,
                 'followed': followed,
-                'followed-game': Application.Twitch.IsFollowing(FollowType.Game, channel.game),
+                'followed-game': App.Twitch.IsFollowing(FollowType.Game, channel.game),
             });
 
             /** Set the item streamer. */
@@ -439,7 +443,7 @@ module TwitchPotato {
 
         private CreateGameItem(key: string): JQuery {
             /** Get the game data. */
-            var game = <IGame>Application.Twitch.GetMenu(MenuType.Games)[key];
+            var game = <IGame>App.Twitch.GetMenu(MenuType.Games)[key];
 
             /** Load the game item template */
             var html = $($('#game-item-template').html());
@@ -450,8 +454,8 @@ module TwitchPotato {
                 'menu': MenuType.Games,
                 'viewers': game.viewers,
                 'channels': game.channels,
-                'followed': Application.Twitch.IsFollowing(FollowType.Game, game.name),
-                'hide': Application.Storage.IsGameHidden(game.name)
+                'followed': App.Twitch.IsFollowing(FollowType.Game, game.name),
+                'hide': App.Storage.IsGameHidden(game.name)
             });
 
             /** Set the item text. */
@@ -462,7 +466,7 @@ module TwitchPotato {
 
         private CreateVideoItem(key: string): JQuery {
             /** Get the video data. */
-            var video = Application.Twitch.GetMenu(MenuType.Videos)[key];
+            var video = App.Twitch.GetMenu(MenuType.Videos)[key];
 
             /** Load the video item template */
             var html = $($('#video-item-template').html());
@@ -626,7 +630,7 @@ module TwitchPotato {
 
         private ShowChannel(key: string, menu: MenuType): void {
             /** Get the channel data. */
-            var channel = <IChannel>Application.Twitch.GetMenu(menu)[key];
+            var channel = <IChannel>App.Twitch.GetMenu(menu)[key];
 
             /** The channel head template. */
             var head = $('#channel-info-head-template').html().format(
@@ -644,7 +648,7 @@ module TwitchPotato {
 
         private ShowGame(key: string): void {
             /** Get the game data. */
-            var game = <IGame>Application.Twitch.GetMenu(MenuType.Games)[key];
+            var game = <IGame>App.Twitch.GetMenu(MenuType.Games)[key];
 
             /** The game head template. */
             var head = $('#game-info-head-template').html().format(
@@ -661,7 +665,7 @@ module TwitchPotato {
 
         private ShowVideo(key: string): void {
             /** Get the video data. */
-            var video = <IVideo>Application.Twitch.GetMenu(MenuType.Videos)[key];
+            var video = <IVideo>App.Twitch.GetMenu(MenuType.Videos)[key];
 
             /** The game head template. */
             var head = $('#video-info-head-template').html().format(
@@ -704,7 +708,7 @@ module TwitchPotato {
         }
 
         Refresh(skipFollowed = false): void {
-            Application.Twitch.Refresh(skipFollowed);
+            App.Twitch.Refresh(skipFollowed);
         }
 
         private StartRefreshTimer(): void {

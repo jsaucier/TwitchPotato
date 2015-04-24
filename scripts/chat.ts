@@ -41,8 +41,8 @@ module TwitchPotato {
                     /** Inject the chat css. */
                     this.webview.insertCSS({ file: 'css/twitch.css' });
 
-                    /** Update the zoom. */
-                    this.UpdateZoom();
+                    /** Update the font size. */
+                    this.UpdateFontSize();
 
                     /** Update the chat layout. */
                     this.UpdateLayout();
@@ -58,11 +58,11 @@ module TwitchPotato {
                 if (this.showChat) $(this.chat).fadeIn();
 
                 if (this.layout === ChatLayout.DockLeft)
-                    Application.Player.UpdateLayout(true, PlayersLayout.ChatLeft);
+                    App.Player.UpdateLayout(true, PlayersLayout.ChatLeft);
                 else if (this.layout === ChatLayout.DockRight)
-                    Application.Player.UpdateLayout(true, PlayersLayout.ChatRight);
+                    App.Player.UpdateLayout(true, PlayersLayout.ChatRight);
                 else
-                    Application.Player.UpdateLayout(true, PlayersLayout.Full);
+                    App.Player.UpdateLayout(true, PlayersLayout.Full);
             }
         }
 
@@ -75,7 +75,7 @@ module TwitchPotato {
                 $(this.chat).fadeOut();
 
                 /** Set the player back to full. */
-                return Application.Player.UpdateLayout(true, PlayersLayout.Full);
+                return App.Player.UpdateLayout(true, PlayersLayout.Full);
             }
 
             /** The chat should be shown. */
@@ -87,14 +87,14 @@ module TwitchPotato {
                 this.UpdateLayout();
         }
 
-        /** Updates the font-size of the chat based on the zoom level. */
-        UpdateZoom(): void {
+        /** Updates the font size of the chat. */
+        UpdateFontSize(): void {
             /** Cannot update the font-size if the webview is not loaded. */
             if (this.isLoaded === false) return;
 
-            /** Set the zoom. */
+            /** Set the font size. */
             this.webview.insertCSS({
-                code: 'body { font-size: {0}%!important }'.format(Application.Storage.GetZoom())
+                code: 'body { font-size: {0}%!important }'.format(App.Storage.FontSize())
             });
         }
 
@@ -128,11 +128,11 @@ module TwitchPotato {
 
             /** Update the player layout. */
             if (this.layout === ChatLayout.DockLeft)
-                Application.Player.UpdateLayout(true, PlayersLayout.ChatLeft);
+                App.Player.UpdateLayout(true, PlayersLayout.ChatLeft);
             else if (this.layout === ChatLayout.DockRight)
-                Application.Player.UpdateLayout(true, PlayersLayout.ChatRight);
+                App.Player.UpdateLayout(true, PlayersLayout.ChatRight);
             else
-                Application.Player.UpdateLayout(true, PlayersLayout.Full);
+                App.Player.UpdateLayout(true, PlayersLayout.Full);
         }
     }
 }

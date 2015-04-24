@@ -33,9 +33,11 @@ module TwitchPotato {
         /*
          * Callback for player input events.
          */
-        OnInput(input: IInput): void {
-            switch (input.input) {
+        HandleInput(input: Inputs): void {
 
+            if (!this.isPlaying) return;
+
+            switch (input) {
                 case Inputs.Player_SelectPrevious:
                     this.UpdateSelected(Direction.Up);
                     break;
@@ -101,15 +103,15 @@ module TwitchPotato {
                     break;
 
                 case Inputs.Player_ToggleChat:
-                    Application.Chat.Toggle(this.GetPlayerByNumber(0).channel);
+                    App.Chat.Toggle(this.GetPlayerByNumber(0).channel);
                     break;
 
                 case Inputs.Player_ChatLayoutNext:
-                    Application.Chat.UpdateLayout(Direction.Right);
+                    App.Chat.UpdateLayout(Direction.Right);
                     break;
 
                 case Inputs.Player_ChatLayoutPrevious:
-                    Application.Chat.UpdateLayout(Direction.Left);
+                    App.Chat.UpdateLayout(Direction.Left);
                     break;
 
                 default:
@@ -175,8 +177,6 @@ module TwitchPotato {
         }
 
         Play(channel: string, create = false, isVideo = false): void {
-            /** Register the player inputs. */
-            Application.Input.RegisterInputs(InputType.Player);
 
             /** Get the number of current players */
             var numPlayers = Object.keys(this.players).length;
@@ -212,7 +212,7 @@ module TwitchPotato {
             $('#players').fadeIn();
 
             /** Hide the guide */
-            Application.Guide.Toggle(false, true)
+            App.Guide.Toggle(false, true)
         }
 
         private Select(): void {
@@ -257,7 +257,7 @@ module TwitchPotato {
                     this.PostMessage(player, 'PauseVideo');
 
                     /** Show the guide. */
-                    Application.ToggleGuide(true);
+                    App.ToggleGuide(true);
                 }
             }
         }
