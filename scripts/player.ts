@@ -21,13 +21,16 @@ module TwitchPotato {
         private playersLayout: PlayersLayout;
         private previousLayout: PlayersLayout;
 
+        /** Gets or sets if this is a fake load. */
+        private isFake = true;
+
         /** Gets or sets if there is any channels playing. */
         isPlaying = false;
 
 
         constructor() {
             /** Create a blank player. */
-            this.Create('Twitch-Potato-Init', false, true);
+            this.Create('Twitch-Potato-Init', false);
         }
 
         /*
@@ -114,6 +117,10 @@ module TwitchPotato {
                     App.Chat.UpdateLayout(Direction.Left);
                     break;
 
+                case Inputs.Reload:
+                    this.Reload();
+                    break;
+
                 default:
                     break;
             }
@@ -135,7 +142,7 @@ module TwitchPotato {
             return this.GetPlayerByNumber(number);
         }
 
-        private Create(channel: string, isVideo = false, isFake = false): IPlayer {
+        private Create(channel: string, isVideo = false): IPlayer {
             /** Check to see if a player for this id exists. */
             var player = this.players[channel];
 
@@ -150,6 +157,7 @@ module TwitchPotato {
                 /** Initialize our player object. */
                 player = {
                     channel: channel,
+                    isVideo: isVideo,
                     isLoaded: false,
                     number: numPlayers,
                     flashback: undefined,
@@ -157,7 +165,7 @@ module TwitchPotato {
                 }
 
                 /** Catch load events. */
-                player.webview.addEventListener('loadcommit', () => {
+                player.webview.addEventListener('contentload', () => {
                     /** Inject the script files. */
                     player.webview.executeScript({ file: 'js/vendor/jquery.min.js' });
                     player.webview.executeScript({ file: 'js/inject.js' });
@@ -166,7 +174,13 @@ module TwitchPotato {
                     player.webview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
 
                     /** Load the player. */
-                    setTimeout(() => this.Load(player, channel, isVideo, isFake), 100);
+                    if (!this.isFake)
+                        setTimeout(() => this.Load(player, player.channel, player.isVideo), 100);
+                    else
+                        this.isFake = false;
+
+                    /** Set the playe ras loaded. */
+                    player.isLoaded = true;
                 });
 
                 /** Add the player to our list. */
@@ -197,7 +211,7 @@ module TwitchPotato {
 
             /* Load the channel if the player is already loaded,
              * otherwise wait for the create function to callback. */
-            if (player.isLoaded === true) this.Load(player, channel, isVideo);
+            if (player.isLoaded) this.Load(player, channel, isVideo);
 
             /** Show the player. */
             this.UpdateLayout(true, PlayersLayout.Full);
@@ -424,17 +438,47 @@ module TwitchPotato {
         }
 
         private Load(player: IPlayer, channel: string, isVideo = false, isFake = false): void {
+
             /** Set the flashback value. */
             player.flashback = (player.channel !== channel) ? player.channel : player.flashback;
+
+            if (player.flashback === 'Twitch-Potato-Init') player.flashback = undefined;
 
             /** Set the player id value. */
             player.channel = channel;
 
-            if (isFake !== true)
-                this.PostMessage(player, 'LoadVideo', { channel: channel, isVideo: isVideo });
+            /** Set the isVideo value. */
+            player.isVideo = isVideo;
 
-            /** Set the playe ras loaded. */
-            player.isLoaded = true;
+            /** Load the video. */
+            this.PostMessage(player, 'LoadVideo', {
+                channel: player.channel,
+                isVideo: player.isVideo
+            });
+        }
+
+        private Reload(): void {
+            /** Get the selected player. */
+            var player = this.GetSelectedPlayer();
+
+            /** Player is no longer loaded. */
+            player.isLoaded = false;
+
+            /** Reload the webview. */
+            player.webview.reload();
+
+            // /** The current player channe. */
+            // var channel = player.channel;
+            //
+            // /** Gets whether the player is playing a video. */
+            // var isVideo = player.isVideo;
+            //
+            // /** Reset the player values. */
+            // player.channel = undefined;
+            // player.isVideo = undefined;
+            //
+            // /** Restart the previous channel or video. */
+            // this.Play(channel, isVideo);
         }
 
         private Mute(mute?: boolean): void {

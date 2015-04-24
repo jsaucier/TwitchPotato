@@ -392,7 +392,8 @@ module TwitchPotato {
         Player_QualitySource,
         Player_ToggleChat,
         Player_ChatLayoutNext,
-        Player_ChatLayoutPrevious
+        Player_ChatLayoutPrevious,
+        Reload
     }
 
     export enum Direction {
