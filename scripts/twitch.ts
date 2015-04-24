@@ -149,7 +149,7 @@ module TwitchPotato {
         /** Upates all the twitch data. */
         Refresh(skipFollowed = false): void {
             /** Set the guide update type. */
-            Application.Guide.SetUpdateType(UpdateType.All);
+            App.Guide.SetUpdateType(UpdateType.All);
 
             /** Resets the followed channels dictionary. */
             this.followed[FollowType.Channel] = {};
@@ -162,9 +162,6 @@ module TwitchPotato {
 
             /** Reset the top games dictionary. */
             this.menus[MenuType.Games] = {};
-
-            /** Resets the game dictionary. */
-            this.menus[MenuType.Game] = {};
 
             if (this.game !== undefined)
                 this.GetGameChannels(this.game);
@@ -183,7 +180,7 @@ module TwitchPotato {
         /** Follows or unfollows the channel or game for the user. */
         Follow(user: string, follow: string, type: FollowType, unfollow = false) {
             /** Set the update type. */
-            Application.Guide.SetUpdateType(UpdateType.Refresh);
+            App.Guide.SetUpdateType(UpdateType.Refresh);
 
             /** Array of users to follow the game. */
             var users: IDictionary<ITwitchUser> = {};
@@ -270,6 +267,10 @@ module TwitchPotato {
 
         /** Gets the channels for a game. */
         GetGameChannels(game: string, getAll = true) {
+
+            /** Resets the game dictionary. */
+            this.menus[MenuType.Game] = {};
+
             /** Save the game. */
             this.game = game;
 
@@ -467,10 +468,7 @@ module TwitchPotato {
                 $('#users').fadeIn();
 
                 /** Hide the loading window. */
-                Application.Loading(false);
-
-                /** Register the global inputs. */
-                Application.Input.RegisterInputs(InputType.Global);
+                App.Loading(false);
 
                 /** Insert the script and execute the code. */
                 webview.focus();
@@ -504,10 +502,7 @@ module TwitchPotato {
             /** No webviews are open. */
             if ($('#users webview').length === 0) {
                 $('#users').fadeOut();
-                Application.Guide.Toggle(true, true);
-
-
-                Application.Input.RegisterInputs(InputType.Guide);
+                App.Guide.Toggle(true, true);
             }
 
             /** Fire the callback. */
@@ -521,7 +516,7 @@ module TwitchPotato {
             var json = xhr.responseJSON;
 
             /** Show the error. */
-            Application.ShowError('{0} - {1}: {2}'.format(json.status, json.error, json.message));
+            App.ShowMessage('{0} - {1}: {2}'.format(json.status, json.error, json.message));
         }
 
         /** Fired when an authentication error is encountered. */
