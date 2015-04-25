@@ -3,3 +3,7 @@ Fix top games api not loading when there is a lot of games.
 Update context menu to create menu items like hide games.
 
 Fix height on menu not resizing properly.
+
+
+Add setting to enable or disable video previews.
+Video preview not working.
