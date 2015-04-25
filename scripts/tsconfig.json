@@ -13,15 +13,13 @@
     },
     "filesGlob": [
         "./*.ts",
+        "./*/*.ts",
         "!./node_modules/**/*.ts"
     ],
     "files": [
         "./_potato.d.ts",
         "./chat.ts",
         "./chrome.d.ts",
-        "./contextmenu.ts",
-        "./followmenu.ts",
-        "./guide.ts",
         "./inject.ts",
         "./input.ts",
         "./jquery.d.ts",
@@ -30,6 +28,12 @@
         "./potato.ts",
         "./storage.ts",
         "./twitch.ts",
-        "./utils.ts"
+        "./utils.ts",
+        "./Guide/Content.ts",
+        "./Guide/ContextMenu.ts",
+        "./Guide/FollowMenu.ts",
+        "./Guide/Guide.ts",
+        "./Guide/MenuItem.ts",
+        "./Guide/Timer.ts"
     ]
 }
