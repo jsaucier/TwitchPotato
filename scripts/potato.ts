@@ -4,7 +4,7 @@ module TwitchPotato {
 
         Storage: StorageHandler;
         Input: InputHandler;
-        Guide: GuideHandler;
+        //Guide: GuideHandler;
         Player: PlayerHandler;
         Twitch: TwitchHandler;
         Notification: NotificationHandler;
@@ -22,7 +22,7 @@ module TwitchPotato {
 
             this.Storage = new StorageHandler();
             this.Input = new InputHandler();
-            this.Guide = new GuideHandler();
+            //this.Guide = new GuideHandler();
             this.Player = new PlayerHandler();
             this.Twitch = new TwitchHandler();
             this.Notification = new NotificationHandler();
@@ -40,7 +40,7 @@ module TwitchPotato {
                     this.Twitch.Login(settings.users[user]);
 
                 /** Update the guide. */
-                this.Guide.Refresh();
+                Guide.Refresh();
             });
         }
 
@@ -60,13 +60,13 @@ module TwitchPotato {
             /** Ensure there is a stream playing. */
             if (!this.Player.IsPlaying()) return;
 
-            if (this.Guide.IsShown() === true) {
+            if (Guide.IsShown() === true) {
 
                 /** Fade the guide out. */
-                this.Guide.Toggle(false, true);
+                Guide.Toggle(false, true);
 
                 /** Pause the guide channel preview. */
-                App.Guide.PausePreview();
+                Guide.Content.PausePreview();
 
                 /** Show the chat window. */
                 App.Chat.Guide(true);
@@ -82,10 +82,10 @@ module TwitchPotato {
                 App.Chat.Guide(false);
 
                 /** Play the guide channel preview. */
-                App.Guide.PlayPreview();
+                Guide.Content.PlayPreview();
 
                 /** Fade the guide in. */
-                this.Guide.Toggle(true, true);
+                Guide.Toggle(true, true);
             }
         }
 
@@ -96,7 +96,7 @@ module TwitchPotato {
 
             /** Reset the settings. */
             this.Twitch.ClearPartitions(undefined, () => {
-                this.Storage.Load(() => this.Guide.Refresh(), true);
+                this.Storage.Load(() => Guide.Refresh(), true);
             });
         }
 
@@ -205,13 +205,13 @@ module TwitchPotato {
             /** Update the application font size. */
             $('body').css('font-size', fontSize + '%');
 
-            this.Guide.UpdateMenu(Direction.None);
+            Guide.UpdateMenu(Direction.None);
 
             /** Update the menu size */
-            this.Guide.UpdateMenuSize();
+            Guide.UpdateMenuSize();
 
             /** Update the mneu scroll position */
-            this.Guide.UpdateMenuScroll();
+            Guide.UpdateMenuScroll();
 
             /** Update the chat font size. */
             this.Chat.UpdateFontSize();
@@ -264,7 +264,7 @@ module TwitchPotato {
                         this.Storage.Users(user);
 
                         /** Update the guide. */
-                        this.Guide.Refresh();
+                        Guide.Refresh();
                     });
                 } else {
                     /** Display an error. */
@@ -276,6 +276,29 @@ module TwitchPotato {
 
     /** The current application instance */
     export var App: Application = new Application();
+
+    export var Guide: GuideHandler;
+
+    /** Post a message containing a method and params to the preview player. */
+    export var PostMessage = function(webview: Webview, method: string, params = {}): void {
+
+        /** Make sure the contentwindow is loaded. */
+        if (webview.contentWindow === undefined) {
+            setTimeout(() => PostMessage(webview, method, params), 100);
+            return;
+        }
+
+        /** Data to be posted. */
+        var data = {
+            method: method,
+            params: params
+        };
+
+        /** Post the data to the client application. */
+        setTimeout(() =>
+            webview.contentWindow.postMessage(
+                JSON.stringify(data), '*'), 100);
+    };
 
     export enum MenuItemType {
         Channel,
@@ -377,4 +400,5 @@ module TwitchPotato {
 /** Initialize the Application only after the page has loaded. */
 $(() => {
     TwitchPotato.App.Initialize();
+    TwitchPotato.Guide = new TwitchPotato.GuideHandler();
 });

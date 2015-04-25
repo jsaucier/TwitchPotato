@@ -34,7 +34,7 @@ module TwitchPotato {
         Close() {
             $(this.contextMenu).remove();
 
-            App.Guide.UpdateMenuScroll();
+            Guide.UpdateMenuScroll();
         }
 
         /** Updates the context menu after the guide refreshes. */
@@ -141,7 +141,7 @@ module TwitchPotato {
             html.appendTo(item);
 
             /** Scroll the guide menu. */
-            App.Guide.UpdateMenuScroll();
+            Guide.UpdateMenuScroll();
         }
 
         /** Create a context menu item. */
@@ -208,7 +208,7 @@ module TwitchPotato {
                     $('.list').eq(MenuType.Game).find('.head').text(game);
 
                     /** Set the update type. */
-                    App.Guide.SetUpdateType(UpdateType.Game);
+                    Guide.SetUpdateType(UpdateType.Game);
 
                     /** Search for more games of this type. */
                     App.Twitch.GetGameChannels(game);
@@ -218,26 +218,26 @@ module TwitchPotato {
                     $('.list').eq(MenuType.Videos).hide();
 
                     /** Set the update type. */
-                    App.Guide.SetUpdateType(UpdateType.Videos);
+                    Guide.SetUpdateType(UpdateType.Videos);
 
                     /** Search for videos from this streamer */
                     App.Twitch.GetChannelVideos(key);
                     break;
                 case 'follow-channel':
                     /** Follow the channel. */
-                    App.Guide.FollowMenu.Show(item, FollowType.Channel);
+                    Guide.FollowMenu.Show(item, FollowType.Channel);
                     return;
                 case 'unfollow-channel':
                     /** Unfollow the channel. */
-                    App.Guide.FollowMenu.Show(item, FollowType.Channel, true);
+                    Guide.FollowMenu.Show(item, FollowType.Channel, true);
                     return;
                 case 'follow-game':
                     /** Follow the game. */
-                    App.Guide.FollowMenu.Show(item, FollowType.Game);
+                    Guide.FollowMenu.Show(item, FollowType.Game);
                     return;
                 case 'unfollow-game':
                     /** Unfollow the game. */
-                    App.Guide.FollowMenu.Show(item, FollowType.Game, true);
+                    Guide.FollowMenu.Show(item, FollowType.Game, true);
                     return;
                 case 'hide-game':
                     /** Determines if the game should be hidden. */
@@ -247,7 +247,7 @@ module TwitchPotato {
                     /** Hide the game. */
                     App.Storage.HideGame(game, hide);
                     /** Refresh the guide. */
-                    App.Guide.Refresh();
+                    Guide.Refresh();
                     break;
                 default:
                     break;

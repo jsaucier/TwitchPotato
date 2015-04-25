@@ -149,7 +149,7 @@ module TwitchPotato {
         /** Upates all the twitch data. */
         Refresh(skipFollowed = false): void {
             /** Set the guide update type. */
-            App.Guide.SetUpdateType(UpdateType.All);
+            Guide.SetUpdateType(UpdateType.All);
 
             /** Resets the followed channels dictionary. */
             this.followed[FollowType.Channel] = {};
@@ -180,7 +180,7 @@ module TwitchPotato {
         /** Follows or unfollows the channel or game for the user. */
         Follow(user: string, follow: string, type: FollowType, unfollow = false) {
             /** Set the update type. */
-            App.Guide.SetUpdateType(UpdateType.Refresh);
+            Guide.SetUpdateType(UpdateType.Refresh);
 
             /** Array of users to follow the game. */
             var users: IDictionary<ITwitchUser> = {};
@@ -502,7 +502,7 @@ module TwitchPotato {
             /** No webviews are open. */
             if ($('#users webview').length === 0) {
                 $('#users').fadeOut();
-                App.Guide.Toggle(true, true);
+                Guide.Toggle(true, true);
             }
 
             /** Fire the callback. */

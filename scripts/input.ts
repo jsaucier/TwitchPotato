@@ -130,7 +130,7 @@ module TwitchPotato {
 
                 /** Route the input to the modules. */
                 if (App.HandleInput(input)) { }
-                else if (App.Guide.HandleInput(input)) { }
+                else if (Guide.HandleInput(input)) { }
                 else if (App.Player.HandleInput(input)) { }
             }
         }

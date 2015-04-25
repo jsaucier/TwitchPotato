@@ -78,10 +78,10 @@ interface Input {
     hidden?: boolean;
 }
 
-
-interface IStorage {
-    users: string[];
-    hidden: string[];
+interface StorageInterface {
+    users: Array<string>;
+    hidden: Array<string>;
+    videoPreview: boolean;
     fontSize: number;
 }
 

@@ -23,7 +23,7 @@ module TwitchPotato {
             switch (input) {
                 case Inputs.ContextMenu:
                     this.Close();
-                    App.Guide.ContextMenu.Close();
+                    Guide.ContextMenu.Close();
                     break;
                 case Inputs.Up:
                     this.UpdateButton(Direction.Up);
@@ -46,9 +46,9 @@ module TwitchPotato {
             $(this.followMenu).remove();
 
             if (closeContextMenu === true)
-                App.Guide.ContextMenu.Close();
+                Guide.ContextMenu.Close();
             else
-                App.Guide.UpdateMenuScroll();
+                Guide.UpdateMenuScroll();
         }
 
         /** Updates the follow menu after the guide refreshes. */
@@ -107,7 +107,7 @@ module TwitchPotato {
             html.appendTo(item);
 
             /** Scroll the guide menu. */
-            App.Guide.UpdateMenuScroll();
+            Guide.UpdateMenuScroll();
         }
 
         /** Handle following and unfollowing if possible. */

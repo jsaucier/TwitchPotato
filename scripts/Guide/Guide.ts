@@ -1,33 +1,23 @@
 module TwitchPotato {
     export class GuideHandler {
-        private objectURLs: string[] = [];
         private firstUpdate = true;
-        private refreshTimeout: number;
-        private timeTimeout: number;
         private infoTimeout: number;
         private selectedItem = '#guide .list.selected .item.selected';
         private updateType: UpdateType = UpdateType.All;
-        private preview: Webview;
-        private previewChannel: string;
-        private useImagePreview = true;
 
         /** Determines if the guide is shown. */
         private isShown = true;
 
         ContextMenu = new ContextMenuHandler();
         FollowMenu = new FollowMenuHandler();
+        Timer = new TimerHandler();
+        Content = new ContentHandler();
 
         constructor() {
             window.addEventListener('resize', () => this.UpdateMenuSize());
 
-            /** Initialize the preview player. */
-            this.InitializePreview();
-
             /** Update the version */
             $('#time .version').text('v{0}'.format(chrome.runtime.getManifest().version));
-
-            /** Start the time timer. */
-            this.UpdateTime();
 
             $(document).ajaxStop(() => this.OnAjaxCompleted());
 
@@ -120,7 +110,8 @@ module TwitchPotato {
                         App.Player.Play(key);
 
                         /** Stop the preivew. */
-                        return this.PostMessage('PauseVideo');
+                        return PostMessage(this.Content.PreviewWebview(),
+                            'PauseVideo');
                     case MenuType.Games:
                         /** Hide the game menu. */
                         $('.list').eq(MenuType.Game).hide();
@@ -141,7 +132,8 @@ module TwitchPotato {
                         App.Player.Play(key, false, true);
 
                         /** Stop the preivew. */
-                        return this.PostMessage('PauseVideo');
+                        return PostMessage(this.Content.PreviewWebview(),
+                            'PauseVideo');
                     default:
                         return;
                 }
@@ -166,7 +158,7 @@ module TwitchPotato {
                 return this.Refresh();
 
             /** Start the refresh timer. */
-            this.StartRefreshTimer();
+            this.Timer.Refresh();
 
             /** Update all the menu items. */
             this.UpdateAllMenuItems();
@@ -178,36 +170,6 @@ module TwitchPotato {
             App.Loading(false);
 
             this.firstUpdate = false;
-        }
-
-        private CreateObjectURL(blob): string {
-            var objURL = URL.createObjectURL(blob);
-
-            this.objectURLs = this.objectURLs || [];
-            this.objectURLs.push(objURL);
-
-            return objURL;
-        }
-
-        private LoadImage(url: string, element: JQuery): void {
-            var ele: HTMLElement = element[0];
-            var xhr: XMLHttpRequest = new XMLHttpRequest();
-
-            xhr.open('GET', url);
-
-            xhr.responseType = 'blob';
-            xhr.contentType = 'image/jpg';
-
-            xhr.onload = () => {
-                var img = document.createElement('img');
-                img.setAttribute('data-src', url);
-                var objURL = this.CreateObjectURL(xhr.response);
-                img.setAttribute('src', objURL);
-                $(element).empty();
-                ele.appendChild(img);
-            };
-
-            xhr.send();
         }
 
         private UpdateAllMenuItems(): void {
@@ -293,9 +255,6 @@ module TwitchPotato {
                 else if (aIsHidden === true) aNumber += 99999999;
                 if (bIsFollowed === true) bNumber += 999999999;
                 else if (bIsHidden === true) bNumber += 99999999;
-
-                // aNumber += (aIsFollowed === true) ? 999999999 : aNumber;
-                // bNumber += (bIsFollowed === true) ? 999999999 : bNumber;
 
                 if (aNumber > bNumber)
                     return -1;
@@ -488,14 +447,6 @@ module TwitchPotato {
             return html;
         }
 
-        private UpdateTime(): void {
-            $('#time .current').text(new Date().toLocaleTimeString());
-
-            clearTimeout(this.timeTimeout);
-
-            this.timeTimeout = setTimeout(() => this.UpdateTime(), 1000);
-        }
-
         UpdateMenu(direction: Direction, delay = 0): void {
 
             if (this.isShown === true) {
@@ -518,7 +469,7 @@ module TwitchPotato {
                 /** Clear timeout */
                 clearTimeout(this.infoTimeout);
 
-                this.infoTimeout = setTimeout(() => this.UpdateInfo(), delay);
+                this.infoTimeout = setTimeout(() => this.Content.UpdateInfo(), delay);
             }
         }
 
@@ -614,199 +565,8 @@ module TwitchPotato {
             }
         }
 
-        private UpdateInfo(): void {
-            var key = $('#guide .list.selected .item.selected').attr('key');
-            var menu = parseInt($('#guide .list.selected .item.selected').attr('menu'));
-
-            if ($('#guide .list.selected .item.selected').attr('setting') === 'true')
-                return this.ShowSetting();
-
-            if (menu === MenuType.Channels ||
-                menu === MenuType.Game)
-                this.ShowChannel(key, menu);
-            else if (menu === MenuType.Videos)
-                this.ShowVideo(key);
-            else if (menu === MenuType.Games)
-                this.ShowGame(key);
-        }
-
-        private ShowChannel(key: string, menu: MenuType): void {
-            /** Get the channel data. */
-            var channel = <IChannel>App.Twitch.GetMenu(menu)[key];
-
-            /** The channel head template. */
-            var head = $('#channel-info-head-template').html().format(
-                channel.streamer,
-                channel.title,
-                channel.game,
-                channel.viewers.deliminate());
-
-            /** Append the head html to the document. */
-            $('#info .head').html(head);
-
-            /** Load the channel preview. */
-            this.LoadPreview(key, channel.preview);
-        }
-
-        private ShowGame(key: string): void {
-            /** Get the game data. */
-            var game = <IGame>App.Twitch.GetMenu(MenuType.Games)[key];
-
-            /** The game head template. */
-            var head = $('#game-info-head-template').html().format(
-                game.name,
-                game.channels.deliminate(),
-                game.viewers.deliminate());
-
-            /** Append the head html to the document. */
-            $('#info .head').html(head);
-
-            /** Load the channel preview. */
-            this.LoadPreview(key, game.boxArt, true);
-        }
-
-        private ShowVideo(key: string): void {
-            /** Get the video data. */
-            var video = <IVideo>App.Twitch.GetMenu(MenuType.Videos)[key];
-
-            /** The game head template. */
-            var head = $('#video-info-head-template').html().format(
-                video.title,
-                video.streamer,
-                video.length.formatSeconds(),
-                video.views.deliminate());
-
-            /** Append the head html to the document. */
-            $('#info .head').html(head);
-
-            /** Load the channel preview. */
-            this.LoadPreview(key, video.preview, this.useImagePreview, true);
-        }
-
-        private ShowSetting(): void {
-            /** Get the setting type. */
-            var type = $(this.selectedItem).attr('type');
-
-            /** Determine if this is an input setting. */
-            var isInput = $(this.selectedItem).attr('input') === 'true';
-
-            /** Get the setting template. */
-            var head = $('#{0}-setting-template'.format(type)).html();
-
-            /** Append the head hmtl to the document. */
-            $('#info .head').html(head);
-
-            /** Clear the content .div */
-            $('#info .content').empty().show();
-
-            /** Create the input if needed. */
-            if (isInput === true)
-                $('#info .content')
-                    .append($('<input>')
-                        .attr('id', type))
-
-            /** Hide the preview div. */
-            $('#preview').hide();
-        }
-
         Refresh(skipFollowed = false): void {
             App.Twitch.Refresh(skipFollowed);
-        }
-
-        private StartRefreshTimer(): void {
-            /** Set the update time. */
-            var date = new Date();
-            $('#time .updated').text('{0} - {1}'.format(date.toLocaleDateString(), date.toLocaleTimeString()));
-
-            /** Restart the refresh timer. */
-            clearTimeout(this.refreshTimeout);
-            this.refreshTimeout = setTimeout(() => this.Refresh(), 1000 * 60);
-        }
-
-        /**
-         * Initialize the guide preview player.
-         */
-        private InitializePreview() {
-            this.preview = <Webview>$('#preview webview')[0]
-
-            this.preview.addEventListener('loadcommit', () => {
-                /** Inject the script files. */
-                this.preview.executeScript({ file: 'js/vendor/jquery.min.js' });
-                this.preview.executeScript({ file: 'js/inject.js' });
-
-                /** Hook the console message event. */
-                this.preview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
-            });
-        }
-
-        /**
-         * Loads the preview video.
-         */
-        LoadPreview(channel: string, imageUrl: string, useImage = false, isVideo = false): void {
-            /** Remove any preview images. */
-            $('#info #preview img').remove();
-
-            /** Hide the content div. */
-            $('#info .content').hide();
-
-            /** Hide the preview video. */
-            $(this.preview).hide();
-
-            /** Show the preview div. */
-            $('#info #preview').show();
-
-            /** Load the preview image. */
-            if (this.useImagePreview === true || useImage === true)
-                return this.LoadImage(imageUrl, $('#info #preview'));
-
-            /** Show the preview video. */
-            $(this.preview).show();
-
-            /** Only load the channel if it is not loaded. */
-            if (channel === this.previewChannel) return;
-
-            /** Load the preview video. */
-            this.PostMessage('LoadPreview', { channel: channel, isVideo: isVideo });
-
-            /** Set the current preview channel. */
-            this.previewChannel = channel;
-        }
-
-        /**
-         * Pause the preview video.
-         */
-        PausePreview(): void {
-            this.PostMessage('PauseVideo');
-        }
-
-        /**
-         * Play the preview video.
-         */
-        PlayPreview(): void {
-            this.PostMessage('PlayVideo');
-        }
-
-        /**
-         * Post a message containing a method and params to the preview player.
-         */
-        private PostMessage(method: string, params = {}): void {
-            /** Video previews are disabled. */
-            if (this.useImagePreview === true) return;
-
-            /** Make sure the contentwindow is loaded. */
-            if (this.preview.contentWindow === undefined) {
-                setTimeout(() => this.PostMessage(method, params), 100);
-                return;
-            }
-
-            /** Data to be posted. */
-            var data = {
-                method: method,
-                params: params
-            };
-
-            /** Post the data to the client application. */
-            setTimeout(() => this.preview.contentWindow.postMessage(JSON.stringify(data), '*'), 100);
         }
     }
 }

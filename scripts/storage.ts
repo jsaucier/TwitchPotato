@@ -2,13 +2,18 @@ module TwitchPotato {
     export class StorageHandler {
 
         /** The storage settings. */
-        private _settings: IStorage = { fontSize: 100, hidden: [], users: [] };
+        private _settings: StorageInterface;
 
         /** Default settings. */
-        private _defaults: IStorage = { fontSize: 100, hidden: [], users: [] };
+        private _defaults: StorageInterface = {
+            fontSize: 100,
+            videoPreview: false,
+            hidden: [],
+            users: []
+        };
 
         /** Gets, adds, or removes users. */
-        Users(user?: string, remove?: boolean, callback?: (settings: IStorage) => void): Array<string> {
+        Users(user?: string, remove?: boolean, callback?: (settings: StorageInterface) => void): Array<string> {
 
             /** Gets whether the users list has changed and needs to be saved. */
             var save = false;
@@ -40,24 +45,10 @@ module TwitchPotato {
             return this._settings.users;
         }
 
-        /** Gets or sets the font size setting. */
-        FontSize(fontSize?: number, callback?: (settings: IStorage) => void): number {
 
-            /** Set the font size value. */
-            if (fontSize !== undefined) {
-
-                /** Set the new font size. */
-                this._settings.fontSize = fontSize;
-                /** Save the font size. */
-                this.Save(callback);
-            }
-
-            /** Return the font size value. */
-            return this._settings.fontSize;
-        }
 
         /** Hide a game. */
-        HideGame(game: string, hide?: boolean, callback?: (settings: IStorage) => void): void {
+        HideGame(game: string, hide?: boolean, callback?: (settings: StorageInterface) => void): void {
 
             /** The index of the game in the hidden array. */
             var index = this._settings.hidden.indexOf(game.toLowerCase())
@@ -81,8 +72,20 @@ module TwitchPotato {
             return (this._settings.hidden.indexOf(game.toLowerCase()) !== -1)
         }
 
+        /** Gets or sets the font size setting. */
+        FontSize(fontSize?: number,
+            callback?: (settings: StorageInterface) => void): number {
+            return this.HandleNumber('fontSize', fontSize, callback);
+        }
+
+        /** Gets or sets whether to use a video as a preview. */
+        UseVideoPreview(videoPreview?: boolean,
+            callback?: (settings: StorageInterface) => void): boolean {
+            return this.HandleBoolean('videoPreview', videoPreview, callback);
+        }
+
         /** Loads the settings. */
-        Load(callback?: (settings: IStorage) => void, defaults?: boolean): void {
+        Load(callback?: (settings: StorageInterface) => void, defaults?: boolean): void {
 
             if (defaults === true) {
                 /** Load the defaults. */
@@ -96,7 +99,7 @@ module TwitchPotato {
                 chrome.storage.local.get(null, (store) => {
 
                     /** Set the default value. */
-                    this._settings = <IStorage>$.extend(
+                    this._settings = <StorageInterface>$.extend(
                         true,
                         this._settings,
                         this._defaults,
@@ -110,7 +113,7 @@ module TwitchPotato {
         }
 
         /** Saves the settings. */
-        Save(callback?: (settings: IStorage) => void): void {
+        Save(callback?: (settings: StorageInterface) => void): void {
 
             chrome.storage.local.set({
                 settings: this._settings
@@ -120,8 +123,68 @@ module TwitchPotato {
                 });
         }
 
+        /** Gets or sets a boolean value. */
+        private HandleBoolean(
+            setting: string,
+            value?: boolean,
+            callback?: (settings: StorageInterface) => void): boolean {
+
+            /** Update the boolean value. */
+            if (value !== undefined) {
+
+                /** Set the value. */
+                this._settings[setting] = value;
+
+                /** Save the settings. */
+                this.Save(callback);
+            }
+
+            /** Return the value. */
+            return this._settings[setting];
+        }
+
+        /** Gets or sets a string value. */
+        private HandleString(
+            setting: string,
+            value?: string,
+            callback?: (settings: StorageInterface) => void): string {
+
+            /** Update the string value. */
+            if (value !== undefined) {
+
+                /** Set the value. */
+                this._settings[setting] = value;
+
+                /** Save the settings. */
+                this.Save(callback);
+            }
+
+            /** Return the value. */
+            return this._settings[setting];
+        }
+
+        /** Gets or sets a string value. */
+        private HandleNumber(
+            setting: string,
+            value?: number,
+            callback?: (settings: StorageInterface) => void): number {
+
+            /** Update the string value. */
+            if (value !== undefined) {
+
+                /** Set the value. */
+                this._settings[setting] = value;
+
+                /** Save the settings. */
+                this.Save(callback);
+            }
+
+            /** Return the value. */
+            return this._settings[setting];
+        }
+
         /** Clears the storage. */
-        private ClearStorage(callback?: (settings: IStorage) => void): void {
+        private ClearStorage(callback?: (settings: StorageInterface) => void): void {
 
             chrome.storage.local.clear(() => {
                 chrome.storage.sync.clear(() => {
