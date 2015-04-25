@@ -128,11 +128,12 @@ class PlayerController {
     }
 
     private LoadPreview(channel: string, isVideo: boolean): void {
+
         /** Set the quality to low. */
         this.SetQuality('Low');
 
         /** Determine if a stream or video is loaded. */
-        if (isVideo === true)
+        if (isVideo)
             this.player.loadVideo(channel);
         else
             this.player.loadStream(channel);
@@ -152,7 +153,7 @@ class PlayerController {
 
     private LoadVideo(channel: string, isVideo: boolean): void {
         /** Determine if a stream or video is loaded. */
-        if (isVideo === true)
+        if (isVideo)
             this.player.loadVideo(channel);
         else
             this.player.loadStream(channel);

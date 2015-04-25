@@ -14,6 +14,12 @@ module TwitchPotato {
         /** The selected menu item. */
         private _selectedItem: JQuery;
 
+        /** Gets or sets if the preview player has been loaded. */
+        private _isLoaded: boolean = false;
+
+        /** Gets or sets the timeout. */
+        private _timeout: number;
+
         constructor() {
             $(() => this.InitializePreview());
         }
@@ -42,7 +48,7 @@ module TwitchPotato {
         }
 
         /** Loads the preview video. */
-        LoadPreview(channel: string, imageUrl: string, useImage = false, isVideo = false): void {
+        LoadPreview(channel: string, imageUrl: string, isVideo = false): void {
 
             /** Remove any preview images. */
             $('#info #preview img').remove();
@@ -57,7 +63,7 @@ module TwitchPotato {
             $('#info #preview').show();
 
             /** Load the preview image. */
-            if (App.Storage.UseVideoPreview() || useImage)
+            if (!App.Storage.UseVideoPreview())
                 return this.LoadImage(imageUrl, $('#info #preview'));
 
             /** Show the preview video. */
@@ -66,11 +72,9 @@ module TwitchPotato {
             /** Only load the channel if it is not loaded. */
             if (channel === this._channel) return;
 
-            /** Load the preview video. */
-
             /** Video previews are disabled. */
-            if (!App.Storage.UseVideoPreview())
-                PostMessage(this._preview, 'LoadPreview', { channel: channel, isVideo: isVideo });
+            if (App.Storage.UseVideoPreview())
+                this.PostMessage('LoadPreview', { channel: channel, isVideo: isVideo });
 
             /** Set the current preview channel. */
             this._channel = channel;
@@ -80,20 +84,20 @@ module TwitchPotato {
         PausePreview(): void {
 
             /** Video previews are disabled. */
-            if (App.Storage.UseVideoPreview()) return;
+            if (!App.Storage.UseVideoPreview()) return;
 
             /** Send the pause message to the preview player. */
-            PostMessage(this._preview, 'PauseVideo');
+            this.PostMessage('PauseVideo');
         }
 
         /** Play the preview video. */
         PlayPreview(): void {
 
             /** Video previews are disabled. */
-            if (App.Storage.UseVideoPreview()) return;
+            if (!App.Storage.UseVideoPreview()) return;
 
             /** Send the play message to the preview player. */
-            PostMessage(this._preview, 'PlayVideo');
+            this.PostMessage('PlayVideo');
         }
 
         /** Initialize the guide preview player. */
@@ -101,14 +105,33 @@ module TwitchPotato {
 
             this._preview = <Webview>$('#preview webview')[0]
 
-            this._preview.addEventListener('loadcommit', () => {
+            this._preview.addEventListener('contentload', () => {
                 /** Inject the script files. */
                 this._preview.executeScript({ file: 'js/vendor/jquery.min.js' });
                 this._preview.executeScript({ file: 'js/inject.js' });
 
                 /** Hook the console message event. */
                 this._preview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
+
+                /** Sets the preview player as loaded. */
+                this._isLoaded = true;
             });
+        }
+
+        /** Posts a message to the preview player. */
+        private PostMessage(method: string, params = {}): void {
+
+            if (!this._isLoaded) {
+
+                /** Clear the timeout. */
+                clearTimeout(this._timeout);
+
+                /** Set the timeout timer. */
+                this._timeout = setTimeout(
+                    () => this.PostMessage(method, params), 100);
+            }
+            else
+                PostMessage(this._preview, method, params);
         }
 
         /** Gets the selected item. */
@@ -210,7 +233,7 @@ module TwitchPotato {
             $('#info .head').html(head);
 
             /** Load the channel preview. */
-            this.LoadPreview(key, video.preview, App.Storage.UseVideoPreview(), true);
+            this.LoadPreview(key, video.preview, true);
         }
 
         private ShowSetting(): void {
