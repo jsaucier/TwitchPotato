@@ -1,0 +1,36 @@
+{
+    "version": "1.5.0-alpha",
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "outDir": "../../App/js",
+        "noLib": false
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!./node_modules/**/*.ts"
+    ],
+    "files": [
+        "./Guide/Content.ts",
+        "./Guide/ContextMenu.ts",
+        "./Guide/FollowMenu.ts",
+        "./Guide/Guide.ts",
+        "./Guide/MenuItem.ts",
+        "./Guide/Timer.ts",
+        "./Lib/chrome.d.ts",
+        "./Lib/jquery.d.ts",
+        "./Lib/potato.d.ts",
+        "./chat.ts",
+        "./inject.ts",
+        "./input.ts",
+        "./notification.ts",
+        "./player.ts",
+        "./potato.ts",
+        "./storage.ts",
+        "./twitch.ts",
+        "./utils.ts"
+    ]
+}
