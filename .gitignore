@@ -1,5 +1,5 @@
 *.bat
 *.zip
 *.map
-App/Css/
-App/Scripts/
+App/css/
+App/js/
