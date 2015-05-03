@@ -7,3 +7,33 @@ Fix height on menu not resizing properly.
 
 Add setting to enable or disable video previews.
 Video preview not working.
+
+
+
+
+
+
+Player Selector - Refactor to a separate file (Player/Selector.ts)
+    Show large icons when selector is visible.
+        Position
+            TopLeft, Top, TopRight
+            MiddleLeft, Middle, MiddleRight
+            BottomLeft, Bottom, BottomRight
+
+        Mute
+        Quality Selector
+        Fullscreen Mode
+        Toggle Chat
+        Mode
+            Default
+            Equal
+        Close
+
+Get stream info to determine sources available.
+ -- http://api.twitch.tv/kraken/channels/thijshs (partner = true, all transcode available)
+ -- non partner streams should reload the player.
+
+Create option to set default stream quality.
+
+Get user token.
+ -- https://api.twitch.tv/api/viewer/token
