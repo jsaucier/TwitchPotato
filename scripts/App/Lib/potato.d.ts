@@ -83,6 +83,7 @@ interface StorageInterface {
     hidden: Array<string>;
     videoPreview: boolean;
     fontSize: number;
+    quality: TwitchPotato.Quality;
 }
 
 interface ITwitchUser {

@@ -9,7 +9,8 @@ module TwitchPotato {
             fontSize: 100,
             videoPreview: false,
             hidden: [],
-            users: []
+            users: [],
+            quality: Quality.Medium
         };
 
         /** Gets, adds, or removes users. */
@@ -82,6 +83,14 @@ module TwitchPotato {
         UseVideoPreview(videoPreview?: boolean,
             callback?: (settings: StorageInterface) => void): boolean {
             return this.HandleBoolean('videoPreview', videoPreview, callback);
+        }
+
+
+        /** Gets or sets the default stream quality. */
+        Quality(quality?: Quality,
+            callback?: (settings: StorageInterface) => void): Quality {
+
+            return this.HandleNumber('quality', quality, callback)
         }
 
         /** Loads the settings. */
