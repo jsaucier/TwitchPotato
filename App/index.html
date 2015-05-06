@@ -60,11 +60,8 @@
                     <div class="list" style="display: flex;">
                         <div class="head">Settings</div>
                         <div class="items">
-                            <div class="item" type="login" setting="true">
-                                <div class="setting">Log into Twitch</div>
-                            </div>
-                            <div class="item" type="add-user" setting="true" input="true">
-                                <div class="setting">Add Twitch User</div>
+                            <div class="item" type="logout" setting="true">
+                                <div class="setting">Logout</div>
                             </div>
                             <div class="item" type="reset" setting="true">
                                 <div class="setting">Reset Settings</div>
@@ -107,9 +104,6 @@
                 <div class="webview">
                     <webview type="login" autosize="on" src="https://api.twitch.tv/api/viewer/token" partition="persist:twitchpotato" style="display:none;"></webview>
                 </div>
-            </div>
-            <div id="users">
-                <div class="head">Press ESC to Close</div>
             </div>
         </div>
 
@@ -190,13 +184,6 @@
             </div>
         </script>
 
-        <script id="add-user-setting-template" type="text/template">
-            <div>Add Twitch User</div>
-            <div class="sub-head">
-                <div>Add a Twitch user to view and edit followed channels and games.</div>
-            </div>
-        </script>
-
         <script id="reset-setting-template" type="text/template">
             <div>Reset Settings</div>
             <div class="sub-head">
@@ -204,10 +191,10 @@
             </div>
         </script>
 
-        <script id="login-setting-template" type="text/template">
-            <div>Log into Twitch</div>
+        <script id="logout-setting-template" type="text/template">
+            <div>Logout of Twitch.tv</div>
             <div class="sub-head">
-                <div>Log into your Twitch account. This is needed to stop ads from playing on your subscribed channels or if you have a Turbo account.</div>
+                <div>Log out of the current Twitch.tv account.</div>
             </div>
         </script>
 
@@ -239,10 +226,6 @@
 
         <script id="player-template" type="text/template">
             <webview type="player" class="player" layout="0" number="{0}" autosize="on" partition="persist:twitchpotato" src="http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true"></webview>
-        </script>
-
-        <script id="twitch-template" type="text/template">
-            <webview type="twitch" username="{0}" autosize="on" partition="persist:twitch_{0}" src="https://dl.dropboxusercontent.com/spa/tn9l4tkx2yhpiv3/twitch%20potato/public/redirect.html"></webview>
         </script>
 
         <script id="chat-template" type="text/template">
