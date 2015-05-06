@@ -40,6 +40,8 @@ module TwitchPotato {
 
 
             Guide = new GuideHandler();
+
+            /** Authenticate the user. */
             Authenticator = new AuthenticatorHandler((user, name, token) => {
                 this._user = user;
                 this._name = name;
@@ -54,14 +56,6 @@ module TwitchPotato {
             this.Storage.Load((settings) => {
                 /** Update the font size. */
                 this.UpdateFontSize(FontSize.Update);
-
-                /** Load the saved users. */
-                // for (var user in settings.users)
-                //     /** Login the user. */
-                //     this.Twitch.Login(settings.users[user]);
-
-                /** Update the guide. */
-                //Guide.Refresh();
             });
         }
 
@@ -116,29 +110,9 @@ module TwitchPotato {
             this.Loading(true);
 
             /** Reset the settings. */
-            this.Twitch.ClearPartitions(undefined, () => {
-                this.Storage.Load(() => Guide.Refresh(), true);
-            });
-        }
-
-        /** Log into Twitch.tv */
-        Login(): void {
-
-            /** Get the login webvew. */
-            var webview = <Webview>$('#login webview')[0];
-
-            webview.addEventListener('contentload', () => {
-                /** Insert the script and execute the code. */
-                webview.focus();
-                webview.executeScript({ file: 'js/vendor/jquery.min.js' });
-                webview.executeScript({ code: '$("#login").focus();' });
-            });
-
-            /** Navigate to the Twitch.tv login page. */
-            $(webview).attr('src', 'http://twitch.tv/login');
-
-            /** Show the webview. */
-            $('#login').fadeIn();
+            //this.Twitch.ClearPartitions(undefined, () => {
+            this.Storage.Load(() => Guide.Refresh(), true);
+            //});
         }
 
         /** Callback triggered after a keypress event. */
@@ -177,10 +151,6 @@ module TwitchPotato {
                 }
         }
 
-        private OnAuthenticated(name: string, displayName: string, token: string): void {
-            console.log(name, displayName, token);
-        }
-
         /** Gets whether a webview is opened. */
         private IsWebviewOpen(): boolean {
             return $('#webviews webview:visible').length > 0;
@@ -188,21 +158,7 @@ module TwitchPotato {
 
         /** Handles the GlobalExit keydown event. */
         private CloseWebview(): void {
-            if ($('#webviews #users webview:visible').length !== 0) {
-                var webview = $('#webviews #users webview:eq(0)');
-                var username = webview.attr('username');
-
-                /** Remove the username from the list. */
-                this.Storage.Users(username, true);
-
-                this.Twitch.ClearPartitions(username, () => {
-                    /** Check to see if no webviews exist. */
-                    if ($('#webviews #users webview').length === 0) {
-                        /** Hide the container. */
-                        $('#webviews #users').fadeOut();
-                    }
-                });
-            } else if ($('#webviews #login webview:visible').length !== 0) {
+            if ($('#webviews #login webview:visible').length !== 0) {
                 /** Load a blank window to stop the video playing. */
                 $('#webviews #login webview').attr('src', 'about:blank');
 
@@ -262,40 +218,13 @@ module TwitchPotato {
                     /** Ensure we have input in the control. */
                     if (value !== '') {
                         if (input.attr('id') === 'add-user')
-                            this.AddUser(value);
+                            console.log('AddUser');
                     }
 
                     input.val('');
                     input.blur();
                 }
             }
-        }
-
-        /** Add a stored user. */
-        private AddUser(user: string): void {
-            /** Show the loading window. */
-            App.Loading(true);
-
-            /** Get the stored users. */
-            var users = this.Storage.Users();
-
-            /** Check to see if the user is a valid account. */
-            this.Twitch.GetTwitchUser(user, (twitchUser: ITwitchUser) => {
-                /** Ensure we haven't already added the user. */
-                if (users.indexOf(user) === -1) {
-                    /** Login to the twitch user. */
-                    this.Twitch.Authorize(user, (twitchUser: ITwitchUser) => {
-                        /** Add the user to the settings. */
-                        this.Storage.Users(user);
-
-                        /** Update the guide. */
-                        Guide.Refresh();
-                    });
-                } else {
-                    /** Display an error. */
-                    this.ShowMessage('{0} has already been added.'.format(twitchUser.name));
-                }
-            });
         }
     }
 
