@@ -78,13 +78,7 @@ interface Input {
     hidden?: boolean;
 }
 
-interface StorageInterface {
-    users: Array<string>;
-    hidden: Array<string>;
-    videoPreview: boolean;
-    fontSize: number;
-    quality: TwitchPotato.Quality;
-}
+
 
 interface ITwitchUser {
     id: string;
