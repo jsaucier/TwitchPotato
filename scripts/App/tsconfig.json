@@ -14,6 +14,7 @@
         "!./node_modules/**/*.ts"
     ],
     "files": [
+        "./Authenticator.ts",
         "./Guide/Content.ts",
         "./Guide/ContextMenu.ts",
         "./Guide/FollowMenu.ts",
