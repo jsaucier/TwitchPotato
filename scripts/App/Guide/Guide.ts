@@ -143,9 +143,9 @@ module TwitchPotato {
                 var type = $(this.selectedItem).attr('type');
 
                 switch (type) {
-                    case 'login':
-                        /** Log into Twitch.tv. */
-                        return App.Login();
+                    case 'logout':
+                        /** Log out of Twitch.tv. */
+                        return Authenticator.LogOut();
                     case 'reset':
                         /** Reset the application settings. */
                         return App.Reset();
