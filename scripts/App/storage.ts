@@ -1,4 +1,12 @@
 module TwitchPotato {
+
+    export interface StorageInterface {
+        hidden: Array<string>;
+        videoPreview: boolean;
+        fontSize: number;
+        quality: TwitchPotato.Quality;
+    }
+
     export class StorageHandler {
 
         /** The storage settings. */
@@ -9,44 +17,8 @@ module TwitchPotato {
             fontSize: 100,
             videoPreview: false,
             hidden: [],
-            users: [],
             quality: Quality.Medium
         };
-
-        /** Gets, adds, or removes users. */
-        Users(user?: string, remove?: boolean, callback?: (settings: StorageInterface) => void): Array<string> {
-
-            /** Gets whether the users list has changed and needs to be saved. */
-            var save = false;
-
-            /** Handle removing of the user. */
-            if (user !== undefined &&
-                remove === true &&
-                this._settings.users.indexOf(user) !== -1) {
-
-                /** Remove the user from the users list. */
-                this._settings.users.splice(this._settings.users.indexOf(user), 1);
-                /** Save the users list. */
-                save = true;
-            }
-            /** Handle adding of the user. */
-            else if (user !== undefined &&
-                remove !== true &&
-                this._settings.users.indexOf(user) === -1) {
-
-                /** Add the user to the users list. */
-                this._settings.users.push(user);
-                /** Save the users list. */
-                save = true;
-            }
-
-            /** Save the user list if it has been updated. */
-            if (save) this.Save(callback);
-
-            return this._settings.users;
-        }
-
-
 
         /** Hide a game. */
         HideGame(game: string, hide?: boolean, callback?: (settings: StorageInterface) => void): void {
