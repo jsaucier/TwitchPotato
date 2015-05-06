@@ -104,9 +104,10 @@
         <div id="webviews">
             <div id="login">
                 <div class="head">Press ESC to Close</div>
-                <webview type="login" autosize="on" partition="persist:twitchpotato"></webview>
+                <div class="webview">
+                    <webview type="login" autosize="on" src="https://api.twitch.tv/api/viewer/token" partition="persist:twitchpotato" style="display:none;"></webview>
+                </div>
             </div>
-
             <div id="users">
                 <div class="head">Press ESC to Close</div>
             </div>
