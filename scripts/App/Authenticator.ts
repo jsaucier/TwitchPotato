@@ -57,6 +57,12 @@ module TwitchPotato {
         /** Logs out of Twitch.tv */
         LogOut(): void {
 
+            /** Display the loading screen. */
+            App.Loading(true);
+
+            /** The user is no longer authenticated. */
+            this._isAuthenticated = false;
+
             /** Navigate to the twitch.tv logout page. */
             this.Navigate('http://www.twitch.tv/logout');
         }
@@ -93,8 +99,12 @@ module TwitchPotato {
             /** Do nothing if the page is blank. */
             if (element.attr('src') === 'about:blank') return;
 
-            if (element.attr('src') === 'https://secure.twitch.tv/login')
+            if (element.attr('src') === 'https://secure.twitch.tv/login') {
                 this.Visibility(true, true);
+
+                /** Hide the loading screen. */
+                App.Loading(false);
+            }
 
             /** Redirect to the token page. */
             if (element.attr('src') === 'http://www.twitch.tv/') {
