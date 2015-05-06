@@ -2,9 +2,14 @@ module TwitchPotato {
     export class Application {
         private initialized = false;
 
+
+        private _user: string;
+        private _name: string;
+        private _token: string;
+
         Storage: StorageHandler;
         Input: InputHandler;
-        //Guide: GuideHandler;
+        //Guide: GuideHandler;s
         Player: PlayerHandler;
         Twitch: TwitchHandler;
         Notification: NotificationHandler;
@@ -18,29 +23,45 @@ module TwitchPotato {
 
         /** Initializes the Main class. */
         Initialize(): void {
+
+            /** Ensure we don't initialize more than once. */
             if (this.initialized === true) return;
+
+            this.initialized = true;
 
             this.Storage = new StorageHandler();
             this.Input = new InputHandler();
             //this.Guide = new GuideHandler();
             this.Player = new PlayerHandler();
-            this.Twitch = new TwitchHandler();
+            //this.Twitch = new TwitchHandler();
             this.Notification = new NotificationHandler();
             this.Chat = new ChatHandler();
 
-            this.initialized = true;
+
+
+            Guide = new GuideHandler();
+            Authenticator = new AuthenticatorHandler((user, name, token) => {
+                this._user = user;
+                this._name = name;
+                this._token = token;
+
+                this.Twitch = new TwitchHandler(user, token);
+            });
+
+
+
 
             this.Storage.Load((settings) => {
                 /** Update the font size. */
                 this.UpdateFontSize(FontSize.Update);
 
                 /** Load the saved users. */
-                for (var user in settings.users)
-                    /** Login the user. */
-                    this.Twitch.Login(settings.users[user]);
+                // for (var user in settings.users)
+                //     /** Login the user. */
+                //     this.Twitch.Login(settings.users[user]);
 
                 /** Update the guide. */
-                Guide.Refresh();
+                //Guide.Refresh();
             });
         }
 
@@ -154,6 +175,10 @@ module TwitchPotato {
                     default:
                         return false;
                 }
+        }
+
+        private OnAuthenticated(name: string, displayName: string, token: string): void {
+            console.log(name, displayName, token);
         }
 
         /** Gets whether a webview is opened. */
@@ -278,6 +303,7 @@ module TwitchPotato {
     export var App: Application = new Application();
 
     export var Guide: GuideHandler;
+    export var Authenticator: AuthenticatorHandler;
 
     /** Post a message containing a method and params to the preview player. */
     export var PostMessage = function(webview: Webview, method: string, params = {}): void {
@@ -400,5 +426,4 @@ module TwitchPotato {
 /** Initialize the Application only after the page has loaded. */
 $(() => {
     TwitchPotato.App.Initialize();
-    TwitchPotato.Guide = new TwitchPotato.GuideHandler();
 });
