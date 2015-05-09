@@ -307,15 +307,6 @@ module TwitchPotato {
         Setting
     }
 
-
-
-    export enum FullscreenAction {
-        Toggle,
-        Enter,
-        Exit,
-        Refresh
-    }
-
     export enum Quality {
         Mobile,
         Low,
