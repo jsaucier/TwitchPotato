@@ -108,7 +108,8 @@ module TwitchPotato {
             this._preview.addEventListener('contentload', () => {
                 /** Inject the script files. */
                 this._preview.executeScript({ file: 'js/Vendor/jquery.min.js' });
-                this._preview.executeScript({ file: 'js/Player/Controller.js' });
+                // TODO: fix
+                // this._preview.executeScript({ file: 'js/Player/Controller.js' });
 
                 /** Hook the console message event. */
                 this._preview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
