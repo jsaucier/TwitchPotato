@@ -1,5 +1,9 @@
 declare var chrome: any;
 
+
+
+
+
 interface ITwitchUserCallback {
     (user: ITwitchUser): void;
 }
@@ -30,36 +34,8 @@ interface IDictionary<T> {
     [key: number]: T;
 }
 
-interface IChannel {
-    /** The channel's name. */
-    name: string;
-    /** The display name of the channel. */
-    streamer: string;
-    /** The current title of the channel. */
-    title: string;
-    /** The number of channel viewers. */
-    viewers: number;
-    /** The current game of the channel. */
-    game: string;
-    /** The preview image of the channel. */
-    preview: string;
-}
 
-interface IGame {
-    name: string;
-    channels: number;
-    viewers: number;
-    boxArt: string;
-}
 
-interface IVideo {
-    name: string;
-    streamer: string;
-    title: string;
-    views: number;
-    length: number;
-    preview: string;
-}
 
 interface IInput {
     input: TwitchPotato.Inputs;
