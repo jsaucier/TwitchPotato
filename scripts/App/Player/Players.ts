@@ -144,6 +144,9 @@ module TwitchPotato {
 
             var multi = MultiLayout[this._multiLayout];
 
+            if (Object.keys(this._players).length === 1)
+                multi = 'Default';
+
             $('#players .player, #players .selector').each(function() {
                 if ($(this).attr('multi') !== multi)
                     $(this).hide()
