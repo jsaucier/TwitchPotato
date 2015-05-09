@@ -8,21 +8,114 @@ module TwitchPotato {
         private _multiLayout = MultiLayout.Default;
         private _selectionTimeout: number;
 
-        constructor() {
-        }
-
         HandleInput(input: Inputs): boolean {
-            return false;
+
+            var player = this.GetSelected();
+
+            console.log(Inputs[input]);
+
+            if (player === undefined) return false;
+
+            switch (input) {
+
+                case Inputs.Stop:
+                    player.State(PlayerState.Stopped);
+
+                    if (!this.IsPlaying()) {
+                        console.log('toggleguide');
+                        App.ToggleGuide(true);
+                    }
+
+                    return true;
+
+                case Inputs.Play:
+                    player.State(PlayerState.Playing, true);
+                    return true;
+
+                case Inputs.Mute:
+                    player.Mute();
+                    return true;
+
+                case Inputs.Flashback:
+                    player.Flashback();
+                    return true;
+
+                case Inputs.ToggleViewMode:
+                    player.ViewMode(ViewMode.Toggle);
+                    return true;
+
+                case Inputs.Fullscreen:
+                    player.ViewMode(ViewMode.Fullscreen);
+                    return true;
+
+                case Inputs.Windowed:
+                    player.ViewMode(ViewMode.Windowed);
+                    return true;
+
+                case Inputs.QualityMobile:
+                    player.Quality(Quality.Mobile);
+                    return true;
+
+                case Inputs.QualityLow:
+                    player.Quality(Quality.Low);
+                    return true;
+
+                case Inputs.QualityMedium:
+                    player.Quality(Quality.Medium);
+                    return true;
+
+                case Inputs.QualityHigh:
+                    player.Quality(Quality.High);
+                    return true;
+
+                case Inputs.QualitySource:
+                    player.Quality(Quality.Source);
+                    return true;
+
+                case Inputs.Up:
+                    this.UpdateSelector(Direction.Up);
+                    return true;
+
+                case Inputs.Down:
+                    this.UpdateSelector(Direction.Down);
+                    return true;
+
+                case Inputs.Select:
+                    this.Select();
+                    return true;
+
+                case Inputs.MultiLayout:
+                    this.MultiLayout();
+                    return true;
+
+                case Inputs.ToggleChat:
+                    App.Chat.Toggle(player.Id());
+                    return true;
+
+                case Inputs.Right:
+                    App.Chat.UpdateLayout(Direction.Right);
+                    return true;
+
+                case Inputs.Left:
+                    App.Chat.UpdateLayout(Direction.Left);
+                    return true;
+
+                case Inputs.Reload:
+                    player.Reload();
+                    return true;
+
+                default:
+                    return false;
+            }
         }
 
         /** Gets whether a player is playing. */
         IsPlaying(): boolean {
 
-            for (var i in this._players) {
+            for (var i in this._players)
 
                 if (this._players[i].State() === PlayerState.Playing)
                     return true;
-            }
 
             return false;
         }
@@ -30,11 +123,10 @@ module TwitchPotato {
         /** Gets the player by the given number. */
         GetByNumber(num: number): Player {
 
-            for (var i in this._players) {
+            for (var i in this._players)
 
                 if (this._players[i].Number() === num)
                     return this._players[i];
-            }
 
             return undefined;
         }
@@ -140,19 +232,21 @@ module TwitchPotato {
         /** Sets the multi layout for the players. */
         MultiLayout(layout?: MultiLayout): void {
 
-            if (layout !== undefined) this._multiLayout = layout;
-
-            var multi = MultiLayout[this._multiLayout];
+            if (layout === undefined)
+                layout = this._multiLayout;
 
             if (Object.keys(this._players).length === 1)
-                multi = 'Default';
+                layout = MultiLayout.Default;
 
-            $('#players .player, #players .selector').each(function() {
-                if ($(this).attr('multi') !== multi)
-                    $(this).hide()
-                        .attr('multi', multi)
-                        .fadeIn();
-            })
+            for (var index in this._players)
+                this._players[index].MultiLayout(layout)
+
+            var selector = $('#players .selector');
+
+            if (selector.attr('multi') !== MultiLayout[layout])
+                $(selector).attr('multi', MultiLayout[layout]);
+
+            this._multiLayout = layout;
         }
 
         /** Updates the selected player. */
@@ -174,18 +268,36 @@ module TwitchPotato {
 
             $('#players .player[number="' + num + '"]').addClass('selected');
 
-            $('#players .selector').attr('number', num);
+            $('#players .selector').attr('number', num).show();
 
             clearTimeout(this._selectionTimeout);
 
-            this._selectionTimeout = setTimeout(this.ClearSelected, 5000);
+            this._selectionTimeout = setTimeout(this.ClearSelected, 2500);
+        }
+
+        /** Selects the selected player. */
+        private Select(): void {
+
+            var current = this.GetByNumber(0);
+            var player = this.GetSelected();
+
+            if (player !== undefined) {
+
+                current.Number(player.Number());
+                this._players[player.Number()] = current;
+
+                player.Number(0);
+                this._players[0] = player;
+            }
+
+            this.ClearSelected();
         }
 
         /** Clears the selected player. */
         private ClearSelected(): void {
 
             $('#players .player').removeClass('selected');
-            $('#players .selector').removeAttr('number');
+            $('#players .selector').removeAttr('number').hide();
         }
     }
 }
