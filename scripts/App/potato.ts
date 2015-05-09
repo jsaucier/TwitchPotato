@@ -69,10 +69,7 @@ module TwitchPotato {
         /** Toggles the Guide. */
         ToggleGuide(hidePlayer = false): void {
 
-            /** Ensure there is a stream playing. */
-            if (!this.Players.IsPlaying()) return;
-
-            if (App.Guide.IsShown() === true) {
+            if (App.Guide.IsShown() && this.Players.IsPlaying()) {
 
                 /** Fade the guide out. */
                 App.Guide.Toggle(false, true);
@@ -82,7 +79,7 @@ module TwitchPotato {
 
                 /** Show the chat window. */
                 App.Chat.Guide(true);
-            } else {
+            } else if (this.Players.IsPlaying()) {
 
                 if (hidePlayer !== true)
                     /** Show the players in the guide. */
@@ -264,7 +261,8 @@ module TwitchPotato {
 
     export enum ViewMode {
         Fullscreen,
-        Windowed
+        Windowed,
+        Toggle
     }
 
     export enum MultiPosition {
