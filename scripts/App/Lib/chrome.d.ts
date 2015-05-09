@@ -34,6 +34,13 @@ interface Webview extends HTMLElement {
     setZoom(zoomFactor: number, func?: () => void): void;
     stop(): void;
     stopFinding(action: StopFindAction): void;
-    loadDataWithBaseUrl(dataUrl: string, baseUrl: string, virtualUrl: string);
+    loadDataWithBaseUrl(dataUrl: string, baseUrl: string, virtualUrl: string): void;
     terminate(): void;
+    addEventListener(type: string, listener: (event: LoadCommitEvent) => void): void;
+    addEventListener(type: string, listener: (event: Event) => void): void;
+}
+
+interface LoadCommitEvent {
+    url: string;
+    isTopLevel: boolean;
 }
