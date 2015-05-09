@@ -31,6 +31,7 @@ module TwitchPotato {
 
             /** Setup the event listener. */
             this._webview.addEventListener('contentload', () => this.ContentLoaded());
+            this._webview.addEventListener('loadcommit', (event: LoadCommitEvent) => this.LoadCommited(event));
 
             /** Get the access token. */
             this.GetToken();
@@ -79,6 +80,13 @@ module TwitchPotato {
             }
         }
 
+        /** Fired when the webview begins loading. */
+        private LoadCommited(event: LoadCommitEvent): void {
+
+            if (event.isTopLevel)
+                App.Loading(true);
+        }
+
         /** Checks to see if the user is authenticated. */
         private ContentLoaded(): void {
 
@@ -94,11 +102,19 @@ module TwitchPotato {
 
                 this.Visibility(true, true);
 
-                return App.Loading(false);
+                App.Loading(false);
+
+                this._webview.focus();
+                this._webview.executeScript({ file: 'js/vendor/jquery.min.js' });
+                this._webview.executeScript({ code: '$("#login").focus();' });
+
+                return;
             }
 
             /** Redirect to the token page. */
             if (element.attr('src') === 'http://www.twitch.tv/') {
+
+                App.Loading(true);
 
                 this.GetToken();
             }
