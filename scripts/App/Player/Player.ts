@@ -1,7 +1,5 @@
 module TwitchPotato {
 
-
-
     export class Player {
 
         private _isLoaded = false;
@@ -76,7 +74,7 @@ module TwitchPotato {
 
             this._flashback = (this._id !== id) ? this._id : this._flashback;
 
-            if (this._flashback === 'Twitch-Potato-Init') this._flashback = undefined;
+            // if (this._flashback === 'Twitch-Potato-Init') this._flashback = undefined;
 
             this._id = id;
             this._isVideo = isVideo;
@@ -135,7 +133,7 @@ module TwitchPotato {
         /** Gets or sets the view mode of the player. */
         ViewMode(viewMode?: ViewMode): ViewMode {
 
-            if (viewMode !== undefined) {
+            if (viewMode !== undefined && this._viewMode !== viewMode) {
                 this._viewMode = viewMode;
                 this.PlayerAction(PlayerActions.ViewMode, { viewMode: viewMode });
             }
@@ -148,7 +146,7 @@ module TwitchPotato {
 
             if (quality !== undefined) {
                 this._quality = quality;
-                this.PlayerAction(PlayerActions.Quality, { quality: quality });
+                this.PlayerAction(PlayerActions.Quality, { quality: quality, queue: true });
             }
 
             return this._quality;
