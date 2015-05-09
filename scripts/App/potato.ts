@@ -7,13 +7,16 @@ module TwitchPotato {
         private _name: string;
         private _token: string;
 
+
+        Guide: GuideHandler;
+        Authenticator: AuthenticatorHandler;
+        Twitch: TwitchHandler;
         Storage: StorageHandler;
         Input: InputHandler;
-        //Guide: GuideHandler;s
-        Player: PlayerHandler;
-        Twitch: TwitchHandler;
         Notification: NotificationHandler;
         Chat: ChatHandler;
+
+        Players: Players;
 
         /** Displays an error message. */
         ShowMessage(error): void {
@@ -31,27 +34,21 @@ module TwitchPotato {
 
             this.Storage = new StorageHandler();
             this.Input = new InputHandler();
-            //this.Guide = new GuideHandler();
-            this.Player = new PlayerHandler();
-            //this.Twitch = new TwitchHandler();
             this.Notification = new NotificationHandler();
             this.Chat = new ChatHandler();
 
+            this.Guide = new GuideHandler();
 
-
-            Guide = new GuideHandler();
+            this.Players = new Players();
 
             /** Authenticate the user. */
-            Authenticator = new AuthenticatorHandler((user, name, token) => {
+            this.Authenticator = new AuthenticatorHandler((user, name, token) => {
                 this._user = user;
                 this._name = name;
                 this._token = token;
 
                 this.Twitch = new TwitchHandler(user, token);
             });
-
-
-
 
             this.Storage.Load((settings) => {
                 /** Update the font size. */
@@ -73,15 +70,15 @@ module TwitchPotato {
         ToggleGuide(hidePlayer = false): void {
 
             /** Ensure there is a stream playing. */
-            if (!this.Player.IsPlaying()) return;
+            if (!this.Players.IsPlaying()) return;
 
-            if (Guide.IsShown() === true) {
+            if (App.Guide.IsShown() === true) {
 
                 /** Fade the guide out. */
-                Guide.Toggle(false, true);
+                App.Guide.Toggle(false, true);
 
                 /** Pause the guide channel preview. */
-                Guide.Content.PausePreview();
+                App.Guide.Content.PausePreview();
 
                 /** Show the chat window. */
                 App.Chat.Guide(true);
@@ -89,7 +86,7 @@ module TwitchPotato {
 
                 if (hidePlayer !== true)
                     /** Show the players in the guide. */
-                    this.Player.UpdateLayout(true, PlayerLayout.Guide);
+                    this.Players.PlayerMode(true, PlayerLayout.Guide);
                 else
                     $('#players').fadeOut();
 
@@ -97,10 +94,10 @@ module TwitchPotato {
                 App.Chat.Guide(false);
 
                 /** Play the guide channel preview. */
-                Guide.Content.PlayPreview();
+                App.Guide.Content.PlayPreview();
 
                 /** Fade the guide in. */
-                Guide.Toggle(true, true);
+                App.Guide.Toggle(true, true);
             }
         }
 
@@ -111,7 +108,7 @@ module TwitchPotato {
 
             /** Reset the settings. */
             //this.Twitch.ClearPartitions(undefined, () => {
-            this.Storage.Load(() => Guide.Refresh(), true);
+            this.Storage.Load(() => App.Guide.Refresh(), true);
             //});
         }
 
@@ -186,13 +183,13 @@ module TwitchPotato {
             /** Update the application font size. */
             $('body').css('font-size', fontSize + '%');
 
-            Guide.UpdateMenu(Direction.None);
+            App.Guide.UpdateMenu(Direction.None);
 
             /** Update the menu size */
-            Guide.UpdateMenuSize();
+            App.Guide.UpdateMenuSize();
 
             /** Update the mneu scroll position */
-            Guide.UpdateMenuScroll();
+            App.Guide.UpdateMenuScroll();
 
             /** Update the chat font size. */
             this.Chat.UpdateFontSize();
@@ -231,14 +228,12 @@ module TwitchPotato {
     /** The current application instance */
     export var App: Application = new Application();
 
-    export var Guide: GuideHandler;
-    export var Authenticator: AuthenticatorHandler;
 
     /** Post a message containing a method and params to the preview player. */
     export var PostMessage = function(webview: Webview, method: string, params = {}): void {
 
         /** Make sure the contentwindow is loaded. */
-        if (webview.contentWindow === undefined) {
+        if (!webview.contentWindow) {
             setTimeout(() => PostMessage(webview, method, params), 100);
             return;
         }
@@ -254,6 +249,56 @@ module TwitchPotato {
             webview.contentWindow.postMessage(
                 JSON.stringify(data), '*'), 100);
     };
+
+    export enum PlayerLayout {
+        Full,
+        Guide,
+        ChatLeft,
+        ChatRight
+    }
+
+    export enum MultiLayout {
+        Default,
+        Equal
+    }
+
+    export enum ViewMode {
+        Fullscreen,
+        Windowed
+    }
+
+    export enum MultiPosition {
+        Top,
+        Left,
+        Right,
+        Bottom,
+        Middle,
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight,
+    }
+
+    export enum PlayerActions {
+        ViewMode,
+        Load,
+        State,
+        Mute,
+        Quality,
+        Preview
+    }
+
+    export enum PlayerState {
+        Playing,
+        Stopped
+    }
+
+
+
+
+
+
+
 
     export enum MenuItemType {
         Channel,

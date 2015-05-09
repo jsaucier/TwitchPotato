@@ -60,11 +60,11 @@ module TwitchPotato {
                 if (this._showChat) $(this._chat).fadeIn();
 
                 if (this._layout === ChatLayout.DockLeft)
-                    App.Player.UpdateLayout(true, PlayerLayout.ChatLeft);
+                    App.Players.PlayerMode(true, PlayerLayout.ChatLeft);
                 else if (this._layout === ChatLayout.DockRight)
-                    App.Player.UpdateLayout(true, PlayerLayout.ChatRight);
+                    App.Players.PlayerMode(true, PlayerLayout.ChatRight);
                 else
-                    App.Player.UpdateLayout(true, PlayerLayout.Full);
+                    App.Players.PlayerMode(true, PlayerLayout.Full);
             }
         }
 
@@ -78,7 +78,7 @@ module TwitchPotato {
                 $(this._chat).fadeOut();
 
                 /** Set the player back to full. */
-                return App.Player.UpdateLayout(true, PlayerLayout.Full);
+                return App.Players.PlayerMode(true, PlayerLayout.Full);
             }
 
             /** The chat should be shown. */
@@ -132,11 +132,11 @@ module TwitchPotato {
 
             /** Update the player layout. */
             if (this._layout === ChatLayout.DockLeft)
-                App.Player.UpdateLayout(true, PlayerLayout.ChatLeft);
+                App.Players.PlayerMode(true, PlayerLayout.ChatLeft);
             else if (this._layout === ChatLayout.DockRight)
-                App.Player.UpdateLayout(true, PlayerLayout.ChatRight);
+                App.Players.PlayerMode(true, PlayerLayout.ChatRight);
             else
-                App.Player.UpdateLayout(true, PlayerLayout.Full);
+                App.Players.PlayerMode(true, PlayerLayout.Full);
         }
     }
 }

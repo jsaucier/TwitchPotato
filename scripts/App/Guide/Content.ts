@@ -107,8 +107,8 @@ module TwitchPotato {
 
             this._preview.addEventListener('contentload', () => {
                 /** Inject the script files. */
-                this._preview.executeScript({ file: 'js/vendor/jquery.min.js' });
-                this._preview.executeScript({ file: 'js/inject.js' });
+                this._preview.executeScript({ file: 'js/Vendor/jquery.min.js' });
+                this._preview.executeScript({ file: 'js/Player/Controller.js' });
 
                 /** Hook the console message event. */
                 this._preview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
@@ -121,17 +121,17 @@ module TwitchPotato {
         /** Posts a message to the preview player. */
         private PostMessage(method: string, params = {}): void {
 
-            if (!this._isLoaded) {
-
-                /** Clear the timeout. */
-                clearTimeout(this._timeout);
-
-                /** Set the timeout timer. */
-                this._timeout = setTimeout(
-                    () => this.PostMessage(method, params), 100);
-            }
-            else
-                PostMessage(this._preview, method, params);
+            // if (!this._isLoaded) {
+            //
+            //     /** Clear the timeout. */
+            //     clearTimeout(this._timeout);
+            //
+            //     /** Set the timeout timer. */
+            //     this._timeout = setTimeout(
+            //         () => this.PostMessage(method, params), 100);
+            // }
+            // else
+            //     PostMessage(this._preview, method, params);
         }
 
         /** Gets the selected item. */
@@ -183,7 +183,7 @@ module TwitchPotato {
         private ShowChannel(key: string, menu: MenuType): void {
 
             /** Get the channel data. */
-            var channel = <IChannel>App.Twitch.GetMenu(menu)[key];
+            var channel = <ChannelItem>App.Twitch.GetItems(menu)[key];
 
             /** The channel head template. */
             var head = $('#channel-info-head-template').html().format(
@@ -202,7 +202,7 @@ module TwitchPotato {
         private ShowGame(key: string): void {
 
             /** Get the game data. */
-            var game = <IGame>App.Twitch.GetMenu(MenuType.Games)[key];
+            var game = <GameItem>App.Twitch.GetItems(MenuType.Games)[key];
 
             /** The game head template. */
             var head = $('#game-info-head-template').html().format(
@@ -220,7 +220,7 @@ module TwitchPotato {
         private ShowVideo(key: string): void {
 
             /** Get the video data. */
-            var video = <IVideo>App.Twitch.GetMenu(MenuType.Videos)[key];
+            var video = <VideoItem>App.Twitch.GetItems(MenuType.Videos)[key];
 
             /** The game head template. */
             var head = $('#video-info-head-template').html().format(

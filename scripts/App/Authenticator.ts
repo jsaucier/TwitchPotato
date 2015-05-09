@@ -30,28 +30,17 @@ module TwitchPotato {
             this._callback = onAuthenticated;
 
             /** Setup the event listener. */
-            this._webview.addEventListener('contentload', () => this.CheckAuthentication());
-        }
+            this._webview.addEventListener('contentload', () => this.ContentLoaded());
 
-        /** Gets whether the user is authenticated. */
-        IsAuthenticated(): boolean { return this._isAuthenticated; }
-
-        /** Gets the user's token. */
-        GetAuthentication(): { name: string, displayName: string, token: string } {
-
-            /** Return the authenticated user name and token. */
-            return {
-                name: this._user,
-                displayName: this._name,
-                token: this._token
-            };
+            /** Get the access token. */
+            this.GetToken();
         }
 
         /** Logs into Twitch.tv */
         LogIn(): void {
 
             /** Navigate to the twitch.tv login page. */
-            this.Navigate('https://secure.twitch.tv/login');
+            this.Navigate('https://secure.twitch.tv/login', true, true);
         }
 
         /** Logs out of Twitch.tv */
@@ -91,7 +80,7 @@ module TwitchPotato {
         }
 
         /** Checks to see if the user is authenticated. */
-        private CheckAuthentication(): void {
+        private ContentLoaded(): void {
 
             /** Get the webview element. */
             var element = $('#login webview');
@@ -99,60 +88,60 @@ module TwitchPotato {
             /** Do nothing if the page is blank. */
             if (element.attr('src') === 'about:blank') return;
 
-            if (element.attr('src') === 'https://secure.twitch.tv/login') {
+            /** User interaction is required. */
+            if (element.attr('src') === 'https://secure.twitch.tv/login' ||
+                element.attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize') === 0) {
+
                 this.Visibility(true, true);
 
-                /** Hide the loading screen. */
-                App.Loading(false);
+                return App.Loading(false);
             }
 
             /** Redirect to the token page. */
             if (element.attr('src') === 'http://www.twitch.tv/') {
-                if (this._isAuthenticated)
-                    this.Navigate('about:blank', false, false);
-                else
-                    /** Redirect to retrieve token. */
-                    this.Navigate('https://api.twitch.tv/api/viewer/token', false);
+
+                this.GetToken();
             }
 
-            /** Only check if we are on the token page. */
-            else if (element.attr('src').indexOf('https://api.twitch.tv/api/viewer/token') === 0) {
+            /** User needs to authenticate. */
+            else if (element.attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authenticate') === 0) {
 
-                this._webview.executeScript({
-                    /** Get the body text. */
-                    code: '(function () { return document.body.innerText; })();'
-                }, (data: any) => {
-
-                        /** Update the authentication status. */
-                        this._isAuthenticated = data[0].indexOf(':error=>') === -1;
-
-                        if (this._isAuthenticated) {
-
-                            /** Hide the webview. */
-                            this.Navigate('about:blank', false, false);
-
-                            /** Update the token. */
-                            this._token = JSON.parse(data[0]).token;
-
-                            /** Get the users name. */
-                            $.ajax({
-                                url: 'https://api.twitch.tv/kraken/user?oauth_token={0}'.format(this._token),
-                                error: (xhr, status, error) => console.log(xhr, status, error),
-                                global: false,
-                                success: (json) => {
-                                    this._user = json.name;
-                                    this._name = json.display_name;
-
-                                    /** Return the token to the callback function */
-                                    this._callback(this._user, this._name, this._token);
-                                }
-                            });
-                        }
-                        else
-                            /** Log the user in. */
-                            this.LogIn();
-                    });
+                this.LogIn();
             }
+
+            /** Get the token and user name. */
+            else if (element.attr('src').indexOf('https://dl.dropboxusercontent.com/spa/tn9l4tkx2yhpiv3/') === 0) {
+
+                this._token = element.attr('src').match(/#access_token=(.*)&/i)[1];
+
+                this.Navigate('about:blank', false, false);
+
+                $.ajax({
+                    url: 'https://api.twitch.tv/kraken/user?oauth_token={0}'.format(this._token),
+                    error: (xhr, status, error) => console.log(xhr, status, error),
+                    global: false,
+                    success: (json) => {
+
+                        this._user = json.name;
+                        this._name = json.display_name;
+
+                        /** Return the token to the callback function */
+                        this._callback(this._user, this._name, this._token);
+                    }
+                });
+            }
+        }
+
+        /** Get the OAuth2 access token. */
+        private GetToken(): void {
+
+            var url =
+                'https://api.twitch.tv/kraken/oauth2/authorize?response_type=token' +
+                '&client_id=60wzh4fjbowe6jwtofuc1jakjfgekry' +
+                '&redirect_uri=https%3A%2F%2Fdl.dropboxusercontent.com%2Fspa%2Ftn9l4tkx2yhpiv3%2Ftwitch%2520potato%2Fpublic%2Ftoken.html' +
+                '&scope=user_read%20user_follows_edit';
+
+            this.Navigate(url, false, false);
         }
     }
 }

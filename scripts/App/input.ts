@@ -68,7 +68,7 @@ module TwitchPotato {
             { name: 'Pause Player', desc: '', type: Inputs.PlayPause, key: 'SPACE' },
             { name: 'Mute Volume', desc: '', type: Inputs.Mute, key: 'M' },
             { name: 'Previous Channel', desc: '', type: Inputs.Flashback, key: 'F' },
-            { name: 'Select Channel', desc: '', type: Inputs.Select, key: 'ENTER' },
+            // { name: 'Select Channel', desc: '', type: Inputs.Select, key: 'ENTER' },
             { name: 'Change Layout', desc: '', type: Inputs.Layout, key: 'H' },
             { name: 'Toggle Fullscreen', desc: '', type: Inputs.FullscreenToggle, key: 'U' },
             { name: 'Enter Fullscreen', desc: '', type: Inputs.FullscreenEnter, key: 'I' },
@@ -130,8 +130,8 @@ module TwitchPotato {
 
                 /** Route the input to the modules. */
                 if (App.HandleInput(input)) { }
-                else if (Guide.HandleInput(input)) { }
-                else if (App.Player.HandleInput(input)) { }
+                else if (App.Guide.HandleInput(input)) { }
+                else if (App.Players.HandleInput(input)) { }
             }
         }
 

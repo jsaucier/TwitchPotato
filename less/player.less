@@ -11,30 +11,26 @@
 #players {
     position: fixed;
     display: none;
-    /* PlayersLayout.Full */
-    &[layout="0"] {
+    &[mode="Full"] {
         top: 0;
         bottom: 0;
         left: 0;
         right: 0;
     }
-    /* PlayersLayout.Guide */
-    &[layout="1"] {
+    &[mode="Guide"] {
         width: 30%;
         height: 30%;
         bottom: 20px;
         right: 20px;
         border: 5px solid @purple;
     }
-    /* PlayersLayout.ChatLeft */
-    &[layout="2"] {
+    &[mode="ChatLeft"] {
         left: 25%;
         top: 0;
         right: 0;
         bottom: 0;
     }
-    /* PlayersLayout.ChatRight */
-    &[layout="3"] {
+    &[mode="ChatRight"] {
         left: 0;
         top: 0;
         right: 25%;
@@ -58,8 +54,7 @@
         display: none;
         background-color: @purple;
         opacity: 0.3;
-        /* Default */
-        &[layout="0"] {
+        &[multi="Default"] {
             &[number="0"] {
                 display: block;
                 top: 0;
@@ -96,8 +91,7 @@
                 z-index: 2001;
             }
         }
-        /* Equal */
-        &[layout="1"] {
+        &[multi="Equal"] {
             &[number="0"] {
                 display: block;
                 top: 0;
@@ -134,8 +128,7 @@
     }
     .player {
         position: absolute;
-        /* Default */
-        &[layout="0"] {
+        &[multi="Default"] {
             &[number="0"] {
                 top: 0;
                 bottom: 0;
@@ -169,8 +162,7 @@
                 z-index: 2000;
             }
         }
-        /* Equal */
-        &[layout="1"] {
+        &[multi="Equal"] {
             &[number="0"] {
                 display: block;
                 top: 0;

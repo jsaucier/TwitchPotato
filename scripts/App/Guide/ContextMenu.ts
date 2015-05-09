@@ -1,5 +1,7 @@
 module TwitchPotato {
+
     export class ContextMenuHandler {
+
         /** Gets the #context-menu jQuery element. */
         private contextMenu = '#guide #context-menu';
         /** Gets the selected button on the context menu. */
@@ -7,38 +9,40 @@ module TwitchPotato {
 
         /** Handles input for the context menu. */
         HandleInput(input: Inputs, item: JQuery): boolean {
+
             /** Context menu is not visible, return false. */
             if ($(this.contextMenu).length === 0) return false;
 
             switch (input) {
+
                 case Inputs.ContextMenu:
                     this.Show(item);
-                    break;
+                    return true;
                 case Inputs.Up:
                     this.UpdateButton(Direction.Up);
-                    break;
+                    return true;
                 case Inputs.Down:
                     this.UpdateButton(Direction.Down);
-                    break;
+                    return true;
                 case Inputs.Select:
                     this.SelectButton(item);
-                    break;
+                    return true;
                 default:
-                    break;
+                    return false;
             }
-
-            return true;
         }
 
         /** Closes the context menu. */
         Close() {
+
             $(this.contextMenu).remove();
 
-            Guide.UpdateMenuScroll();
+            App.Guide.UpdateMenuScroll();
         }
 
         /** Updates the context menu after the guide refreshes. */
         Update(item, type: string) {
+
             this.Show(item);
 
             /** Remove selected menu item. */
@@ -51,6 +55,7 @@ module TwitchPotato {
 
         /** Shows the context menu for the item. */
         Show(item: JQuery): void {
+
             /** Remove the context menu from the DOM. */
             if ($(this.contextMenu).length !== 0) return this.Close();
 
@@ -67,54 +72,37 @@ module TwitchPotato {
                 /** Remove unused buttons. */
                 html.find('[type="search-games"]').remove();
                 html.find('[type="search-videos"]').remove();
-                html.find('[type="view-pip"]').remove();
+                html.find('[type="view-multi"]').remove();
                 html.find('[type="follow-channel"]').remove();
                 html.find('[type="unfollow-channel"]').remove();
             }
 
             /** The selected item key. */
             var key = item.attr('key');
-            /** The selected item game. */
-            var game = item.attr('game');
-            /** The users following the selected channel. */
-            var channelFollowers: string[];
-            /** The users following the selected game. */
-            var gameFollowers: string[];
-            /** The loaded users. */
-            var users = App.Twitch.GetUsers();
 
-            /** No user accounts are loaded, so we cannot follow/unfollow. */
-            if (users.length === 0) {
-                html.find('[type="follow-channel"]').remove();
-                html.find('[type="unfollow-channel"]').remove();
-                html.find('[type="follow-game"]').remove();
-                html.find('[type="unfollow-game"]').remove();
-            }
-            else if (menu === MenuType.Channels || menu === MenuType.Game) {
-                channelFollowers = App.Twitch.GetFollowing(FollowType.Channel, key);
-                gameFollowers = App.Twitch.GetFollowing(FollowType.Game, game);
+            if (menu === MenuType.Channels || menu === MenuType.Game) {
 
-                if (Object.keys(channelFollowers).length === 0)
+                /** The selected item game. */
+                var game = item.attr('game');
+
+                if (App.Twitch.IsFollowing(FollowType.Channel, key) === false)
                     html.find('[type="unfollow-channel"]').remove();
 
-                if (Object.keys(gameFollowers).length === 0)
-                    html.find('[type="unfollow-game"]').remove();
-
-                if (Object.keys(users).length === Object.keys(channelFollowers).length)
+                if (App.Twitch.IsFollowing(FollowType.Channel, key))
                     html.find('[type="follow-channel"]').remove();
 
-                if (Object.keys(users).length === Object.keys(gameFollowers).length)
-                    html.find('[type="follow-game"]').remove();
-
-
-            }
-            else if (menu === MenuType.Games) {
-                gameFollowers = App.Twitch.GetFollowing(FollowType.Game, key);
-
-                if (Object.keys(gameFollowers).length === 0)
+                if (App.Twitch.IsFollowing(FollowType.Game, game) === false)
                     html.find('[type="unfollow-game"]').remove();
 
-                if (Object.keys(users).length === Object.keys(gameFollowers).length)
+                if (App.Twitch.IsFollowing(FollowType.Game, game))
+                    html.find('[type="follow-game"]').remove();
+            }
+            else if (menu === MenuType.Games) {
+
+                if (App.Twitch.IsFollowing(FollowType.Game, key) === false)
+                    html.find('[type="unfollow-game"]').remove();
+
+                if (App.Twitch.IsFollowing(FollowType.Game, key))
                     html.find('[type="follow-game"]').remove();
 
                 if (App.Storage.IsGameHidden(key) === true)
@@ -131,7 +119,6 @@ module TwitchPotato {
                 'type': 'hide-game',
                 'hide': !hidden,
                 'key': game || key,
-
             });
 
             /** Select the appropriate button. */
@@ -141,11 +128,12 @@ module TwitchPotato {
             html.appendTo(item);
 
             /** Scroll the guide menu. */
-            Guide.UpdateMenuScroll();
+            App.Guide.UpdateMenuScroll();
         }
 
         /** Create a context menu item. */
         private AddMenuItem(html: JQuery, attrs: { [key: string]: any }): JQuery {
+
             return $('<div>')
                 .addClass('button')
                 .attr(attrs)
@@ -154,6 +142,7 @@ module TwitchPotato {
 
         /** Update the selected button. */
         private UpdateButton(direction: Direction): void {
+
             /** The index of the selected menu item. */
             var index = $(this.contextMenu).find('.button:visible')
                 .index($(this.selectedButton));
@@ -186,6 +175,7 @@ module TwitchPotato {
 
         /** Selects the button. */
         private SelectButton(item: JQuery): void {
+
             /** The key of the selected item. */
             var key = item.attr('key');
 
@@ -196,9 +186,9 @@ module TwitchPotato {
                 case 'cancel':
                     this.Close();
                     break;
-                case 'view-pip':
-                    /** Play the channel in pip mode. */
-                    App.Player.Play(key, true);
+                case 'view-multi':
+                    /** Play the channel in multi mode. */
+                    App.Players.Play(key, false, true);
                     break;
                 case 'search-games':
                     /** The game of the selected item. */
@@ -208,7 +198,7 @@ module TwitchPotato {
                     $('.list').eq(MenuType.Game).find('.head').text(game);
 
                     /** Set the update type. */
-                    Guide.SetUpdateType(UpdateType.Game);
+                    App.Guide.SetUpdateType(UpdateType.Game);
 
                     /** Search for more games of this type. */
                     App.Twitch.GetGameChannels(game);
@@ -218,27 +208,31 @@ module TwitchPotato {
                     $('.list').eq(MenuType.Videos).hide();
 
                     /** Set the update type. */
-                    Guide.SetUpdateType(UpdateType.Videos);
+                    App.Guide.SetUpdateType(UpdateType.Videos);
 
                     /** Search for videos from this streamer */
                     App.Twitch.GetChannelVideos(key);
                     break;
                 case 'follow-channel':
                     /** Follow the channel. */
-                    Guide.FollowMenu.Show(item, FollowType.Channel);
-                    return;
+                    App.Twitch.Follow(key, FollowType.Channel);
+                    break
                 case 'unfollow-channel':
                     /** Unfollow the channel. */
-                    Guide.FollowMenu.Show(item, FollowType.Channel, true);
-                    return;
+                    App.Twitch.Follow(key, FollowType.Channel, true);
+                    break
                 case 'follow-game':
+                    var game = item.attr('game') || item.attr('key');
+
                     /** Follow the game. */
-                    Guide.FollowMenu.Show(item, FollowType.Game);
-                    return;
+                    App.Twitch.Follow(game, FollowType.Game);
+                    break;
                 case 'unfollow-game':
+                    var game = item.attr('game') || item.attr('key');
+
                     /** Unfollow the game. */
-                    Guide.FollowMenu.Show(item, FollowType.Game, true);
-                    return;
+                    App.Twitch.Follow(game, FollowType.Game, true);
+                    break;
                 case 'hide-game':
                     /** Determines if the game should be hidden. */
                     var hide = ($(this.selectedButton).attr('hide') === 'true') ? true : false;
@@ -247,14 +241,13 @@ module TwitchPotato {
                     /** Hide the game. */
                     App.Storage.HideGame(game, hide);
                     /** Refresh the guide. */
-                    Guide.Refresh();
+                    App.Guide.Refresh();
                     break;
                 default:
                     break;
             }
 
-            /** Remove the context menu. */
-            $(this.contextMenu).remove();
+            this.Close();
         }
     }
 }
