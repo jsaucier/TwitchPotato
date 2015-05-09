@@ -135,7 +135,7 @@ class Controller {
         if (status === 'unknown')
             setTimeout(() => this.CheckLoaded(), 100);
         else
-            this.ProcessQueue();
+            setTimeout(() => this.ProcessQueue(), 100);
     }
 
     private Mute(mute): void {
