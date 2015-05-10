@@ -15,6 +15,9 @@ module TwitchPotato {
         private _viewMode = ViewMode.Windowed;
         private _position: MultiPosition;
         private _multiLayout: MultiLayout;
+        private _div: JQuery;
+        private _notifyTimeout: number;
+        private _selectTimeout: number;
 
         /** Creates a new instance of player. */
         constructor(num: number, id: string, isVideo: boolean) {
@@ -24,12 +27,11 @@ module TwitchPotato {
 
             $('#players').append($($('#player-template').html().format(num)));
 
-            var webview = $('#players webview[number="' + num + '"].player');
-
             this._number = num;
-            this._webview = <Webview>webview[0];
+            this._div = $('#players .player[number="' + num + '"]');
+            this._webview = <Webview>this._div.find('webview')[0];
 
-            webview.attr('src', src);
+            this._div.find('webview').attr('src', src);
 
             /** Bind to the contentload event. */
             this._webview.addEventListener('contentload', () => {
@@ -58,9 +60,10 @@ module TwitchPotato {
         /** Gets or sets the current multi layout for the player. */
         MultiLayout(layout?: MultiLayout): MultiLayout {
 
-            if (layout !== undefined) {
+            if (layout !== undefined &&
+                this._multiLayout !== layout) {
                 this._multiLayout = layout;
-                $(this._webview)
+                $(this._div)
                     .hide()
                     .attr('multi', MultiLayout[layout])
                     .fadeIn();
@@ -74,7 +77,7 @@ module TwitchPotato {
 
             if (num !== undefined) {
                 this._number = num;
-                $(this._webview).attr('number', num);
+                $(this._div).attr('number', num);
             }
 
             return this._number;
@@ -176,6 +179,23 @@ module TwitchPotato {
             return this._position;
         }
 
+        /** Selects the player. */
+        Select(num: number): void {
+
+            clearTimeout(this._selectTimeout);
+
+            if (num === this._number) {
+
+                this._div.addClass('selected');
+                this._div.find('.selector').fadeIn();
+                this._selectTimeout = setTimeout(() => this.Select(-1), 2500);
+            }
+            else {
+                this._div.removeClass('selected');
+                this._div.find('.selector').fadeOut();
+            }
+        }
+
         /** Reloads the player. */
         Reload(): void {
 
@@ -201,20 +221,32 @@ module TwitchPotato {
 
         /** Displays a notification of the player action. */
         private DisplayActionNotification(action: string): void {
-
-            // TODO: Display an image or icon in reference of the action.
-            var div = $('<div/>').attr({
-                id: this._id,
-                class: 'action',
-                multi: MultiLayout[this._multiLayout],
-                number: this._number
-            });
-
-            div.append($('<img/>').attr({
-                src: 'images/{0}.png'.format(action.toLowerCase())
-            }));
-
-            // $('#players').append(div);
+            // console.log(action);
+            //             // TODO: Display an image or icon in reference of the action.
+            //
+            //             clearTimeout(this._notifyTimeout);
+            //
+            //             $('.action').remove();
+            //
+            //             var div = $('<div/>').addClass('action');
+            //
+            //             div.append($('<span/>'));
+            //
+            //             // .text(action.toUpperCase());
+            //
+            //             // div.append($('<div/>')
+            //             //     .addClass('text')
+            //             //     .text(action.toUpperCase()));
+            //
+            //
+            //             div.append($('<img/>').attr({
+            //                 src: 'chrome-extension://' + chrome.runtime.id + '/images/' + action.toLowerCase() + '.png'
+            //             }));
+            //
+            //             $('body').append(div);
+            //
+            //
+            //             //this._notifyTimeout = setTimeout(() => $('.action').remove(), 2500);
         }
     }
 }

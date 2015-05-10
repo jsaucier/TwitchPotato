@@ -3,16 +3,14 @@ module TwitchPotato {
     export class Players {
 
         private _players: { [id: number]: Player } = {};
-        private _layout: PlayerLayout = PlayerLayout.Full;
-        private _previousMode: PlayerLayout;
+        private _layout: PlayerMode = PlayerMode.Full;
+        private _previousMode: PlayerMode;
         private _multiLayout = MultiLayout.Default;
         private _selectionTimeout: number;
 
         HandleInput(input: Inputs): boolean {
 
             var player = this.GetSelected();
-
-            console.log(Inputs[input]);
 
             if (player === undefined) return false;
 
@@ -21,10 +19,8 @@ module TwitchPotato {
                 case Inputs.Stop:
                     player.State(PlayerState.Stopped);
 
-                    if (!this.IsPlaying()) {
-                        console.log('toggleguide');
+                    if (!this.IsPlaying())
                         App.ToggleGuide(true);
-                    }
 
                     return true;
 
@@ -85,7 +81,11 @@ module TwitchPotato {
                     return true;
 
                 case Inputs.MultiLayout:
-                    this.MultiLayout();
+
+                    var layout = (this._multiLayout === MultiLayout.Default) ?
+                        MultiLayout.Equal : MultiLayout.Default;
+
+                    this.MultiLayout(layout);
                     return true;
 
                 case Inputs.ToggleChat:
@@ -149,7 +149,7 @@ module TwitchPotato {
             else
                 player.Load(id, isVideo);
 
-            this.PlayerMode(true, PlayerLayout.Full);
+            this.PlayerMode(true, PlayerMode.Full);
 
             this.MultiLayout();
 
@@ -198,19 +198,20 @@ module TwitchPotato {
         }
 
         /** Updates the player mode. */
-        PlayerMode(fadeIn: boolean, layout?: PlayerLayout): void {
+        PlayerMode(fadeIn: boolean, layout?: PlayerMode): void {
 
             if (layout === undefined)
                 layout = this._previousMode;
 
-            if (layout === PlayerLayout.Guide)
+            if (layout === PlayerMode.Guide)
                 this._previousMode = this._layout;
 
-            var lo = PlayerLayout[layout];
+            var lo = PlayerMode[layout];
 
             if (this._layout === layout) {
 
-                if ($('#players').attr('mode') === lo) {
+                if ($('#players').attr('mode') === lo &&
+                    $('#players').css('display') === 'none') {
 
                     if (fadeIn === true)
                         $('#players').fadeIn();
@@ -221,10 +222,12 @@ module TwitchPotato {
                 }
             }
 
-            if (fadeIn === true)
-                $('#players').hide().attr('mode', lo).fadeIn();
-            else
-                $('#players').hide().attr('mode', lo).show();
+            if ($('#players').attr('mode') !== lo) {
+                if (fadeIn === true)
+                    $('#players').hide().attr('mode', lo).fadeIn();
+                else
+                    $('#players').hide().attr('mode', lo).show();
+            }
 
             this._layout = layout;
         }
@@ -241,20 +244,15 @@ module TwitchPotato {
             for (var index in this._players)
                 this._players[index].MultiLayout(layout)
 
-            var selector = $('#players .selector');
-
-            if (selector.attr('multi') !== MultiLayout[layout])
-                $(selector).attr('multi', MultiLayout[layout]);
-
             this._multiLayout = layout;
         }
 
         /** Updates the selected player. */
         private UpdateSelector(direction: Direction): void {
 
-            this.ClearSelected();
-
             var num = parseInt($('#players .player.selected').attr('number')) || 0;
+
+            this.ClearSelected();
 
             if (direction === Direction.Up) num--;
             else if (direction === Direction.Down) num++;
@@ -266,13 +264,8 @@ module TwitchPotato {
             else if (num > numPlayers - 1)
                 num = 0;
 
-            $('#players .player[number="' + num + '"]').addClass('selected');
-
-            $('#players .selector').attr('number', num).show();
-
-            clearTimeout(this._selectionTimeout);
-
-            this._selectionTimeout = setTimeout(this.ClearSelected, 2500);
+            for (var index in this._players)
+                this._players[index].Select(num);
         }
 
         /** Selects the selected player. */
