@@ -36,11 +36,12 @@
         right: 25%;
         bottom: 0;
     }
-    .player,
-    .selector,
-    .action {
-        position: fixed;
+    .player {
+        position: absolute;
         &[multi="Default"] {
+            height: 30%;
+            width: 30%;
+            z-index: 2001;
             &[number="0"] {
                 display: block;
                 top: 0;
@@ -50,127 +51,68 @@
                 height: 100%;
                 width: 100%;
                 z-index: 1001;
-                &.selector {
-                    z-index: 3000;
-                }
-                &.action {
-                    z-index: 4000;
-                }
             }
             &[number="1"] {
                 display: block;
                 bottom: 2%;
                 left: 2%;
-                height: 30%;
-                width: 30%;
-                z-index: 2001;
-                &.selector {
-                    z-index: 3000;
-                }
-                &.action {
-                    z-index: 4000;
-                }
             }
             &[number="2"] {
                 display: block;
                 bottom: 2%;
                 left: 50%;
-                height: 30%;
-                width: 30%;
                 margin-left: -15%;
-                z-index: 2001;
-                &.selector {
-                    z-index: 3000;
-                }
-                &.action {
-                    z-index: 4000;
-                }
             }
             &[number="3"] {
                 display: block;
                 bottom: 2%;
                 right: 2%;
-                height: 30%;
-                width: 30%;
-                z-index: 2001;
-                &.selector {
-                    z-index: 3000;
-                }
-                &.action {
-                    z-index: 4000;
-                }
             }
         }
         &[multi="Equal"] {
+            height: 50%;
+            width: 50%;
+            z-index: 1001;
             &[number="0"] {
                 display: block;
                 top: 0;
                 left: 0;
-                height: 50%;
-                width: 50%;
-                z-index: 1001;
-                &.selector {
-                    z-index: 3000;
-                }
-                &.action {
-                    z-index: 4000;
-                }
             }
             &[number="1"] {
                 display: block;
                 top: 0;
                 left: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1001;
-                &.selector {
-                    z-index: 3000;
-                }
-                &.action {
-                    z-index: 4000;
-                }
             }
             &[number="2"] {
                 display: block;
                 left: 0;
                 top: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1001;
-                &.selector {
-                    z-index: 3000;
-                }
-                &.action {
-                    z-index: 4000;
-                }
             }
             &[number="3"] {
                 display: block;
                 left: 50%;
                 top: 50%;
-                height: 50%;
-                width: 50%;
-                z-index: 1001;
-                &.selector {
-                    z-index: 3000;
-                }
-                &.action {
-                    z-index: 4000;
-                }
             }
         }
-    }
-    .selector {
-        display: none;
-        background-color: @purple;
-        opacity: 0.3;
-    }
-    .action {
-        
-    }
-    webview.video {
-        height: 100%;
-        width: 100%;
-        background-color: #222;
+        * {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 100%;
+            width: 100%;
+        }
+        webview {
+            background-color: #222;
+        }
+        .selector {
+            display: none;
+            background-color: @purple;
+            opacity: 0.3;
+        }
+        .notify {
+            display: none;
+        }
     }
 }
