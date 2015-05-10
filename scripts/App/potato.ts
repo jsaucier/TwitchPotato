@@ -83,11 +83,11 @@ module TwitchPotato {
 
                 if (hidePlayer !== true)
                     /** Show the players in the guide. */
-                    this.Players.PlayerMode(true, PlayerLayout.Guide);
+                    this.Players.PlayerMode(true, PlayerMode.Guide);
                 else
                     $('#players').fadeOut();
 
-                /** Show the chat window. */
+                /** Hide the chat window. */
                 App.Chat.Guide(false);
 
                 /** Play the guide channel preview. */
@@ -247,7 +247,7 @@ module TwitchPotato {
                 JSON.stringify(data), '*'), 100);
     };
 
-    export enum PlayerLayout {
+    export enum PlayerMode {
         Full,
         Guide,
         ChatLeft,
