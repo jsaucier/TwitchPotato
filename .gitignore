@@ -1,4 +1,4 @@
 *.bat
 *.zip
 node_modules/*
-App/*
+build/*
