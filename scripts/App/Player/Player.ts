@@ -18,12 +18,13 @@ module TwitchPotato {
         private _div: JQuery;
         private _notifyTimeout: number;
         private _selectTimeout: number;
+        private _isPartnered: boolean;
 
         /** Creates a new instance of player. */
         constructor(num: number, id: string, isVideo: boolean) {
 
-            var src = 'http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true&';
-            src += (!isVideo) ? 'channel=' + id : 'videoId=' + id;
+            this._id = id;
+            this._isVideo = isVideo;
 
             $('#players').append($($('#player-template').html().format(num)));
 
@@ -31,7 +32,12 @@ module TwitchPotato {
             this._div = $('#players .player[number="' + num + '"]');
             this._webview = <Webview>this._div.find('webview')[0];
 
-            this._div.find('webview').attr('src', src);
+            this.GetPartnerStatus(() => {
+                var src = 'http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true&';
+                src += (!isVideo) ? 'channel=' + id : 'videoId=' + id;
+
+                this._div.find('webview').attr('src', src);
+            });
 
             /** Bind to the contentload event. */
             this._webview.addEventListener('contentload', () => {
@@ -56,6 +62,9 @@ module TwitchPotato {
 
         /** Gets whether the player has loaded. */
         IsLoaded(): boolean { return this._isLoaded; }
+
+        /** Gets whether the channel is partnered. */
+        IsPartnered(): boolean { return this._isPartnered; }
 
         /** Gets or sets the current multi layout for the player. */
         MultiLayout(layout?: MultiLayout): MultiLayout {
@@ -97,8 +106,29 @@ module TwitchPotato {
             this._id = id;
             this._isVideo = isVideo;
 
-            this.PlayerAction(PlayerActions.Load, { id: id, isVideo: isVideo });
-            this.State(PlayerState.Playing);
+            /** Check to see if this is a partnered stream.  If it is not, then
+             *  reload the player otherwise sometimes the nonpartner streams
+             *  to do not load properly. */
+            if (this._isVideo) {
+                this.PlayerAction(PlayerActions.Load, { id: id, isVideo: isVideo });
+                this.State(PlayerState.Playing);
+            }
+            else {
+                this._isLoaded = false;
+
+                this.GetPartnerStatus((isPartnered) => {
+                    if (isPartnered) {
+                        this.PlayerAction(PlayerActions.Load, { id: id, isVideo: isVideo });
+                        this.State(PlayerState.Playing);
+                    }
+                    else {
+                        var src = 'http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true&';
+                        src += (!isVideo) ? 'channel=' + id : 'videoId=' + id;
+
+                        this._div.find('webview').attr('src', src);
+                    }
+                });
+            }
         }
 
         /** Load the previous channel or video. */
@@ -203,6 +233,20 @@ module TwitchPotato {
             this._webview.reload();
         }
 
+        /** Gets to see if the channel is partnered. */
+        private GetPartnerStatus(callback?: (isPartnered: boolean) => void): void {
+
+            if (this._isVideo) {
+                this._isPartnered = undefined;
+                callback(undefined);
+            }
+            else
+                App.Twitch.IsPartnered(this._id, (isPartnered) => {
+                    this._isPartnered = isPartnered;
+                    callback(isPartnered)
+                 });
+        }
+
         /** Executes an action with the given param object on the player. */
         private PlayerAction(action: PlayerActions, params = {}): void {
 
@@ -218,6 +262,10 @@ module TwitchPotato {
 
             setTimeout(() => this._webview.contentWindow.postMessage(JSON.stringify(data), '*'), 100);
         }
+
+
+
+
 
         /** Displays a notification of the player action. */
         private DisplayActionNotification(action: string): void {

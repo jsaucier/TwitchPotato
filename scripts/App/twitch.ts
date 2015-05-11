@@ -66,6 +66,16 @@ module TwitchPotato {
             this.GetFollowedGames();
         }
 
+        /** Determines if the channel is partnered. */
+        IsPartnered(channel: string, callback: (isPartnered: boolean) => void): void {
+
+            $.ajax({
+                url: 'https://api.twitch.tv/kraken/channels/{0}'.format(channel),
+                error: (xhr, status, error) => this.ShowError(xhr, status, error),
+                success: (data) => callback(data.partner),
+            })
+        }
+
         /** Follows or unfollows the channel or game for the user. */
         Follow(name: string, type: FollowType, unfollow = false) {
 
