@@ -1,0 +1,41 @@
+{
+    "version": "1.5.0-alpha",
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "outDir": "./App"
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!./node_modules/**/*.ts"
+    ],
+    "files": [
+        "./Source/App/app.ts",
+        "./Source/App/js/Authenticator.ts",
+        "./Source/App/js/Guide/Content.ts",
+        "./Source/App/js/Guide/ContextMenu.ts",
+        "./Source/App/js/Guide/Guide.ts",
+        "./Source/App/js/Guide/MenuItem.ts",
+        "./Source/App/js/Guide/Timer.ts",
+        "./Source/App/js/Lib/Definitions.d.ts",
+        "./Source/App/js/Lib/chrome.d.ts",
+        "./Source/App/js/Lib/jquery.d.ts",
+        "./Source/App/js/Player/Controller.ts",
+        "./Source/App/js/Player/Player.ts",
+        "./Source/App/js/Player/Players.ts",
+        "./Source/App/js/Player/Selector.ts",
+        "./Source/App/js/Storage.ts",
+        "./Source/App/js/Twitch.ts",
+        "./Source/App/js/chat.ts",
+        "./Source/App/js/input.ts",
+        "./Source/App/js/notification.ts",
+        "./Source/App/js/potato.ts",
+        "./Source/App/js/utils.ts"
+    ]
+}
