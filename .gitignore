@@ -1,5 +1,4 @@
 *.bat
 *.zip
-*.map
-App/css/
-App/js/
+node_modules/*
+App/*

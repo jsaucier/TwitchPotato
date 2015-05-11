@@ -2,7 +2,6 @@ Fix top games api not loading when there is a lot of games.
 
 Update context menu to create menu items like hide games.
 
-
 Add setting to enable or disable video previews.
 Video preview not working.
 
@@ -26,12 +25,3 @@ Get stream info to determine sources available.
  -- http://api.twitch.tv/kraken/channels/thijshs (partner = true, all transcode available)
 
 Create option to set default stream quality.
-
-Get user token.
- -- https://api.twitch.tv/api/viewer/token
-
-
-MOVE PLAYER WEBVIEWS INSIDE A DIV
- -- Move selector inside the divs when selecting.
- -- Show display notifications inside the div as well.
- -- Multi, number, etc on div and not webview.
