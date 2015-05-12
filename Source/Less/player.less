@@ -1,4 +1,3 @@
-// out: ../App/css/player.css, sourcemap: true, compress: true
 @purple: #6441a5;
 * {
     padding: 0;
@@ -94,7 +93,10 @@
                 top: 50%;
             }
         }
-        * {
+        webview,
+        .highlight,
+        .notify,
+        .menu {
             position: absolute;
             top: 0;
             left: 0;
@@ -106,14 +108,16 @@
         webview {
             background-color: #222;
         }
-        .selector {
+        .highlight {
             display: none;
             background-color: @purple;
-            opacity: 0.3;
+            opacity: 0.4;
         }
         .notify {
             display: none;
         }
+        .menu {
+            display: none;
+        }
     }
 }
-/*# sourceMappingURL=player.css.map */
