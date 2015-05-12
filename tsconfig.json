@@ -9,7 +9,8 @@
         "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "./build/debug"
+        "outDir": "./build/debug",
+        "sourceMap": true
     },
     "filesGlob": [
         "./**/*.ts",
