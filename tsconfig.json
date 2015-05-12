@@ -31,10 +31,10 @@
         "./source/scripts/app/js/lib/chrome.d.ts",
         "./source/scripts/app/js/lib/jquery.d.ts",
         "./source/scripts/app/js/notification.ts",
-        "./source/scripts/app/js/player/Controller.ts",
-        "./source/scripts/app/js/player/Player.ts",
-        "./source/scripts/app/js/player/Players.ts",
-        "./source/scripts/app/js/player/Selector.ts",
+        "./source/scripts/app/js/player/controller.ts",
+        "./source/scripts/app/js/player/menu.ts",
+        "./source/scripts/app/js/player/player.ts",
+        "./source/scripts/app/js/player/players.ts",
         "./source/scripts/app/js/potato.ts",
         "./source/scripts/app/js/utils.ts"
     ]

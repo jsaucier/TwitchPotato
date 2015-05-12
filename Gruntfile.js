@@ -101,6 +101,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     // Default task(s).
-    grunt.registerTask('default', ['copy:main', 'copy:images', 'watch']);
+    grunt.registerTask('default', ['copy:main', 'copy:images', 'less:debug', 'watch']);
 
 };
