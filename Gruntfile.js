@@ -67,7 +67,7 @@ module.exports = function(grunt) {
                     yuicompress: true,
                     optimization: 2,
                     sourceMap: true,
-                    outputSourceFiles: true,
+                    sourceMapFileInline: true
                 },
                 files: [{
                     expand: true,
