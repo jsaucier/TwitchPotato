@@ -258,7 +258,10 @@ module TwitchPotato {
         State,
         Mute,
         Quality,
-        Preview
+        Position,
+        Preview,
+        Chat,
+        Layout
     }
 
     export enum PlayerState {

@@ -23,7 +23,10 @@ enum PlayerActions {
     State,
     Mute,
     Quality,
-    Preview
+    Position,
+    Preview,
+    Chat,
+    Layout
 }
 
 enum PlayerState {
