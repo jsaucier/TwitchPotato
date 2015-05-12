@@ -265,7 +265,7 @@ module TwitchPotato {
                 num = 0;
 
             for (var index in this._players)
-                this._players[index].Select(num);
+                this._players[index].Highlight(num);
         }
 
         /** Selects the selected player. */
