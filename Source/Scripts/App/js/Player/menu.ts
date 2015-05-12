@@ -6,8 +6,6 @@ module TwitchPotato {
 
         private _sources: Array<string>
 
-
-
         private _highlight: JQuery;
         private _hlTimeout: number;
 
@@ -67,48 +65,70 @@ module TwitchPotato {
         }
 
 
+        /** Creates the Qaulity menu items. */
+        CreateQualityMenu(): void {
 
-        ShowQualityMenu(): void {
-
-            var size = Object.keys(Quality).length / 2;
-
-            var html = $('<div/>').addClass('items');
-
-            for (var i = 0; i < size; i++) {
+            for (var i = 0; i < Object.keys(Quality).length / 2; i++) {
 
                 var item = $('<div/>')
                     .addClass('item')
-                    .attr('quality', i);
+                    .attr({
+                        action: PlayerActions.Quality,
+                        quality: i
+                    });
 
                 item.append($('<img/>').
                     attr('src', 'images/quality-{0}.png'.format(Quality[i].toLowerCase())));
 
-                item.append($('<div/>')
-                    .addClass('text')
-                    .text(Quality[i]));
+                // item.append($('<div/>')
+                //     .addClass('text')
+                //     .text(Quality[i]));
 
-                html.append(item);
+                if (this._player.Quality() === i)
+                    item.addClass('selected');
+
+                this._menu.find('.items').append(item);
             }
+        }
 
-            this.ShowMenu(html);
+        /** Creates the Position menu items. */
+        CreatePositionMenu(): void {
+
+            var size = Object.keys(MultiPosition).length / 2;
+
+            var html = $('<')
         }
 
         /** Creates the menu element. */
         private CreateMenu(): void {
 
-            var container = $('<div/>').addClass('menu');
+            var menu = $('<div/>')
+                .addClass('menu')
+                .append($('<div/>')
+                    .addClass('items'))
 
-            this._player.Container().append(container).hide();
+            this._player.Container().append(menu).hide();
 
             this._menu = this._player.Container().find('.menu');
         }
 
-        private ShowMenu(html: JQuery, show = true, fade = true): void {
+        private ShowMenu(action?: PlayerActions, show = true, fade = true): void {
 
             clearTimeout(this._menuTimeout);
 
-            if (html !== undefined)
-                this._menu.hide().empty().append(html);
+            this._menu.find('.items').empty();
+
+            if (action !== undefined) {
+
+                switch (action) {
+
+                    case PlayerActions.Quality:
+                        this.CreateQualityMenu();
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             if (show) {
                 if (fade)
@@ -123,7 +143,7 @@ module TwitchPotato {
                     this._menu.hide();
             }
 
-            this._menuTimeout = setTimeout(() => this.ShowMenu(undefined, false, true), 5000);
+            // this._menuTimeout = setTimeout(() => this.ShowMenu(undefined, false, true), 5000);
         }
     }
 }
