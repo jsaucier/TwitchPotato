@@ -112,15 +112,6 @@ module TwitchPotato {
         /** Callback triggered after a keypress event. */
         HandleInput(input: Inputs): boolean {
 
-            // if (this.IsWebviewOpen())
-            //     switch (input) {
-            //         case Inputs.Close:
-            //             this.CloseWebview();
-            //             return true;
-            //         default:
-            //             return true;
-            //     }
-            // else
             switch (input) {
                 case Inputs.Close:
                     window.close();
@@ -144,22 +135,6 @@ module TwitchPotato {
                     return false;
             }
         }
-
-        /** Gets whether a webview is opened. */
-        // private IsWebviewOpen(): boolean {
-        //     return $('#webviews webview:visible').length > 0;
-        // }
-
-        /** Handles the GlobalExit keydown event. */
-        // private CloseWebview(): void {
-        //     if ($('#webviews #login webview:visible').length !== 0) {
-        //         /** Load a blank window to stop the video playing. */
-        //         $('#webviews #login webview').attr('src', 'about:blank');
-        //
-        //         /** Hide the webviews */
-        //         $('#webviews #login').fadeOut();
-        //     }
-        // }
 
         /** Updates the font size. */
         private UpdateFontSize(type: FontSize): void {
