@@ -15,10 +15,10 @@ module TwitchPotato {
         private _viewMode = ViewMode.Windowed;
         private _position: MultiPosition;
         private _multiLayout: MultiLayout;
-        private _div: JQuery;
+        private _container: JQuery;
         private _notifyTimeout: number;
-        private _selectTimeout: number;
         private _isPartnered: boolean;
+        private _menu: PlayerMenu;
 
         /** Creates a new instance of player. */
         constructor(num: number, id: string, isVideo: boolean) {
@@ -29,14 +29,14 @@ module TwitchPotato {
             $('#players').append($($('#player-template').html().format(num)));
 
             this._number = num;
-            this._div = $('#players .player[number="' + num + '"]');
-            this._webview = <Webview>this._div.find('webview')[0];
+            this._container = $('#players .player[number="' + num + '"]');
+            this._webview = <Webview>this._container.find('webview')[0];
 
             this.GetPartnerStatus(() => {
                 var src = 'http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true&';
                 src += (!isVideo) ? 'channel=' + id : 'videoId=' + id;
 
-                this._div.find('webview').attr('src', src);
+                this._container.find('webview').attr('src', src);
             });
 
             /** Bind to the contentload event. */
@@ -55,6 +55,8 @@ module TwitchPotato {
 
             /** Bind to the console message event. */
             this._webview.addEventListener('consolemessage', (e) => ConsoleMessage(e));
+
+            this._menu = new PlayerMenu(this);
         }
 
         /** Gets the current id of the playing channel or video. */
@@ -66,13 +68,16 @@ module TwitchPotato {
         /** Gets whether the channel is partnered. */
         IsPartnered(): boolean { return this._isPartnered; }
 
+        /** Gets the player container. */
+        Container(): JQuery { return this._container};
+
         /** Gets or sets the current multi layout for the player. */
         MultiLayout(layout?: MultiLayout): MultiLayout {
 
             if (layout !== undefined &&
                 this._multiLayout !== layout) {
                 this._multiLayout = layout;
-                $(this._div)
+                $(this._container)
                     .hide()
                     .attr('multi', MultiLayout[layout])
                     .fadeIn();
@@ -86,7 +91,7 @@ module TwitchPotato {
 
             if (num !== undefined) {
                 this._number = num;
-                $(this._div).attr('number', num);
+                $(this._container).attr('number', num);
             }
 
             return this._number;
@@ -125,7 +130,7 @@ module TwitchPotato {
                         var src = 'http://www.twitch.tv/widgets/live_embed_player.swf?volume=100&auto_play=true&';
                         src += (!isVideo) ? 'channel=' + id : 'videoId=' + id;
 
-                        this._div.find('webview').attr('src', src);
+                        this._container.find('webview').attr('src', src);
                     }
                 });
             }
@@ -209,21 +214,15 @@ module TwitchPotato {
             return this._position;
         }
 
-        /** Selects the player. */
-        Select(num: number): void {
+        /** Highlight the player. */
+        Highlight(num: number): void {
 
-            clearTimeout(this._selectTimeout);
+            if (num === this._number)
+                this._container.addClass('selected');
+            else
+                this._container.removeClass('selected');
 
-            if (num === this._number) {
-
-                this._div.addClass('selected');
-                this._div.find('.selector').fadeIn();
-                this._selectTimeout = setTimeout(() => this.Select(-1), 2500);
-            }
-            else {
-                this._div.removeClass('selected');
-                this._div.find('.selector').fadeOut();
-            }
+            this._menu.Highlight(num === this._number);
         }
 
         /** Reloads the player. */
