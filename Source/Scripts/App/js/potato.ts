@@ -9,7 +9,7 @@ module TwitchPotato {
 
 
         Guide: GuideHandler;
-        Authenticator: AuthenticatorHandler;
+        Authenticator: Authenticator;
         Twitch: TwitchHandler;
         Storage: StorageHandler;
         Input: InputHandler;
@@ -42,7 +42,7 @@ module TwitchPotato {
             this.Players = new Players();
 
             /** Authenticate the user. */
-            this.Authenticator = new AuthenticatorHandler((user, name, token) => {
+            this.Authenticator = new Authenticator((user, name, token) => {
                 this._user = user;
                 this._name = name;
                 this._token = token;
@@ -112,54 +112,54 @@ module TwitchPotato {
         /** Callback triggered after a keypress event. */
         HandleInput(input: Inputs): boolean {
 
-            if (this.IsWebviewOpen())
-                switch (input) {
-                    case Inputs.Close:
-                        this.CloseWebview();
-                        return true;
-                    default:
-                        return true;
-                }
-            else
-                switch (input) {
-                    case Inputs.Close:
-                        window.close();
-                        return true;
-                    case Inputs.ToggleGuide:
-                        this.ToggleGuide();
-                        return true;
-                    case Inputs.FontSizeIncrease:
-                        this.UpdateFontSize(FontSize.Increase);
-                        return true;
-                    case Inputs.FontSizeDecrease:
-                        this.UpdateFontSize(FontSize.Decrease);
-                        return true;
-                    case Inputs.FontSizeReset:
-                        this.UpdateFontSize(FontSize.Reset);
-                        return true;
-                    case Inputs.SaveSetting:
-                        this.SaveSetting();
-                        return true;
-                    default:
-                        return false;
-                }
+            // if (this.IsWebviewOpen())
+            //     switch (input) {
+            //         case Inputs.Close:
+            //             this.CloseWebview();
+            //             return true;
+            //         default:
+            //             return true;
+            //     }
+            // else
+            switch (input) {
+                case Inputs.Close:
+                    window.close();
+                    return true;
+                case Inputs.ToggleGuide:
+                    this.ToggleGuide();
+                    return true;
+                case Inputs.FontSizeIncrease:
+                    this.UpdateFontSize(FontSize.Increase);
+                    return true;
+                case Inputs.FontSizeDecrease:
+                    this.UpdateFontSize(FontSize.Decrease);
+                    return true;
+                case Inputs.FontSizeReset:
+                    this.UpdateFontSize(FontSize.Reset);
+                    return true;
+                case Inputs.SaveSetting:
+                    this.SaveSetting();
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /** Gets whether a webview is opened. */
-        private IsWebviewOpen(): boolean {
-            return $('#webviews webview:visible').length > 0;
-        }
+        // private IsWebviewOpen(): boolean {
+        //     return $('#webviews webview:visible').length > 0;
+        // }
 
         /** Handles the GlobalExit keydown event. */
-        private CloseWebview(): void {
-            if ($('#webviews #login webview:visible').length !== 0) {
-                /** Load a blank window to stop the video playing. */
-                $('#webviews #login webview').attr('src', 'about:blank');
-
-                /** Hide the webviews */
-                $('#webviews #login').fadeOut();
-            }
-        }
+        // private CloseWebview(): void {
+        //     if ($('#webviews #login webview:visible').length !== 0) {
+        //         /** Load a blank window to stop the video playing. */
+        //         $('#webviews #login webview').attr('src', 'about:blank');
+        //
+        //         /** Hide the webviews */
+        //         $('#webviews #login').fadeOut();
+        //     }
+        // }
 
         /** Updates the font size. */
         private UpdateFontSize(type: FontSize): void {

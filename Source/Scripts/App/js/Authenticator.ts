@@ -1,6 +1,6 @@
 module TwitchPotato {
 
-    export class AuthenticatorHandler {
+    export class Authenticator {
 
         /** The authentication webview. */
         private _webview: Webview;
@@ -97,7 +97,7 @@ module TwitchPotato {
             if (element.attr('src') === 'about:blank') return;
 
             /** User interaction is required. */
-            if (element.attr('src') === 'https://secure.twitch.tv/login' ||
+            if (element.attr('src').indexOf('https://secure.twitch.tv/login') === 0 ||
                 element.attr('src').indexOf('https://api.twitch.tv/kraken/oauth2/authorize') === 0) {
 
                 this.Visibility(true, true);
