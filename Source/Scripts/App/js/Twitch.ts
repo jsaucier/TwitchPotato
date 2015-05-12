@@ -231,11 +231,13 @@ module TwitchPotato {
 
         /** Fired when an error is encountered. */
         private ShowError(xhr, status, error) {
-            /** Response object. */
+
             var json = xhr.responseJSON;
 
-            /** Show the error. */
-            App.ShowMessage('{0} - {1}: {2}'.format(json.status, json.error, json.message));
+            if (json === undefined)
+                App.ShowMessage('{0} - {1}'.format(xhr.status, xhr.statusText));
+            else
+                App.ShowMessage('{0} - {1}: {2}'.format(json.status, json.error, json.message));
         }
 
         /** Fired when an authentication error is encountered. */
