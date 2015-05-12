@@ -69,7 +69,10 @@ module TwitchPotato {
         IsPartnered(): boolean { return this._isPartnered; }
 
         /** Gets the player container. */
-        Container(): JQuery { return this._container};
+        Container(): JQuery { return this._container; }
+
+        /** Gets the player menu. */
+        Menu(): PlayerMenu { return this._menu; }
 
         /** Gets or sets the current multi layout for the player. */
         MultiLayout(layout?: MultiLayout): MultiLayout {
