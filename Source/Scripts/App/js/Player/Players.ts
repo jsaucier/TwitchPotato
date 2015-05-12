@@ -14,98 +14,106 @@ module TwitchPotato {
 
             if (player === undefined) return false;
 
-            switch (input) {
+            if (player.Menu().HandleInput(input))
+                return;
+            else {
+                switch (input) {
 
-                case Inputs.Stop:
-                    player.State(PlayerState.Stopped);
+                    case Inputs.ContextMenu:
+                        player.Menu().ShowMenu(-1, true, true);
+                        return true;
 
-                    if (!this.IsPlaying())
-                        App.ToggleGuide(true);
+                    case Inputs.Stop:
+                        player.State(PlayerState.Stopped);
 
-                    return true;
+                        if (!this.IsPlaying())
+                            App.ToggleGuide(true);
 
-                case Inputs.Play:
-                    player.State(PlayerState.Playing, true);
-                    return true;
+                        return true;
 
-                case Inputs.Mute:
-                    player.Mute();
-                    return true;
+                    case Inputs.Play:
+                        player.State(PlayerState.Playing, true);
+                        return true;
 
-                case Inputs.Flashback:
-                    player.Flashback();
-                    return true;
+                    case Inputs.Mute:
+                        player.Mute();
+                        return true;
 
-                case Inputs.ToggleViewMode:
-                    player.ViewMode(ViewMode.Toggle);
-                    return true;
+                    case Inputs.Flashback:
+                        player.Flashback();
+                        return true;
 
-                case Inputs.Fullscreen:
-                    player.ViewMode(ViewMode.Fullscreen);
-                    return true;
+                    case Inputs.ToggleViewMode:
+                        player.ViewMode(ViewMode.Toggle);
+                        return true;
 
-                case Inputs.Windowed:
-                    player.ViewMode(ViewMode.Windowed);
-                    return true;
+                    case Inputs.Fullscreen:
+                        player.ViewMode(ViewMode.Fullscreen);
+                        return true;
 
-                case Inputs.QualityMobile:
-                    player.Quality(Quality.Mobile);
-                    return true;
+                    case Inputs.Windowed:
+                        player.ViewMode(ViewMode.Windowed);
+                        return true;
 
-                case Inputs.QualityLow:
-                    player.Quality(Quality.Low);
-                    return true;
+                    case Inputs.QualityMobile:
+                        player.Quality(Quality.Mobile);
+                        return true;
 
-                case Inputs.QualityMedium:
-                    player.Quality(Quality.Medium);
-                    return true;
+                    case Inputs.QualityLow:
+                        player.Quality(Quality.Low);
+                        return true;
 
-                case Inputs.QualityHigh:
-                    player.Quality(Quality.High);
-                    return true;
+                    case Inputs.QualityMedium:
+                        player.Quality(Quality.Medium);
+                        return true;
 
-                case Inputs.QualitySource:
-                    player.Quality(Quality.Source);
-                    return true;
+                    case Inputs.QualityHigh:
+                        player.Quality(Quality.High);
+                        return true;
 
-                case Inputs.Up:
-                    this.UpdateSelector(Direction.Up);
-                    return true;
+                    case Inputs.QualitySource:
+                        player.Quality(Quality.Source);
+                        return true;
 
-                case Inputs.Down:
-                    this.UpdateSelector(Direction.Down);
-                    return true;
+                    case Inputs.Up:
+                        this.UpdateSelector(Direction.Up);
+                        return true;
 
-                case Inputs.Select:
-                    this.Select();
-                    return true;
+                    case Inputs.Down:
+                        this.UpdateSelector(Direction.Down);
+                        return true;
 
-                case Inputs.MultiLayout:
+                    case Inputs.Select:
+                        this.Select();
+                        return true;
 
-                    var layout = (this._multiLayout === MultiLayout.Default) ?
-                        MultiLayout.Equal : MultiLayout.Default;
+                    case Inputs.MultiLayout:
 
-                    this.MultiLayout(layout);
-                    return true;
+                        var layout = (this._multiLayout === MultiLayout.Default) ?
+                            MultiLayout.Equal : MultiLayout.Default;
 
-                case Inputs.ToggleChat:
-                    App.Chat.Toggle(player.Id());
-                    return true;
+                        this.MultiLayout(layout);
+                        return true;
 
-                case Inputs.Right:
-                    App.Chat.UpdateLayout(Direction.Right);
-                    return true;
+                    case Inputs.ToggleChat:
+                        App.Chat.Toggle(player.Id());
+                        return true;
 
-                case Inputs.Left:
-                    App.Chat.UpdateLayout(Direction.Left);
-                    return true;
+                    case Inputs.Right:
+                        App.Chat.UpdateLayout(Direction.Right);
+                        return true;
 
-                case Inputs.Reload:
-                    player.Reload();
-                    return true;
+                    case Inputs.Left:
+                        App.Chat.UpdateLayout(Direction.Left);
+                        return true;
 
-                default:
-                    return false;
+                    case Inputs.Reload:
+                        player.Reload();
+                        return true;
+
+                    default:
+                        return false;
+                }
             }
         }
 
