@@ -1,4 +1,132 @@
-// module TwitchPotato {
+module TwitchPotato {
+
+    export class PlayerMenu {
+
+        private _player: Player;
+
+        private _sources: Array<string>
+
+
+
+        private _highlight: JQuery;
+        private _hlTimeout: number;
+
+        private _notification: JQuery;
+        private _ntTimeout: number;
+
+        private _menu: JQuery;
+        private _menuTimeout: number;
+
+        constructor(player: Player) {
+
+            this._player = player;
+
+            this.CreateHighlight();
+            this.CreateNotification;
+            this.CreateMenu();
+        }
+
+        /** Highlights the selected player. */
+        Highlight(showOrHide: boolean): void {
+
+            clearTimeout(this._hlTimeout);
+
+            if (showOrHide) {
+                this._highlight.fadeIn();
+                setTimeout(() => this._highlight.fadeOut(), 2500);
+            }
+            else
+                this._highlight.fadeOut();
+        }
+
+        /** Creates the highlight element. */
+        private CreateHighlight(): void {
+
+            if (this._player.Container().find('.highlight').length !== 0) return;
+
+            var highlight = $('<div/>').addClass('highlight');
+
+            this._player.Container().append(highlight).hide();
+
+            this._highlight = this._player.Container().find('.highlight');
+        }
+
+        /** Displays the notification. */
+        Notify(): void { }
+
+        /** Creates the notification element. */
+        private CreateNotification(): void {
+
+            if (this._player.Container().find('.notification').length !== 0) return;
+
+            var notification = $('<div/>').addClass('notification');
+
+            this._player.Container().append(notification).hide();
+
+            this._notification = this._player.Container().find('.notification');
+        }
+
+
+
+        ShowQualityMenu(): void {
+
+            var size = Object.keys(Quality).length / 2;
+
+            var html = $('<div/>').addClass('items');
+
+            for (var i = 0; i < size; i++) {
+
+                var item = $('<div/>')
+                    .addClass('item')
+                    .attr('quality', i);
+
+                item.append($('<img/>').
+                    attr('src', 'images/quality-{0}.png'.format(Quality[i].toLowerCase())));
+
+                item.append($('<div/>')
+                    .addClass('text')
+                    .text(Quality[i]));
+
+                html.append(item);
+            }
+
+            this.ShowMenu(html);
+        }
+
+        /** Creates the menu element. */
+        private CreateMenu(): void {
+
+            var container = $('<div/>').addClass('menu');
+
+            this._player.Container().append(container).hide();
+
+            this._menu = this._player.Container().find('.menu');
+        }
+
+        private ShowMenu(html: JQuery, show = true, fade = true): void {
+
+            clearTimeout(this._menuTimeout);
+
+            if (html !== undefined)
+                this._menu.hide().empty().append(html);
+
+            if (show) {
+                if (fade)
+                    this._menu.fadeIn();
+                else
+                    this._menu.show();
+            }
+            else {
+                if (fade)
+                    this._menu.fadeOut();
+                else
+                    this._menu.hide();
+            }
+
+            this._menuTimeout = setTimeout(() => this.ShowMenu(undefined, false, true), 5000);
+        }
+    }
+}
 //
 //     export enum PipMode {
 //         Default,
