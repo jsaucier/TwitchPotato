@@ -10,10 +10,10 @@ module TwitchPotato {
 
         private _followed: { [type: number]: { [id: string]: boolean } } = {};
 
-        private _channels: ChannelItems = {};
-        private _games: GameItems = {};
-        private _videos: VideoItems = {};
-        private _search: ChannelItems = {};
+        private _channels: TwitchChannels = {};
+        private _games: TwitchGames = {};
+        private _videos: TwitchVideos = {};
+        private _search: TwitchChannels = {};
 
         constructor(user: string, token: string) {
             this._user = user;
@@ -31,19 +31,23 @@ module TwitchPotato {
         GetFollows(followType: FollowType): any { return this._followed[followType]; }
 
         /** Gets the channel information. */
-        GetChannel(channel: string): ChannelItem { return this._channels[channel]; }
+        GetChannel(channel: string): TwitchChannel { return this._channels[channel]; }
 
         /** Gets the game information. */
-        GetGame(game: string): GameItem { return this._games[game]; }
+        GetGame(game: string): TwitchGame { return this._games[game]; }
 
         /** Gets the menu information. */
-        GetItems(menu: MenuType): any {
-
+        GetMenuItems(menu: MenuType): any {
             if (menu === MenuType.Channels) return this._channels;
             if (menu === MenuType.Games) return this._games;
             if (menu === MenuType.Game) return this._search;
             if (menu === MenuType.Videos) return this._videos;
         }
+
+        GetChannels(): TwitchChannels { return this._channels; }
+        GetGames(): TwitchGames { return this._games; }
+        GetVideos(): TwitchVideos { return this._videos; }
+        GetSearch(): TwitchChannels { return this._search; }
 
         /** Upates all the twitch data. */
         Refresh(skipFollowed = false): void {
@@ -59,16 +63,15 @@ module TwitchPotato {
             if (this._lastSearch !== undefined)
                 this._search = {};
 
-            this.GetChannels();
-            this.GetGames();
+            this.RefreshChannels();
+            this.RefreshGames();
 
-            this.GetFollowedChannels();
-            this.GetFollowedGames();
+            this.RefreshFollowedChannels();
+            this.RefreshFollowedGames();
         }
 
         /** Determines if the channel is partnered. */
         IsPartnered(channel: string, callback: (isPartnered: boolean) => void): void {
-
             $.ajax({
                 url: 'https://api.twitch.tv/kraken/channels/{0}'.format(channel),
                 error: (xhr, status, error) => this.ShowError(xhr, status, error),
@@ -93,15 +96,15 @@ module TwitchPotato {
                 error: (xhr, status, error) => this.AuthenticationError(xhr, status, error),
                 success: () => {
                     if (type === FollowType.Channel)
-                        setTimeout(() => this.GetFollowedChannels(), 500);
+                        setTimeout(() => this.RefreshFollowedChannels(), 500);
                     else
-                        setTimeout(() => this.GetFollowedGames(), 500);
+                        setTimeout(() => this.RefreshFollowedGames(), 500);
                 }
             });
         }
 
         /** Updates the top channels. */
-        GetChannels(getAll = false): void {
+        RefreshChannels(getAll = false): void {
 
             var url = 'https://api.twitch.tv/kraken/streams?limit={0}'.format(this._limit);
 
@@ -120,7 +123,7 @@ module TwitchPotato {
         }
 
         /** Gets all of the games. */
-        GetGames(getAll = true): void {
+        RefreshGames(getAll = true): void {
 
             var url = 'https://api.twitch.tv/kraken/games/top?limit={0}'.format(this._limit);
 
@@ -139,7 +142,7 @@ module TwitchPotato {
         }
 
         /** Gets the channels for a game. */
-        GetGameChannels(searchGame: string, getAll = true) {
+        RefreshGameChannels(searchGame: string, getAll = true) {
 
             this._search = {};
 
@@ -163,7 +166,7 @@ module TwitchPotato {
         }
 
         /** Get the vidoes for a channe. */
-        GetChannelVideos(channel, getAll = true) {
+        RefreshChannelVideos(channel, getAll = true) {
 
             this._videos = {};
 
@@ -187,7 +190,7 @@ module TwitchPotato {
         }
 
         /** Get the followed channels for the Twitch user. */
-        GetFollowedChannels(): void {
+        RefreshFollowedChannels(): void {
 
             var url = 'https://api.twitch.tv/kraken/streams/followed?oauth_token={0}'.format(this._token);
 
@@ -201,7 +204,7 @@ module TwitchPotato {
         }
 
         /** Get the followed games for the Twitch user. */
-        GetFollowedGames(): void {
+        RefreshFollowedGames(): void {
 
             var url = 'https://api.twitch.tv/api/users/{0}/follows/games?limit={1}'.format(this._user, this._limit);
 
@@ -252,7 +255,7 @@ module TwitchPotato {
         }
 
         /** Loads the next page of channels. */
-        private GetNextChannels(url: string, offset: number, items: ChannelItems, followed = false) {
+        private GetNextChannels(url: string, offset: number, items: TwitchChannels, followed = false) {
 
             $.ajax({
                 url: url + '&offset={0}'.format(offset),
@@ -282,7 +285,7 @@ module TwitchPotato {
         }
 
         /** Converts a json object to a channel. */
-        private ParseChannelItems(object, items: ChannelItems, followed = false): void {
+        private ParseChannelItems(object, items: TwitchChannels, followed = false): void {
 
             for (var key in object) {
 
@@ -358,7 +361,7 @@ module TwitchPotato {
         // }
     }
 
-    export interface ChannelItem {
+    export interface TwitchChannel {
         name: string;
         streamer: string;
         title: string;
@@ -367,14 +370,15 @@ module TwitchPotato {
         preview: string;
     }
 
-    export interface GameItem {
+    export interface TwitchGame {
         name: string;
         channels: number;
         viewers: number;
         boxArt: string;
     }
 
-    export interface VideoItem {
+    export interface TwitchVideo {
+        id: string;
         name: string;
         streamer: string;
         title: string;
@@ -383,15 +387,15 @@ module TwitchPotato {
         preview: string;
     }
 
-    export interface ChannelItems {
-        [channel: string]: ChannelItem
+    export interface TwitchChannels {
+        [channel: string]: TwitchChannel
     }
 
-    export interface GameItems {
-        [game: string]: GameItem;
+    export interface TwitchGames {
+        [game: string]: TwitchGame;
     }
 
-    export interface VideoItems {
-        [video: string]: VideoItem;
+    export interface TwitchVideos {
+        [video: string]: TwitchVideo;
     }
 }

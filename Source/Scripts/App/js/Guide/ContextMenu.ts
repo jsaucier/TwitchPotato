@@ -201,7 +201,7 @@ module TwitchPotato {
                     App.Guide.SetUpdateType(UpdateType.Game);
 
                     /** Search for more games of this type. */
-                    App.Twitch.GetGameChannels(game);
+                    App.Twitch.RefreshGameChannels(game);
                     break;
                 case 'search-videos':
                     /** Hide the game menu. */
@@ -211,7 +211,7 @@ module TwitchPotato {
                     App.Guide.SetUpdateType(UpdateType.Videos);
 
                     /** Search for videos from this streamer */
-                    App.Twitch.GetChannelVideos(key);
+                    App.Twitch.RefreshChannelVideos(key);
                     break;
                 case 'follow-channel':
                     /** Follow the channel. */

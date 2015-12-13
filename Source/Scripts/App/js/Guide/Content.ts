@@ -184,7 +184,7 @@ module TwitchPotato {
         private ShowChannel(key: string, menu: MenuType): void {
 
             /** Get the channel data. */
-            var channel = <ChannelItem>App.Twitch.GetItems(menu)[key];
+            var channel = <TwitchChannel>App.Twitch.GetChannels()[key];
 
             /** The channel head template. */
             var head = $('#channel-info-head-template').html().format(
@@ -203,7 +203,7 @@ module TwitchPotato {
         private ShowGame(key: string): void {
 
             /** Get the game data. */
-            var game = <GameItem>App.Twitch.GetItems(MenuType.Games)[key];
+            var game = <TwitchGame>App.Twitch.GetGames()[key];
 
             /** The game head template. */
             var head = $('#game-info-head-template').html().format(
@@ -221,7 +221,7 @@ module TwitchPotato {
         private ShowVideo(key: string): void {
 
             /** Get the video data. */
-            var video = <VideoItem>App.Twitch.GetItems(MenuType.Videos)[key];
+            var video = <TwitchVideo>App.Twitch.GetVideos()[key];
 
             /** The game head template. */
             var head = $('#video-info-head-template').html().format(
@@ -258,7 +258,7 @@ module TwitchPotato {
             if (isInput === true)
                 $('#info .content')
                     .append($('<input>')
-                        .attr('id', type));
+                    .attr('id', type));
 
             /** Hide the preview div. */
             $('#preview').hide();

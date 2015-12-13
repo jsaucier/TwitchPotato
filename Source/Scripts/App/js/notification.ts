@@ -20,11 +20,11 @@ module TwitchPotato {
             var online: IDictionary<string> = {};
 
             /** The data for the channel. */
-            var channel: ChannelItem;
+            var channel: TwitchChannel;
 
             for (var o in followed) {
                 /** Update the channel. */
-                channel = App.Twitch.GetItems(MenuType.Channels)[o];
+                channel = App.Twitch.GetChannels()[o];
 
                 /**
                  * Only notify new streamers that just come online or
@@ -38,7 +38,7 @@ module TwitchPotato {
             /** Add the online channels to the notification window. */
             for (var o in online) {
                 /** Update the channel. */
-                channel = App.Twitch.GetItems(MenuType.Channels)[o];
+                channel = App.Twitch.GetChannels()[o];
 
                 /** The notification item template. */
                 var html = $('#notify-item-template').html().format(
