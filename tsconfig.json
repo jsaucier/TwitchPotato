@@ -17,26 +17,29 @@
         "!./node_modules/**/*.ts"
     ],
     "files": [
-        "./source/scripts/app/app.ts",
-        "./source/scripts/app/js/Authenticator.ts",
-        "./source/scripts/app/js/Storage.ts",
-        "./source/scripts/app/js/Twitch.ts",
-        "./source/scripts/app/js/chat.ts",
-        "./source/scripts/app/js/guide/Content.ts",
-        "./source/scripts/app/js/guide/ContextMenu.ts",
-        "./source/scripts/app/js/guide/Guide.ts",
-        "./source/scripts/app/js/guide/MenuItem.ts",
-        "./source/scripts/app/js/guide/Timer.ts",
-        "./source/scripts/app/js/input.ts",
-        "./source/scripts/app/js/lib/Definitions.d.ts",
-        "./source/scripts/app/js/lib/chrome.d.ts",
-        "./source/scripts/app/js/lib/jquery.d.ts",
-        "./source/scripts/app/js/notification.ts",
-        "./source/scripts/app/js/player/Player.ts",
-        "./source/scripts/app/js/player/controller.ts",
-        "./source/scripts/app/js/player/menu.ts",
-        "./source/scripts/app/js/player/players.ts",
-        "./source/scripts/app/js/potato.ts",
-        "./source/scripts/app/js/utils.ts"
-    ]
+        "./Source/Scripts/App/app.ts",
+        "./Source/Scripts/App/js/Authenticator.ts",
+        "./Source/Scripts/App/js/chat.ts",
+        "./Source/Scripts/App/js/Guide/Content.ts",
+        "./Source/Scripts/App/js/Guide/ContextMenu.ts",
+        "./Source/Scripts/App/js/Guide/Guide.ts",
+        "./Source/Scripts/App/js/Guide/MenuItem.ts",
+        "./Source/Scripts/App/js/Guide/Timer.ts",
+        "./Source/Scripts/App/js/input.ts",
+        "./Source/Scripts/App/js/Lib/chrome.d.ts",
+        "./Source/Scripts/App/js/Lib/Definitions.d.ts",
+        "./Source/Scripts/App/js/Lib/jquery.d.ts",
+        "./Source/Scripts/App/js/notification.ts",
+        "./Source/Scripts/App/js/Player/Controller.ts",
+        "./Source/Scripts/App/js/Player/menu.ts",
+        "./Source/Scripts/App/js/Player/Player.ts",
+        "./Source/Scripts/App/js/Player/Players.ts",
+        "./Source/Scripts/App/js/potato.ts",
+        "./Source/Scripts/App/js/Storage.ts",
+        "./Source/Scripts/App/js/Twitch.ts",
+        "./Source/Scripts/App/js/utils.ts"
+    ],
+    "atom": {
+        "rewriteTsconfig": true
+    }
 }
